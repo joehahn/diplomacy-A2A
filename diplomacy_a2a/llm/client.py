@@ -22,7 +22,11 @@ class ChatResult:
     text: str
     input_tokens: int
     output_tokens: int
-    cached_input_tokens: int = 0  # provider-specific; 0 if unsupported
+    # Cache accounting (Anthropic-style; 0 for providers without caching).
+    # Creation tokens are billed at a premium (write-to-cache); read tokens
+    # at a deep discount. Tracking both lets us reason about cost per run.
+    cache_creation_input_tokens: int = 0
+    cache_read_input_tokens: int = 0
     raw: object = field(default=None, repr=False)  # provider-native response, for debugging
 
 

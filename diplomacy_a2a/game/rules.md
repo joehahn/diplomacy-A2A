@@ -49,9 +49,6 @@ Each game year has up to five phases:
    excess home center) or disbands (one per missing center) to match
    its supply-center count.
 
-Phases the adjudicator may skip if no orders apply (e.g., no retreats
-needed, no adjustments needed).
-
 ## Order syntax (EXACT strings the adjudicator accepts)
 
 These are the only forms accepted. Anything else is rejected.
@@ -118,8 +115,8 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
 - Most tactical exchanges are decided in dialogue *before* the moves
   resolve. The negotiation transcript is the real artifact.
 - Trust is fragile, betrayal is expected, but reputation across many
-  turns matters. A power that always defects has nobody willing to deal
-  with it; a power that always honors deals gets exploited.
+  turns matters. A power that always betrays its allies has nobody
+  willing to deal with it; a power that always honors deals gets exploited.
 - The supply-center count after Fall (especially Fall 1901, Fall 1902)
   signals who is winning and reshapes alliances.
 
