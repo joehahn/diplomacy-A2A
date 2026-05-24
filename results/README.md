@@ -17,22 +17,30 @@ Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
 ## Canonical runs
 
-### `20260524T031616Z/` — first baseline, no negotiation
+### `20260524T034819Z/` — **with 1-round negotiation** (current canonical demo)
 
-The first end-to-end run of the artifact pipeline. Seven Sonnet-backed
-agents with default personality stubs played 2 years (7 phases) of
-Diplomacy with **no negotiation between turns** — each agent picked
-orders from its legal-moves menu independently. Cost: ~$0.35.
+Seven Sonnet-backed agents playing 2 years of Diplomacy with **one round
+of private pairwise messaging** before each movement phase. 7 phases,
+~$0.88, ~12 minutes.
 
-Notable dynamics:
+The dialogue is the headline feature here. Selected highlights:
 
-- Russia pressed east and finished on top (6 centers) — the
-  "expansionist" persona delivered.
-- Italy moved toward the Balkans (`A TYR - TRI`, `A APU - GRE via convoy`)
-  — the "scheming" persona in action.
-- One invalid order across the entire run (Austria S1902M), caught by
-  our validator and filtered before reaching the adjudicator.
+- **Italy → Austria** in S1901M: "I'd like to propose a friendly opening
+  between us — I have no designs on Trieste."
+  **Italy's actual orders** in F1901M then moved on Trieste. Classic
+  CICERO-flavored stab captured in transcript.
+- By F1902M, multiple powers had independently identified Turkey as the
+  rising threat and were proposing coalitions against it
+  ("Turkey at 5 centers is a real threat to both of us — I'm pushing
+  to check them this fall").
 
-Easiest way to view: `open results/20260524T031616Z/index.html` to
-flip through the maps phase by phase. Or read `report.md` for the
-postmortem with full reasoning. Both render inline on GitHub too.
+Open `results/20260524T034819Z/index.html` to flip through the maps and
+dialogue phase by phase.
+
+### `20260524T031616Z/` — no-negotiation baseline (for comparison)
+
+Same setup, same personas, but agents act independently each turn
+with no inter-agent dialogue. Useful as the "what does dialogue
+actually buy us?" comparison run. 7 phases, ~$0.35.
+
+Open `results/20260524T031616Z/index.html` for the slideshow view.

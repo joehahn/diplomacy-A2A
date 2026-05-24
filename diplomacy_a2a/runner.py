@@ -1,25 +1,29 @@
 """Run one full game end-to-end.
 
-Orchestrates: state setup, agent calls per phase, validation, submission,
-map rendering, transcript logging, postmortem rendering. v1 has no
-negotiation phase yet — agents act independently each turn.
+Orchestrates: state setup, optional negotiation rounds before each
+movement phase, agent calls for orders, validation, library
+adjudication, map rendering, transcript logging, and final markdown +
+HTML postmortem rendering.
 
 Produces under `results/<run-id>/`:
 - `transcript.jsonl` — structured event log (source of truth)
-- `S1901M.svg`, etc. — one map image per phase
-- `report.md`       — markdown postmortem, embeds the SVGs
+- `<short-phase>.svg` — one map image per phase
+- `report.md`        — markdown postmortem with dialogue and reasoning
+- `index.html` + `<short-phase>.html` — slideshow viewer
 
 run-id is a UTC timestamp like `20260523T231245Z`.
 """
 from __future__ import annotations
 
 import time
+from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from diplomacy_a2a.agent import Agent, validate_orders
+from diplomacy_a2a.agent import Agent, DialogueMessage, validate_orders
 from diplomacy_a2a.game.state import GameState, POWERS
 from diplomacy_a2a.llm.client import LLMClient
+from diplomacy_a2a.negotiation import run_negotiation_round
 from diplomacy_a2a.personas.registry import DEFAULT_PERSONAS
 from diplomacy_a2a.transcripts import TranscriptWriter, render_html_viewer, render_markdown
 
@@ -46,6 +50,13 @@ def _estimate_cost(tokens: dict[str, int]) -> float:
     ) / 1_000_000
 
 
+def _accumulate_tokens(totals: dict[str, int], chat) -> None:
+    totals["input"] += chat.input_tokens
+    totals["output"] += chat.output_tokens
+    totals["cache_create"] += chat.cache_creation_input_tokens
+    totals["cache_read"] += chat.cache_read_input_tokens
+
+
 def run_game(
     *,
     client: LLMClient,
@@ -53,15 +64,11 @@ def run_game(
     years: int = 2,
     personas: dict[str, str] | None = None,
     results_root: Path = Path("results"),
+    negotiation_rounds: int = 1,  # rounds per MOVEMENT phase (0 = skip)
     max_phases: int = 50,  # safety stop
     verbose: bool = True,
 ) -> Path:
-    """Run a full game, save artifacts under results_root/<run-id>/.
-
-    `model` is passed to transcript metadata only — the client itself
-    was constructed with whichever model the caller chose.
-    Returns the path to the run directory.
-    """
+    """Run a full game, save artifacts under results_root/<run-id>/."""
     if personas is None:
         personas = DEFAULT_PERSONAS
 
@@ -76,6 +83,7 @@ def run_game(
     end_year = 1900 + years
     tokens = {"input": 0, "output": 0, "cache_create": 0, "cache_read": 0}
     phases_played = 0
+    dialogue_history: list[DialogueMessage] = []
     t0 = time.time()
 
     with TranscriptWriter(jsonl_path).open() as tw:
@@ -86,6 +94,7 @@ def run_game(
             years_target=years,
             personas=personas,
             powers=list(POWERS),
+            negotiation_rounds=negotiation_rounds,
         )
 
         while not state.is_done and phases_played < max_phases:
@@ -99,21 +108,56 @@ def run_game(
                 state.advance()
                 continue
 
+            is_movement = short.endswith("M")
+
             tw.write(
                 "phase_started",
                 phase=state.phase,
                 short_phase=short,
                 powers_acting=powers_acting,
+                is_movement=is_movement,
             )
             if verbose:
                 print(f"=== {state.phase} ({short}) — {len(powers_acting)} acting ===")
 
+            # ----- Negotiation rounds (movement phases only) -----
+            phase_dialogue: list[DialogueMessage] = []
+            if is_movement and negotiation_rounds > 0:
+                for round_idx in range(negotiation_rounds):
+                    if verbose:
+                        print(f"  --- Negotiation round {round_idx + 1}/{negotiation_rounds} ---")
+                    new_msgs, results = run_negotiation_round(
+                        agents=agents, state=state, history=dialogue_history
+                    )
+                    for power, res in results.items():
+                        _accumulate_tokens(tokens, res.chat)
+                        tw.write(
+                            "agent_messages",
+                            phase=short,
+                            round=round_idx + 1,
+                            power=power,
+                            text=res.chat.text,
+                            messages=res.messages,
+                            tokens={
+                                "input": res.chat.input_tokens,
+                                "output": res.chat.output_tokens,
+                                "cache_create": res.chat.cache_creation_input_tokens,
+                                "cache_read": res.chat.cache_read_input_tokens,
+                            },
+                        )
+                    dialogue_history.extend(new_msgs)
+                    phase_dialogue.extend(new_msgs)
+                    if verbose:
+                        for m in new_msgs:
+                            preview = m.text if len(m.text) < 80 else m.text[:77] + "..."
+                            print(f"    {m.sender} → {m.recipient}: {preview}")
+
+            # ----- Order phase -----
             for power in powers_acting:
-                result = agents[power].submit_orders(state)
-                tokens["input"] += result.chat.input_tokens
-                tokens["output"] += result.chat.output_tokens
-                tokens["cache_create"] += result.chat.cache_creation_input_tokens
-                tokens["cache_read"] += result.chat.cache_read_input_tokens
+                # Agents receiving dialogue context see their own messages
+                # this phase + any history from prior phases.
+                result = agents[power].submit_orders(state, dialogue=dialogue_history)
+                _accumulate_tokens(tokens, result.chat)
 
                 valid, invalid = validate_orders(state, power, result.orders)
 
@@ -144,7 +188,6 @@ def run_game(
                     print(f"  {power}: {valid}{badge}")
 
             # Render this phase's map WITH order arrows BEFORE advancing.
-            # That captures intent (move/support/convoy arrows visible).
             svg_path = run_dir / f"{short}.svg"
             svg_path.write_text(state.game.render(incl_orders=True, incl_abbrev=False))
             tw.write("phase_rendered", phase=short, svg_path=svg_path.name)
@@ -172,7 +215,6 @@ def run_game(
             cost_usd=_estimate_cost(tokens),
         )
 
-    # Render the markdown postmortem and the HTML slideshow viewer
     render_markdown(jsonl_path, run_dir / "report.md")
     render_html_viewer(jsonl_path, run_dir)
 

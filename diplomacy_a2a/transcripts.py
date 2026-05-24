@@ -86,14 +86,15 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
             lines.append(f"- **{power}** — {persona}")
         lines.append("")
 
-    # Walk phase-by-phase. Each phase: phase_started, then alternating
-    # agent_response / orders_submitted per power, then phase_rendered.
+    # Walk phase-by-phase. Each phase: phase_started, then a mix of
+    # agent_messages (negotiation) and agent_response/orders_submitted (orders).
     current_phase: dict[str, Any] | None = None
     agent_responses: dict[str, dict[str, Any]] = {}
     orders_submitted: dict[str, dict[str, Any]] = {}
+    dialogue_events: list[dict[str, Any]] = []  # agent_messages events for this phase
 
     def flush_phase() -> None:
-        nonlocal current_phase, agent_responses, orders_submitted
+        nonlocal current_phase, agent_responses, orders_submitted, dialogue_events
         if current_phase is None:
             return
         short = current_phase.get("short_phase", "?")
@@ -101,10 +102,21 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
         lines.append(f"## {phase_long} (`{short}`)")
         lines.append("")
         svg_name = f"{short}.svg"
-        # Only embed if file exists alongside (we don't check here — leave to viewer)
         lines.append(f'<img src="{svg_name}" alt="{short} map" width="700">')
         lines.append("")
-        # Powers in canonical order if present
+        # Dialogue (if any messages were exchanged this phase)
+        all_msgs = [
+            (ev["power"], recipient, text)
+            for ev in dialogue_events
+            for recipient, text in ev.get("messages", {}).items()
+        ]
+        if all_msgs:
+            lines.append("### Dialogue")
+            lines.append("")
+            for sender, recipient, text in all_msgs:
+                lines.append(f"- **{sender} → {recipient}**: {text}")
+            lines.append("")
+        # Orders per power
         for power, resp in agent_responses.items():
             subs = orders_submitted.get(power, {})
             valid = subs.get("valid", [])
@@ -118,7 +130,6 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
                 lines.append(f"Invalid (filtered): " + " · ".join(f"`{o}`" for o in invalid))
             text = resp.get("text", "").strip()
             if text:
-                # Truncate at ORDERS: for the human-readable reasoning portion
                 reasoning = text.split("ORDERS:", 1)[0].strip()
                 if reasoning:
                     lines.append("")
@@ -132,19 +143,19 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
         current_phase = None
         agent_responses = {}
         orders_submitted = {}
+        dialogue_events = []
 
     for e in events:
         t = e["type"]
         if t == "phase_started":
             flush_phase()
             current_phase = e
+        elif t == "agent_messages":
+            dialogue_events.append(e)
         elif t == "agent_response":
             agent_responses[e["power"]] = e
         elif t == "orders_submitted":
             orders_submitted[e["power"]] = e
-        elif t == "phase_resolved":
-            # Append resolution summary to the current phase block
-            pass
     flush_phase()
 
     # Final state
@@ -187,6 +198,10 @@ img.map { max-width: 100%; border: 1px solid #ddd; }
 .orders .power b { display: inline-block; min-width: 80px; }
 .invalid { color: #c33; }
 ol.phases { line-height: 1.8; }
+.dialogue { background: #fff7e6; border-left: 3px solid #d8a; padding: 10px 14px;
+            margin: 12px 0; font-size: 0.9em; }
+.dialogue .msg { margin: 4px 0; }
+.dialogue .who { font-weight: bold; color: #524; }
 """
 
 
@@ -219,8 +234,12 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "long": e.get("phase", "?"),
                 "powers_acting": e.get("powers_acting", []),
                 "orders": {},  # power -> {valid, invalid}
+                "dialogue": [],  # list of (sender, recipient, text)
             }
             phases.append(current)
+        elif e["type"] == "agent_messages" and current is not None:
+            for recipient, text in e.get("messages", {}).items():
+                current["dialogue"].append((e["power"], recipient, text))
         elif e["type"] == "orders_submitted" and current is not None:
             current["orders"][e["power"]] = {
                 "valid": e.get("valid", []),
@@ -268,6 +287,22 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             f"{prev_link}<a href='index.html'>index ({i+1}/{len(phases)})</a>{next_link}"
             "</nav>"
         )
+        dialogue_html: list[str] = []
+        if ph["dialogue"]:
+            dialogue_html.append("<h2>Dialogue this phase</h2>")
+            dialogue_html.append("<div class='dialogue'>")
+            for sender, recipient, text in ph["dialogue"]:
+                # Lightweight HTML-safety: only escape the message body
+                safe = (
+                    text.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                )
+                dialogue_html.append(
+                    f"<div class='msg'><span class='who'>{sender} → {recipient}:</span> {safe}</div>"
+                )
+            dialogue_html.append("</div>")
+
         orders_html: list[str] = ["<div class='orders'>"]
         for power, ods in ph["orders"].items():
             valid_str = " · ".join(f"<code>{o}</code>" for o in ods["valid"]) or "<i>(none)</i>"
@@ -284,6 +319,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 nav,
                 f"<h1>{ph['long']} <code>({ph['short']})</code></h1>",
                 f"<img class='map' src='{ph['short']}.svg' alt='{ph['short']} map'>",
+                *dialogue_html,
                 "<h2>Orders this phase</h2>",
                 *orders_html,
                 nav,
