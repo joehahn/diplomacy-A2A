@@ -21,7 +21,7 @@ from diplomacy_a2a.agent import Agent, validate_orders
 from diplomacy_a2a.game.state import GameState, POWERS
 from diplomacy_a2a.llm.client import LLMClient
 from diplomacy_a2a.personas.registry import DEFAULT_PERSONAS
-from diplomacy_a2a.transcripts import TranscriptWriter, render_markdown
+from diplomacy_a2a.transcripts import TranscriptWriter, render_html_viewer, render_markdown
 
 # Sonnet pricing per million tokens (current published rates).
 # Used only for end-of-run cost estimation in the postmortem.
@@ -172,8 +172,9 @@ def run_game(
             cost_usd=_estimate_cost(tokens),
         )
 
-    # Render the markdown postmortem
+    # Render the markdown postmortem and the HTML slideshow viewer
     render_markdown(jsonl_path, run_dir / "report.md")
+    render_html_viewer(jsonl_path, run_dir)
 
     if verbose:
         elapsed = time.time() - t0

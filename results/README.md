@@ -8,7 +8,10 @@ Each run lands as a directory:
 
 - `transcript.jsonl` — structured event log (one event per line, the source of truth)
 - `report.md`        — human-readable markdown postmortem rendered from the JSONL
-- `<short-phase>.svg` — one map image per phase (e.g. `S1901M.svg`), embedded inline in the markdown
+- `<short-phase>.svg` — one map image per phase (e.g. `S1901M.svg`)
+- `index.html` + one `<short-phase>.html` per phase — slideshow viewer with
+  prev/next navigation between phases. **Easiest entry point**: open
+  `index.html` and click through the phases.
 
 Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
@@ -30,6 +33,6 @@ Notable dynamics:
 - One invalid order across the entire run (Austria S1902M), caught by
   our validator and filtered before reaching the adjudicator.
 
-Open `results/20260524T031616Z/report.md` to read the postmortem.
-SVGs render inline in any markdown viewer that supports HTML
-`<img>` tags (GitHub does).
+Easiest way to view: `open results/20260524T031616Z/index.html` to
+flip through the maps phase by phase. Or read `report.md` for the
+postmortem with full reasoning. Both render inline on GitHub too.

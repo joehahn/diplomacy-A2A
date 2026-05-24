@@ -1,13 +1,15 @@
-"""Structured transcript writer + markdown postmortem renderer.
+"""Structured transcript writer + postmortem renderers.
 
-A game run produces three things under `results/<run-id>/`:
+A game run produces these artifacts under `results/<run-id>/`:
 - `transcript.jsonl` — one event per line (machine-readable, the source of truth)
 - `report.md`       — human-readable postmortem rendered from the JSONL
 - `<short-phase>.svg` — one map image per phase, embedded inline by the markdown
+- `index.html` + `<short-phase>.html` — slideshow-style viewer with prev/next
+   navigation between phases (pure HTML, no JS, opens via `open <file>`)
 
-The JSONL is the canonical record. The markdown is regenerable from it,
-so we can re-render postmortems with improved templates without
-re-running games.
+The JSONL is the canonical record. Both the markdown and the HTML
+viewer are regenerable from it, so we can re-render postmortems with
+improved templates without re-running games.
 """
 from __future__ import annotations
 
@@ -159,3 +161,134 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
             lines.append("")
 
     out_path.write_text("\n".join(lines) + "\n")
+
+
+# ----------------------------------------------------------------------
+# HTML viewer (slideshow-style: index.html + one page per phase)
+# ----------------------------------------------------------------------
+
+_HTML_CSS = """
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px;
+       margin: 0 auto; padding: 20px; color: #222; }
+h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
+h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
+.meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
+      gap: 8px; }
+nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
+                   font-size: 0.95em; }
+nav a { background: #eef; color: #224; }
+nav a:hover { background: #dde; }
+nav span.disabled { background: #f5f5f5; color: #bbb; }
+img.map { max-width: 100%; border: 1px solid #ddd; }
+.orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
+          margin: 12px 0; font-size: 0.9em; }
+.orders .power { margin: 4px 0; }
+.orders .power b { display: inline-block; min-width: 80px; }
+.invalid { color: #c33; }
+ol.phases { line-height: 1.8; }
+"""
+
+
+def _html_page(*, title: str, body: str) -> str:
+    return (
+        "<!DOCTYPE html>\n<html><head>\n"
+        f"<meta charset='utf-8'><title>{title}</title>\n"
+        f"<style>{_HTML_CSS}</style>\n"
+        "</head><body>\n"
+        f"{body}\n"
+        "</body></html>\n"
+    )
+
+
+def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
+    """Generate index.html + one HTML page per phase under out_dir."""
+    events = [json.loads(line) for line in jsonl_path.read_text().splitlines() if line.strip()]
+
+    run_started = next((e for e in events if e["type"] == "run_started"), {})
+    run_ended = next((e for e in events if e["type"] == "run_ended"), {})
+    run_id = run_started.get("run_id", "?")
+
+    # Group: per-phase blocks in playback order
+    phases: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    for e in events:
+        if e["type"] == "phase_started":
+            current = {
+                "short": e.get("short_phase", "?"),
+                "long": e.get("phase", "?"),
+                "powers_acting": e.get("powers_acting", []),
+                "orders": {},  # power -> {valid, invalid}
+            }
+            phases.append(current)
+        elif e["type"] == "orders_submitted" and current is not None:
+            current["orders"][e["power"]] = {
+                "valid": e.get("valid", []),
+                "invalid": e.get("invalid", []),
+            }
+
+    # --- index.html ---
+    meta_bits: list[str] = []
+    meta_bits.append(f"Model <code>{run_started.get('model', '?')}</code>")
+    if run_ended:
+        meta_bits.append(f"{run_ended.get('phases_played', '?')} phases")
+        meta_bits.append(f"${run_ended.get('cost_usd', 0):.4f}")
+    index_body = [
+        f"<h1>Diplomacy A2A — Run <code>{run_id}</code></h1>",
+        f"<div class='meta'>{' · '.join(meta_bits)}</div>",
+        "<h2>Phases</h2>",
+        "<ol class='phases'>",
+    ]
+    for ph in phases:
+        index_body.append(f"  <li><a href='{ph['short']}.html'>{ph['long']} ({ph['short']})</a></li>")
+    index_body.append("</ol>")
+    index_body.append("<h2>Other artifacts</h2>")
+    index_body.append("<ul>")
+    index_body.append("  <li><a href='report.md'>report.md</a> — full postmortem with reasoning</li>")
+    index_body.append("  <li><a href='transcript.jsonl'>transcript.jsonl</a> — raw event log</li>")
+    index_body.append("</ul>")
+    (out_dir / "index.html").write_text(
+        _html_page(title=f"Diplomacy A2A — {run_id}", body="\n".join(index_body))
+    )
+
+    # --- per-phase pages ---
+    for i, ph in enumerate(phases):
+        prev_link = (
+            f"<a href='{phases[i-1]['short']}.html'>← {phases[i-1]['short']}</a>"
+            if i > 0
+            else "<span class='disabled'>← prev</span>"
+        )
+        next_link = (
+            f"<a href='{phases[i+1]['short']}.html'>{phases[i+1]['short']} →</a>"
+            if i < len(phases) - 1
+            else "<span class='disabled'>next →</span>"
+        )
+        nav = (
+            "<nav>"
+            f"{prev_link}<a href='index.html'>index ({i+1}/{len(phases)})</a>{next_link}"
+            "</nav>"
+        )
+        orders_html: list[str] = ["<div class='orders'>"]
+        for power, ods in ph["orders"].items():
+            valid_str = " · ".join(f"<code>{o}</code>" for o in ods["valid"]) or "<i>(none)</i>"
+            line = f"<div class='power'><b>{power}</b>: {valid_str}"
+            if ods["invalid"]:
+                inv = " · ".join(f"<code>{o}</code>" for o in ods["invalid"])
+                line += f" <span class='invalid'>(filtered: {inv})</span>"
+            line += "</div>"
+            orders_html.append(line)
+        orders_html.append("</div>")
+
+        body = "\n".join(
+            [
+                nav,
+                f"<h1>{ph['long']} <code>({ph['short']})</code></h1>",
+                f"<img class='map' src='{ph['short']}.svg' alt='{ph['short']} map'>",
+                "<h2>Orders this phase</h2>",
+                *orders_html,
+                nav,
+            ]
+        )
+        (out_dir / f"{ph['short']}.html").write_text(
+            _html_page(title=f"{ph['short']} — {run_id}", body=body)
+        )
