@@ -1,13 +1,13 @@
 """One turn's negotiation phase — orchestrates pairwise private messaging.
 
-For v1 we run a single negotiation round per movement phase: every power
-gets one call to produce outgoing messages to any subset of the other
-powers. The messages are collected and threaded into the next call
-(order generation) as dialogue history.
-
-Multi-round negotiation (where round 2+ sees round 1's incoming
-messages) is a future extension — the shape here supports it
-naturally.
+Each round, every power gets one call to produce outgoing messages to
+any subset of the other powers (or none). Within a round, messaging is
+logically simultaneous — every agent sees the same `history` and does
+not see messages produced THIS round until the next round. Across
+rounds it is sequential: round 2+ sees the prior rounds' incoming
+messages, so agents can react before committing orders. The runner
+drives `negotiation_rounds` of these per movement phase and threads the
+accumulated dialogue into order generation.
 """
 from __future__ import annotations
 
@@ -23,6 +23,8 @@ def run_negotiation_round(
     history: list[DialogueMessage],
     *,
     powers: Iterable[str] | None = None,
+    round_index: int = 1,
+    total_rounds: int = 1,
 ) -> tuple[list[DialogueMessage], dict[str, MessagesResult]]:
     """Run one round of messaging across the given powers.
 
@@ -41,7 +43,9 @@ def run_negotiation_round(
 
     for power in powers_iter:
         agent = agents[power]
-        result = agent.negotiate(state, history)
+        result = agent.negotiate(
+            state, history, round_index=round_index, total_rounds=total_rounds
+        )
         results[power] = result
         for recipient, text in result.messages.items():
             new_messages.append(

@@ -85,6 +85,11 @@ class Agent:
             "message any subset of the other powers — or none. Send 0 messages "
             "by emitting an empty object `{}`. Recipients must be one of: "
             f"{other_powers}.\n\n"
+            "Negotiation runs as several rounds before each movement phase. "
+            "Within a round, all powers send their messages simultaneously, so "
+            "a recipient won't see what you send until the next round — and you "
+            "may stay silent in any round. Use early rounds to probe and propose, "
+            "later rounds to react, confirm, or adjust before orders are committed.\n\n"
             "Example:\n"
             "MESSAGES:\n"
             "{\n"
@@ -117,15 +122,26 @@ class Agent:
         state: GameState,
         history: list[DialogueMessage] | None = None,
         *,
+        round_index: int = 1,
+        total_rounds: int = 1,
         max_tokens: int = 1024,
         temperature: float = 0.8,
     ) -> MessagesResult:
         view = render_for_power(state, self.power)
         dialogue_block = format_dialogue_for_agent(history or [], self.power)
+        round_note = (
+            f"This is negotiation round {round_index} of {total_rounds} before "
+            f"orders for {state.phase}. All powers message simultaneously this "
+            f"round, so others won't see yours until the next round. "
+        )
+        if round_index >= total_rounds:
+            round_note += "This is the FINAL round — you commit orders next, so close any deals now. "
+        elif round_index == 1:
+            round_note += "Further rounds follow, so you can open threads now and react to replies later. "
         user_msg = (
             f"{view}\n\n"
             f"## Dialogue history (private to you)\n{dialogue_block}\n\n"
-            f"It is the negotiation phase before orders for {state.phase}. "
+            f"{round_note}"
             f"Send private messages to any subset of the other powers (or none). "
             f"Keep each message to 2–4 sentences."
         )

@@ -133,7 +133,11 @@ def run_game(
                     if verbose:
                         print(f"  --- Negotiation round {round_idx + 1}/{negotiation_rounds} ---")
                     new_msgs, results = run_negotiation_round(
-                        agents=agents, state=state, history=dialogue_history
+                        agents=agents,
+                        state=state,
+                        history=dialogue_history,
+                        round_index=round_idx + 1,
+                        total_rounds=negotiation_rounds,
                     )
                     for power, res in results.items():
                         _accumulate_tokens(tokens, res.chat)
