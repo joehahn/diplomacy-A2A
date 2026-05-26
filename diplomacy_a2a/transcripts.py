@@ -263,10 +263,22 @@ h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 60
 .orders .power b { display: inline-block; min-width: 80px; }
 .invalid { color: #c33; }
 ol.phases { line-height: 1.8; }
-.dialogue { background: #fff7e6; border-left: 3px solid #d8a; padding: 10px 14px;
-            margin: 12px 0; font-size: 0.9em; }
-.dialogue .msg { margin: 4px 0; }
-.dialogue .who { font-weight: bold; color: #524; }
+.legend { font-size: 0.78em; color: #666; margin: 6px 0 10px; }
+.legend .chip { display: inline-block; padding: 1px 8px; margin: 2px 4px 2px 0;
+                border-radius: 10px; color: #fff; font-weight: 600; }
+.thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
+.thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
+.thread-head .arr { color: #aaa; font-weight: 400; }
+.bubbles { display: flex; flex-direction: column; gap: 6px; }
+.bubble { max-width: 72%; padding: 7px 11px; border-radius: 12px; background: #f6f6f8;
+          border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.left  { align-self: flex-start; border-top-left-radius: 3px; }
+.bubble.right { align-self: flex-end;   border-top-right-radius: 3px; }
+.bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
+                 letter-spacing: 0.02em; }
+.bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
+               margin-left: 6px; font-weight: 700; }
+.bubble .btext { color: #222; line-height: 1.35; }
 """
 
 
@@ -281,18 +293,67 @@ def _html_page(*, title: str, body: str) -> str:
     )
 
 
-def _dialogue_block(label: str, msgs: list[tuple[str, str, str]]) -> list[str]:
-    """Render a negotiation block: messages exchanged before `label`'s movement."""
+# Per-power colors (roughly the traditional Diplomacy palette), used to tint
+# message bubbles and the legend so a reader can track who's speaking.
+POWER_COLORS = {
+    "AUSTRIA": "#c0392b",  # red
+    "ENGLAND": "#2c5fa8",  # navy
+    "FRANCE": "#1f8aa8",   # cyan
+    "GERMANY": "#555555",  # gray/black
+    "ITALY": "#2e8b57",    # green
+    "RUSSIA": "#7d3c98",   # purple
+    "TURKEY": "#cc8a00",   # gold
+}
+
+
+def _esc(text: str) -> str:
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _dialogue_threads(label: str, msgs: list[tuple[int, str, str, str]]) -> list[str]:
+    """Render the phase's negotiation as per-pair chat threads.
+
+    `msgs` is a list of (round, sender, recipient, text). Messages are
+    grouped into bilateral threads (most active first); within a thread
+    they're ordered by round, with the alphabetically-first power's
+    bubbles on the left and the other's on the right, each tinted by
+    sender and tagged with its round.
+    """
     if not msgs:
         return []
-    out = [f"<h2>Negotiation before {label}</h2>", "<div class='dialogue'>"]
-    for sender, recipient, text in msgs:
-        # Lightweight HTML-safety: only escape the message body.
-        safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    threads: dict[tuple[str, str], list[tuple[int, str, str, str]]] = {}
+    for rnd, snd, rec, text in msgs:
+        threads.setdefault(tuple(sorted((snd, rec))), []).append((rnd, snd, rec, text))
+
+    present = sorted({p for key in threads for p in key})
+    legend = " ".join(
+        f"<span class='chip' style='background:{POWER_COLORS.get(p, '#777')}'>{p}</span>"
+        for p in present
+    )
+    out = [f"<h2>Negotiation before {label}</h2>", f"<div class='legend'>{legend}</div>"]
+
+    for key in sorted(threads, key=lambda k: (-len(threads[k]), k)):
+        left, right = key
+        cl, cr = POWER_COLORS.get(left, "#777"), POWER_COLORS.get(right, "#777")
+        out.append("<div class='thread'>")
         out.append(
-            f"<div class='msg'><span class='who'>{sender} → {recipient}:</span> {safe}</div>"
+            f"<div class='thread-head'><span style='color:{cl}'>{left}</span>"
+            f"<span class='arr'> ⇄ </span>"
+            f"<span style='color:{cr}'>{right}</span></div>"
         )
-    out.append("</div>")
+        out.append("<div class='bubbles'>")
+        for rnd, snd, rec, text in sorted(
+            threads[key], key=lambda m: (m[0], 0 if m[1] == left else 1)
+        ):
+            side = "left" if snd == left else "right"
+            color = POWER_COLORS.get(snd, "#777")
+            out.append(
+                f"<div class='bubble {side}' style='border-left:4px solid {color}'>"
+                f"<div class='bmeta' style='color:{color}'>{snd} → {rec}"
+                f"<span class='rnd'>R{rnd}</span></div>"
+                f"<div class='btext'>{_esc(text)}</div></div>"
+            )
+        out.append("</div></div>")
     return out
 
 
@@ -331,7 +392,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     # Per-phase blocks in playback order, plus dialogue keyed by the
     # movement phase it precedes.
     phases: list[dict[str, Any]] = []
-    dialogue_by_phase: dict[str, list[tuple[str, str, str]]] = {}
+    dialogue_by_phase: dict[str, list[tuple[int, str, str, str]]] = {}
     current: dict[str, Any] | None = None
     for e in events:
         if e["type"] == "phase_started":
@@ -345,7 +406,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         elif e["type"] == "agent_messages":
             for recipient, text in e.get("messages", {}).items():
                 dialogue_by_phase.setdefault(e["phase"], []).append(
-                    (e["power"], recipient, text)
+                    (e.get("round", 1), e["power"], recipient, text)
                 )
         elif e["type"] == "orders_submitted" and current is not None:
             current["orders"][e["power"]] = {
@@ -446,7 +507,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 f"<h1>{sl['heading']}</h1>",
                 *orders_html,
                 *maps_html,
-                *_dialogue_block(sl["dialogue_label"], sl["dialogue"]),
+                *_dialogue_threads(sl["dialogue_label"], sl["dialogue"]),
                 nav,
             ]
         )
