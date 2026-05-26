@@ -43,9 +43,6 @@ Building toward goal 3:
 - **Outcome scoring + analysis** — aggregate results across the grid (success
   rates, alliance/betrayal patterns) so the personality comparison is data, not
   anecdote.
-- **Multi-provider backends** — the [`LLMClient`](diplomacy_a2a/llm/client.py)
-  seam is already provider-neutral, so a second backend (OpenAI, LiteLLM, …) is a
-  small addition, not a refactor.
 - **Cheap "smoke" mode** — a one-game Haiku entry point so anyone can verify the
   whole pipeline end-to-end for pennies before committing to a full run.
 
