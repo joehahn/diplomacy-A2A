@@ -7,9 +7,10 @@ HTML postmortem rendering.
 
 Produces under `results/<run-id>/`:
 - `transcript.jsonl` — structured event log (source of truth)
-- `<short-phase>.svg` — one map image per phase
+- `initial.svg` + `<short-phase>.svg` (orders) + `<short-phase>.result.svg`
+  (post-resolution) — maps replayed from the transcript
 - `report.md`        — markdown postmortem with dialogue and reasoning
-- `index.html` + `<short-phase>.html` — slideshow viewer
+- `index.html` + `start.html` + `<short-phase>.html` — slideshow viewer
 
 run-id is a UTC timestamp like `20260523T231245Z`.
 """
@@ -25,7 +26,12 @@ from diplomacy_a2a.game.state import GameState, POWERS
 from diplomacy_a2a.llm.client import LLMClient
 from diplomacy_a2a.negotiation import run_negotiation_round
 from diplomacy_a2a.personas.registry import DEFAULT_PERSONAS
-from diplomacy_a2a.transcripts import TranscriptWriter, render_html_viewer, render_markdown
+from diplomacy_a2a.transcripts import (
+    TranscriptWriter,
+    regenerate_maps,
+    render_html_viewer,
+    render_markdown,
+)
 
 # Sonnet pricing per million tokens (current published rates).
 # Used only for end-of-run cost estimation in the postmortem.
@@ -187,11 +193,6 @@ def run_game(
                     badge = "" if not invalid else f"  (filtered {len(invalid)} invalid)"
                     print(f"  {power}: {valid}{badge}")
 
-            # Render this phase's map WITH order arrows BEFORE advancing.
-            svg_path = run_dir / f"{short}.svg"
-            svg_path.write_text(state.game.render(incl_orders=True, incl_abbrev=False))
-            tw.write("phase_rendered", phase=short, svg_path=svg_path.name)
-
             state.advance()
             phases_played += 1
 
@@ -215,6 +216,10 @@ def run_game(
             cost_usd=_estimate_cost(tokens),
         )
 
+    # Maps are regenerated from the completed transcript by replaying the
+    # recorded orders through the library — the same deterministic path used
+    # to re-render committed runs, so live and re-rendered output stay identical.
+    regenerate_maps(jsonl_path, run_dir)
     render_markdown(jsonl_path, run_dir / "report.md")
     render_html_viewer(jsonl_path, run_dir)
 

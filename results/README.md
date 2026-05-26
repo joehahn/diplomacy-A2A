@@ -8,10 +8,15 @@ Each run lands as a directory:
 
 - `transcript.jsonl` — structured event log (one event per line, the source of truth)
 - `report.md`        — human-readable markdown postmortem rendered from the JSONL
-- `<short-phase>.svg` — one map image per phase (e.g. `S1901M.svg`)
-- `index.html` + one `<short-phase>.html` per phase — slideshow viewer with
-  prev/next navigation between phases. **Easiest entry point**: open
-  `index.html` and click through the phases.
+- `initial.svg` — the opening board; `<short-phase>.svg` — that phase's orders as
+  arrows on the start-of-phase board; `<short-phase>.result.svg` — the board after
+  the phase resolved (e.g. `S1901M.svg` / `S1901M.result.svg`)
+- `index.html` + `start.html` + one `<short-phase>.html` per phase — slideshow
+  viewer. Each slide reads top-to-bottom: orders, then the orders map and the
+  resulting board, then the negotiation that leads into the *next* movement phase
+  (so you read the talk, then click ahead to see what it produced). The opening
+  `start.html` shows the initial board and the first round of negotiation.
+  **Easiest entry point**: open `index.html` and click through.
 
 Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 

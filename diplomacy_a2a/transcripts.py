@@ -3,13 +3,15 @@
 A game run produces these artifacts under `results/<run-id>/`:
 - `transcript.jsonl` — one event per line (machine-readable, the source of truth)
 - `report.md`       — human-readable postmortem rendered from the JSONL
-- `<short-phase>.svg` — one map image per phase, embedded inline by the markdown
-- `index.html` + `<short-phase>.html` — slideshow-style viewer with prev/next
-   navigation between phases (pure HTML, no JS, opens via `open <file>`)
+- `initial.svg`, `<short-phase>.svg` (orders + arrows), `<short-phase>.result.svg`
+   (board after the phase resolved) — map images replayed from the JSONL
+- `index.html` + `start.html` + `<short-phase>.html` — slideshow-style viewer
+   with prev/next navigation (pure HTML, no JS, opens via `open <file>`)
 
-The JSONL is the canonical record. Both the markdown and the HTML
-viewer are regenerable from it, so we can re-render postmortems with
-improved templates without re-running games.
+The JSONL is the canonical record. The maps, markdown, and HTML viewer
+are all regenerable from it — maps by replaying the recorded orders
+through the adjudicator (deterministic, no API calls) — so we can
+re-render postmortems with improved templates without re-running games.
 """
 from __future__ import annotations
 
@@ -52,6 +54,67 @@ class TranscriptWriter:
 
     def __exit__(self, *exc: Any) -> None:
         self.close()
+
+
+def regenerate_maps(jsonl_path: Path, out_dir: Path) -> None:
+    """Replay the recorded orders through the library to (re)render all map SVGs.
+
+    Adjudication is deterministic given orders, so replaying the `valid`
+    orders captured in the JSONL reproduces the exact board states of the
+    original run — no LLM calls, no cost. For each phase we emit two maps,
+    plus one initial board:
+
+    - `initial.svg`        — opening position, no orders/arrows
+    - `<short>.svg`        — start-of-phase positions + that phase's order arrows
+    - `<short>.result.svg` — positions after the phase resolved, no arrows
+
+    This is the single source of map generation, shared by live runs
+    (`runner.py`) and after-the-fact re-rendering of committed transcripts.
+    """
+    # Lazy import: keep the game/adjudicator dependency out of the module's
+    # import path so plain JSONL→markdown/HTML rendering stays dependency-light.
+    from diplomacy_a2a.game.state import GameState
+
+    events = [json.loads(line) for line in jsonl_path.read_text().splitlines() if line.strip()]
+
+    # Spine of the replay: the phases in playback order, each with the
+    # valid orders actually submitted per power.
+    phase_order: list[str] = []
+    orders_by_phase: dict[str, dict[str, list[str]]] = {}
+    for e in events:
+        if e["type"] == "phase_started":
+            short = e.get("short_phase", "?")
+            phase_order.append(short)
+            orders_by_phase.setdefault(short, {})
+        elif e["type"] == "orders_submitted":
+            orders_by_phase.setdefault(e["phase"], {})[e["power"]] = e.get("valid", [])
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    state = GameState.new()
+    (out_dir / "initial.svg").write_text(
+        state.game.render(incl_orders=False, incl_abbrev=False)
+    )
+
+    for short in phase_order:
+        # Skip any interstitial phases the original run had no orders for
+        # (the runner advances past phases with no orderable powers without
+        # logging them). Guard against runaway loops.
+        for _ in range(10):
+            if state.short_phase == short:
+                break
+            state.advance()
+        else:
+            raise RuntimeError(f"Replay could not reach phase {short!r}")
+
+        for power, orders in orders_by_phase.get(short, {}).items():
+            state.submit(power, orders)
+        (out_dir / f"{short}.svg").write_text(
+            state.game.render(incl_orders=True, incl_abbrev=False)
+        )
+        state.advance()
+        (out_dir / f"{short}.result.svg").write_text(
+            state.game.render(incl_orders=False, incl_abbrev=False)
+        )
 
 
 def render_markdown(jsonl_path: Path, out_path: Path) -> None:
@@ -192,6 +255,8 @@ nav a { background: #eef; color: #224; }
 nav a:hover { background: #dde; }
 nav span.disabled { background: #f5f5f5; color: #bbb; }
 img.map { max-width: 100%; border: 1px solid #ddd; }
+h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em; }
 .orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
           margin: 12px 0; font-size: 0.9em; }
 .orders .power { margin: 4px 0; }
@@ -216,50 +281,126 @@ def _html_page(*, title: str, body: str) -> str:
     )
 
 
+def _dialogue_block(label: str, msgs: list[tuple[str, str, str]]) -> list[str]:
+    """Render a negotiation block: messages exchanged before `label`'s movement."""
+    if not msgs:
+        return []
+    out = [f"<h2>Negotiation before {label}</h2>", "<div class='dialogue'>"]
+    for sender, recipient, text in msgs:
+        # Lightweight HTML-safety: only escape the message body.
+        safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        out.append(
+            f"<div class='msg'><span class='who'>{sender} → {recipient}:</span> {safe}</div>"
+        )
+    out.append("</div>")
+    return out
+
+
+def _orders_block(orders: dict[str, dict[str, Any]]) -> list[str]:
+    out = ["<div class='orders'>"]
+    for power, ods in orders.items():
+        valid_str = " · ".join(f"<code>{o}</code>" for o in ods["valid"]) or "<i>(none)</i>"
+        line = f"<div class='power'><b>{power}</b>: {valid_str}"
+        if ods["invalid"]:
+            inv = " · ".join(f"<code>{o}</code>" for o in ods["invalid"])
+            line += f" <span class='invalid'>(filtered: {inv})</span>"
+        out.append(line + "</div>")
+    out.append("</div>")
+    return out
+
+
 def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
-    """Generate index.html + one HTML page per phase under out_dir."""
+    """Generate index.html + one slide per board state under out_dir.
+
+    Slide layout reflects the natural narrative order — read the talk,
+    then see what it produced:
+
+    - Slide 0 (`start.html`): the opening board (no orders), with the
+      negotiation that happens *before* the first movement below it.
+    - Each phase slide: the orders on top, then two maps (the orders as
+      arrows on the start-of-phase board, and the resulting board after
+      adjudication), then the negotiation leading into the *next* movement
+      phase at the bottom — teeing up the next slide's reveal.
+    """
     events = [json.loads(line) for line in jsonl_path.read_text().splitlines() if line.strip()]
 
     run_started = next((e for e in events if e["type"] == "run_started"), {})
     run_ended = next((e for e in events if e["type"] == "run_ended"), {})
     run_id = run_started.get("run_id", "?")
 
-    # Group: per-phase blocks in playback order
+    # Per-phase blocks in playback order, plus dialogue keyed by the
+    # movement phase it precedes.
     phases: list[dict[str, Any]] = []
+    dialogue_by_phase: dict[str, list[tuple[str, str, str]]] = {}
     current: dict[str, Any] | None = None
     for e in events:
         if e["type"] == "phase_started":
             current = {
                 "short": e.get("short_phase", "?"),
                 "long": e.get("phase", "?"),
-                "powers_acting": e.get("powers_acting", []),
                 "orders": {},  # power -> {valid, invalid}
-                "dialogue": [],  # list of (sender, recipient, text)
             }
             phases.append(current)
-        elif e["type"] == "agent_messages" and current is not None:
+            dialogue_by_phase.setdefault(current["short"], [])
+        elif e["type"] == "agent_messages":
             for recipient, text in e.get("messages", {}).items():
-                current["dialogue"].append((e["power"], recipient, text))
+                dialogue_by_phase.setdefault(e["phase"], []).append(
+                    (e["power"], recipient, text)
+                )
         elif e["type"] == "orders_submitted" and current is not None:
             current["orders"][e["power"]] = {
                 "valid": e.get("valid", []),
                 "invalid": e.get("invalid", []),
             }
 
+    # Build the ordered slide list. Slide 0 is the opening board; slide k>=1
+    # is phases[k-1]. The negotiation before movement phase P is shown on the
+    # slide immediately *preceding* P (so it previews the upcoming reveal).
+    slides: list[dict[str, Any]] = [
+        {
+            "file": "start.html",
+            "title": "Initial position",
+            "heading": "Initial position <small>(opening, before any orders)</small>",
+            "orders": None,
+            "maps": [("Opening position", "initial.svg")],
+            "dialogue_label": "",
+            "dialogue": [],
+        }
+    ]
+    for ph in phases:
+        slides.append(
+            {
+                "file": f"{ph['short']}.html",
+                "title": f"{ph['long']} ({ph['short']})",
+                "heading": f"{ph['long']} <code>({ph['short']})</code>",
+                "orders": ph["orders"],
+                "maps": [
+                    ("Orders — start positions, arrows show moves", f"{ph['short']}.svg"),
+                    ("Result — positions after this phase resolved", f"{ph['short']}.result.svg"),
+                ],
+                "dialogue_label": "",
+                "dialogue": [],
+            }
+        )
+    # Attach each movement phase's negotiation to the slide before it.
+    for mi, ph in enumerate(phases):
+        if ph["short"].endswith("M"):
+            slides[mi]["dialogue"] = dialogue_by_phase.get(ph["short"], [])
+            slides[mi]["dialogue_label"] = ph["long"]
+
     # --- index.html ---
-    meta_bits: list[str] = []
-    meta_bits.append(f"Model <code>{run_started.get('model', '?')}</code>")
+    meta_bits = [f"Model <code>{run_started.get('model', '?')}</code>"]
     if run_ended:
         meta_bits.append(f"{run_ended.get('phases_played', '?')} phases")
         meta_bits.append(f"${run_ended.get('cost_usd', 0):.4f}")
     index_body = [
         f"<h1>Diplomacy A2A — Run <code>{run_id}</code></h1>",
         f"<div class='meta'>{' · '.join(meta_bits)}</div>",
-        "<h2>Phases</h2>",
+        "<h2>Slides</h2>",
         "<ol class='phases'>",
     ]
-    for ph in phases:
-        index_body.append(f"  <li><a href='{ph['short']}.html'>{ph['long']} ({ph['short']})</a></li>")
+    for sl in slides:
+        index_body.append(f"  <li><a href='{sl['file']}'>{sl['title']}</a></li>")
     index_body.append("</ol>")
     index_body.append("<h2>Other artifacts</h2>")
     index_body.append("<ul>")
@@ -270,61 +411,45 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         _html_page(title=f"Diplomacy A2A — {run_id}", body="\n".join(index_body))
     )
 
-    # --- per-phase pages ---
-    for i, ph in enumerate(phases):
+    # --- per-slide pages ---
+    n = len(slides)
+    for i, sl in enumerate(slides):
         prev_link = (
-            f"<a href='{phases[i-1]['short']}.html'>← {phases[i-1]['short']}</a>"
+            f"<a href='{slides[i-1]['file']}'>← {slides[i-1]['title']}</a>"
             if i > 0
             else "<span class='disabled'>← prev</span>"
         )
         next_link = (
-            f"<a href='{phases[i+1]['short']}.html'>{phases[i+1]['short']} →</a>"
-            if i < len(phases) - 1
+            f"<a href='{slides[i+1]['file']}'>{slides[i+1]['title']} →</a>"
+            if i < n - 1
             else "<span class='disabled'>next →</span>"
         )
         nav = (
             "<nav>"
-            f"{prev_link}<a href='index.html'>index ({i+1}/{len(phases)})</a>{next_link}"
+            f"{prev_link}<a href='index.html'>index ({i+1}/{n})</a>{next_link}"
             "</nav>"
         )
-        dialogue_html: list[str] = []
-        if ph["dialogue"]:
-            dialogue_html.append("<h2>Dialogue this phase</h2>")
-            dialogue_html.append("<div class='dialogue'>")
-            for sender, recipient, text in ph["dialogue"]:
-                # Lightweight HTML-safety: only escape the message body
-                safe = (
-                    text.replace("&", "&amp;")
-                    .replace("<", "&lt;")
-                    .replace(">", "&gt;")
-                )
-                dialogue_html.append(
-                    f"<div class='msg'><span class='who'>{sender} → {recipient}:</span> {safe}</div>"
-                )
-            dialogue_html.append("</div>")
 
-        orders_html: list[str] = ["<div class='orders'>"]
-        for power, ods in ph["orders"].items():
-            valid_str = " · ".join(f"<code>{o}</code>" for o in ods["valid"]) or "<i>(none)</i>"
-            line = f"<div class='power'><b>{power}</b>: {valid_str}"
-            if ods["invalid"]:
-                inv = " · ".join(f"<code>{o}</code>" for o in ods["invalid"])
-                line += f" <span class='invalid'>(filtered: {inv})</span>"
-            line += "</div>"
-            orders_html.append(line)
-        orders_html.append("</div>")
+        maps_html: list[str] = []
+        for caption, src in sl["maps"]:
+            maps_html.append(f"<h3 class='mapcap'>{caption}</h3>")
+            maps_html.append(f"<img class='map' src='{src}' alt='{caption}'>")
+
+        orders_html: list[str] = []
+        if sl["orders"] is not None:
+            orders_html.append("<h2>Orders this phase</h2>")
+            orders_html.extend(_orders_block(sl["orders"]))
 
         body = "\n".join(
             [
                 nav,
-                f"<h1>{ph['long']} <code>({ph['short']})</code></h1>",
-                f"<img class='map' src='{ph['short']}.svg' alt='{ph['short']} map'>",
-                *dialogue_html,
-                "<h2>Orders this phase</h2>",
+                f"<h1>{sl['heading']}</h1>",
                 *orders_html,
+                *maps_html,
+                *_dialogue_block(sl["dialogue_label"], sl["dialogue"]),
                 nav,
             ]
         )
-        (out_dir / f"{ph['short']}.html").write_text(
-            _html_page(title=f"{ph['short']} — {run_id}", body=body)
+        (out_dir / sl["file"]).write_text(
+            _html_page(title=f"{sl['title']} — {run_id}", body=body)
         )
