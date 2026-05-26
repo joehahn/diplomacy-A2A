@@ -48,7 +48,10 @@ python -m diplomacy_a2a experiment # full persona × matchup × seed grid
   orchestration: agents exchange private messages each turn, then commit
   orders, then the library adjudicates.
 - **`results/`** — pre-rendered transcripts so visitors can see output
-  without spending money.
+  without spending money. Flip through a game phase by phase in the
+  turn-by-turn viewer (hosted on GitHub Pages):
+  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260524T034819Z/index.html)
+  (with negotiation).
 
 ## Cost
 
