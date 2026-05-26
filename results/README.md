@@ -34,8 +34,8 @@ The dialogue is the headline feature here. Selected highlights:
   ("Turkey at 5 centers is a real threat to both of us — I'm pushing
   to check them this fall").
 
-Open `results/20260524T034819Z/index.html` to flip through the maps and
-dialogue phase by phase.
+[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260524T034819Z/index.html)
+(GitHub Pages) to flip through the maps and dialogue phase by phase.
 
 ### `20260524T031616Z/` — no-negotiation baseline (for comparison)
 
@@ -43,4 +43,5 @@ Same setup, same personas, but agents act independently each turn
 with no inter-agent dialogue. Useful as the "what does dialogue
 actually buy us?" comparison run. 7 phases, ~$0.35.
 
-Open `results/20260524T031616Z/index.html` for the slideshow view.
+[**View this run's slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260524T031616Z/index.html)
+(GitHub Pages).
