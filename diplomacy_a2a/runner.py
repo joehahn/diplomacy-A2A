@@ -70,7 +70,7 @@ def run_game(
     years: int = 2,
     personas: dict[str, str] | None = None,
     results_root: Path = Path("results"),
-    negotiation_rounds: int = 1,  # rounds per MOVEMENT phase (0 = skip)
+    negotiation_rounds: int = 3,  # rounds per MOVEMENT phase (0 = skip)
     max_phases: int = 50,  # safety stop
     verbose: bool = True,
 ) -> Path:

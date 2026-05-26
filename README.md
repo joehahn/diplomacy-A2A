@@ -8,9 +8,35 @@ across multiple turns of full-press play. The artifact that matters is the
 This is a portfolio demo for AI-consulting / forward-deployed-engineer work,
 in the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
 
+## Goals & deliverables
+
+1. **Built with Claude Code, but reproducible with just an Anthropic key.**
+   The project is *developed* using Claude Code, yet it *runs* on nothing more
+   than the [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks)
+   (`anthropic`) and an API key — Claude Code is the development harness, not a
+   runtime dependency. Anyone can clone this, drop in their key, and rebuild or
+   re-run the simulation. The provider boundary is a single seam
+   ([`llm/client.py`](diplomacy_a2a/llm/client.py)).
+
+2. **Highlight agent-to-agent interactions that move each other.** The point is
+   not just that agents *send* messages, but that they *influence* one another —
+   proposing, reacting across rounds, honoring or betraying deals — and that
+   those interactions visibly drive how the game evolves. The negotiation
+   transcript and the turn-by-turn slideshow are the deliverable (see
+   **Negotiation protocol**), not whether any particular agent wins.
+
+3. **Personality → success (the ultimate aim).** Condition each agent with a
+   character trait — aggressive, conservative, backstabbing, untruthful,
+   cooperative, … — and run enough games to ask: *which personality most
+   reliably achieves success?* The [persona system](diplomacy_a2a/personas/)
+   is the lever; the transcripts (the "why") plus game outcomes (the "what")
+   are the data.
+
 ## Status
 
-Under construction. Skeleton in place; game loop not yet wired up.
+Under construction. Core game loop works end-to-end via `run_game`
+([`runner.py`](diplomacy_a2a/runner.py)) — see committed runs under `results/`.
+The documented CLI subcommands are still aspirational (not yet wired up).
 
 ## Setup
 
