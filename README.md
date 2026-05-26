@@ -32,6 +32,23 @@ in the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
    is the lever; the transcripts (the "why") plus game outcomes (the "what")
    are the data.
 
+## Roadmap
+
+Building toward goal 3:
+
+- **Persona/trait experiment grid** — run a grid of personas × matchups × seeds
+  and score which character traits most reliably succeed, turning the demo into
+  a small "which personality wins?" study (a full grid is a few hundred dollars
+  of API spend; see **Cost**).
+- **Outcome scoring + analysis** — aggregate results across the grid (success
+  rates, alliance/betrayal patterns) so the personality comparison is data, not
+  anecdote.
+- **Multi-provider backends** — the [`LLMClient`](diplomacy_a2a/llm/client.py)
+  seam is already provider-neutral, so a second backend (OpenAI, LiteLLM, …) is a
+  small addition, not a refactor.
+- **Cheap "smoke" mode** — a one-game Haiku entry point so anyone can verify the
+  whole pipeline end-to-end for pennies before committing to a full run.
+
 ## Status
 
 Under construction. Core game loop works end-to-end via `run_game`
