@@ -91,8 +91,8 @@ python -m diplomacy_a2a experiment # full persona × matchup × seed grid
 - **`results/`** — pre-rendered transcripts so visitors can see output
   without spending money. Flip through a game phase by phase in the
   turn-by-turn viewer (hosted on GitHub Pages):
-  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260524T034819Z/index.html)
-  (with negotiation).
+  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260526T231112Z/index.html)
+  (3 rounds of negotiation per turn).
 
 ## Negotiation protocol
 

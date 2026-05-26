@@ -22,25 +22,42 @@ Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
 ## Canonical runs
 
-### `20260524T034819Z/` — **with 1-round negotiation** (current canonical demo)
+The three runs below form a progression — **no dialogue → one round → three
+rounds** — so you can see what each layer of negotiation buys.
 
-Seven Sonnet-backed agents playing 2 years of Diplomacy with **one round
-of private pairwise messaging** before each movement phase. 7 phases,
-~$0.88, ~12 minutes.
+### `20260526T231112Z/` — **3-round negotiation** (current canonical demo)
 
-The dialogue is the headline feature here. Selected highlights:
+Seven Sonnet-backed agents, 2 years, with **three rounds** of private pairwise
+messaging before each movement phase — and the agents are told the protocol, so
+they probe in round 1, negotiate in round 2, and close deals in round 3. 7 phases,
+~$2.20, ~23 minutes.
+
+The extra rounds produce explicit, multi-step deal-making and openly telegraphed
+betrayals. Highlight, F1901M:
+
+- **Italy → Austria** (round 3): *"I'm making a move toward Trieste this fall —
+  not as a hostile act, but I want to be honest rather than surprise you."*
+  Italy then ordered **`A VEN - TRI`** (into Austria's home center). Austria,
+  having heard the warning that same round, ordered **`A TYR - TRI`** to defend —
+  a clean case of dialogue driving orders, and an *honest* stab.
+- **Turkey → Austria**: ceded Greece (*"it's yours this fall"*) and slid
+  **`A BUL - SER`** into the center Austria vacated moving to Greece — a
+  coordinated handoff negotiated across the three rounds.
+
+[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260526T231112Z/index.html)
+(GitHub Pages) to flip through the maps and dialogue phase by phase.
+
+### `20260524T034819Z/` — 1-round negotiation (for comparison)
+
+Same setup but only **one round** of messaging per movement phase. 7 phases,
+~$0.88. Useful for seeing how much the extra rounds deepen the dialogue.
 
 - **Italy → Austria** in S1901M: "I'd like to propose a friendly opening
-  between us — I have no designs on Trieste."
-  **Italy's actual orders** in F1901M then moved on Trieste. Classic
-  CICERO-flavored stab captured in transcript.
-- By F1902M, multiple powers had independently identified Turkey as the
-  rising threat and were proposing coalitions against it
-  ("Turkey at 5 centers is a real threat to both of us — I'm pushing
-  to check them this fall").
+  between us — I have no designs on Trieste." **Italy's actual orders** in
+  F1901M then moved on Trieste — a CICERO-flavored stab, but unannounced.
 
-[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260524T034819Z/index.html)
-(GitHub Pages) to flip through the maps and dialogue phase by phase.
+[**View this run's slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260524T034819Z/index.html)
+(GitHub Pages).
 
 ### `20260524T031616Z/` — no-negotiation baseline (for comparison)
 
