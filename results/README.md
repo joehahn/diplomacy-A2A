@@ -20,19 +20,16 @@ Each run lands as a directory:
 
 Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
-## Canonical runs
+## Canonical run
 
-The three runs below form a progression — **no dialogue → one round → three
-rounds** — so you can see what each layer of negotiation buys.
-
-### `20260526T231112Z/` — **3-round negotiation** (current canonical demo)
+### `20260526T231112Z/` — **3-round negotiation**
 
 Seven Sonnet-backed agents, 2 years, with **three rounds** of private pairwise
 messaging before each movement phase — and the agents are told the protocol, so
 they probe in round 1, negotiate in round 2, and close deals in round 3. 7 phases,
 ~$2.20, ~23 minutes.
 
-The extra rounds produce explicit, multi-step deal-making and openly telegraphed
+The rounds produce explicit, multi-step deal-making and openly telegraphed
 betrayals. Highlight, F1901M:
 
 - **Italy → Austria** (round 3): *"I'm making a move toward Trieste this fall —
@@ -46,24 +43,3 @@ betrayals. Highlight, F1901M:
 
 [**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260526T231112Z/index.html)
 (GitHub Pages) to flip through the maps and dialogue phase by phase.
-
-### `20260524T034819Z/` — 1-round negotiation (for comparison)
-
-Same setup but only **one round** of messaging per movement phase. 7 phases,
-~$0.88. Useful for seeing how much the extra rounds deepen the dialogue.
-
-- **Italy → Austria** in S1901M: "I'd like to propose a friendly opening
-  between us — I have no designs on Trieste." **Italy's actual orders** in
-  F1901M then moved on Trieste — a CICERO-flavored stab, but unannounced.
-
-[**View this run's slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260524T034819Z/index.html)
-(GitHub Pages).
-
-### `20260524T031616Z/` — no-negotiation baseline (for comparison)
-
-Same setup, same personas, but agents act independently each turn
-with no inter-agent dialogue. Useful as the "what does dialogue
-actually buy us?" comparison run. 7 phases, ~$0.35.
-
-[**View this run's slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260524T031616Z/index.html)
-(GitHub Pages).
