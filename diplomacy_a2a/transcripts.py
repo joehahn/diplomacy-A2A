@@ -384,6 +384,7 @@ ol.phases { line-height: 1.8; }
 .nego-link:hover { background: #fde0ec; }
 .narr .r-fail { color: #0a8fa8; }
 .narr .r-bad { color: #c0392b; }
+.narr .r-warn { color: #c77a0a; }
 """
 
 
@@ -431,6 +432,8 @@ def _colorize_outcomes(html_text: str) -> str:
 
     out = re.sub(r"\(([^)]*)\)", _paren, html_text)
     out = re.sub(r"(\[dislodged:[^\]]*\])", r"<b class='r-bad'>\1</b>", out)
+    # A disband shrinks a power — flag the unit it loses (amber).
+    out = re.sub(r"\bdisbands (A|F) ([A-Z/]+)", r"<b class='r-warn'>disbands \1 \2</b>", out)
     return out
 
 
