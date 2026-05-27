@@ -101,6 +101,32 @@ python -m diplomacy_a2a experiment # full persona × matchup × seed grid
   [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260527T133022Z/index.html)
   (3 rounds of negotiation per turn, with turn-by-turn narration).
 
+## What each agent sees
+
+Diplomacy is a game of **open information**, and the simulation preserves that.
+Each agent's prompt is built by [`game/view.py`](diplomacy_a2a/game/view.py) and
+contains the **full board** every turn:
+
+- **Every power's unit positions** — not just its own; there is no fog of war.
+- **Every supply center and who owns it**, with counts (so it knows the standings).
+- **Its own legal moves** for the phase, computed by the library
+  (`get_all_possible_orders`) and filtered to the units it controls — the
+  authoritative list of what it may order.
+- A plain-English **"what happened last turn"** recap (see Turn narration).
+
+An agent does **not** see other powers' submitted orders, their legal-move lists,
+or any private messages it wasn't party to — only its own correspondence.
+
+**Geography is not spelled out.** There is deliberately no adjacency table or
+coordinates in the prompt. Tactical correctness comes from the legal-moves list
+(an illegal move simply isn't offered), and strategic geographic reasoning
+("Galicia borders us both") relies on the model's built-in knowledge of the
+standard Diplomacy map via the canonical province codes (`GAL`, `BOH`, …).
+Positions are conveyed as **text**, using those codes — the rendered SVG maps
+(with province labels) are for human readers, not the agents. If geography
+hallucinations ever surface in transcripts, a compact adjacency table can be
+added to the prompt as a cheap experiment.
+
 ## Negotiation protocol
 
 Before each **movement** phase, agents negotiate over a configurable number of
