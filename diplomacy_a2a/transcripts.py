@@ -356,6 +356,20 @@ ol.phases { line-height: 1.8; }
         margin: 10px 0; font-size: 0.9em; }
 .narr .nrow { margin: 4px 0; line-height: 1.4; }
 .narr .nrow b { display: inline-block; min-width: 78px; }
+.orders-link { display: inline-block; margin: 2px 0 12px; padding: 4px 11px; font-size: 0.85em;
+               background: #eef; color: #224; border-radius: 4px; text-decoration: none; }
+.orders-link:hover { background: #dde; }
+.modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; }
+.modal:target { display: block; }
+.modal-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+                  background: rgba(0, 0, 0, 0.45); }
+.modal-card { position: relative; margin: 6vh auto; background: #fff; max-width: 620px;
+              max-height: 82vh; overflow: auto; padding: 14px 22px 20px; border-radius: 8px;
+              box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.modal-card h2 { margin-top: 4px; }
+.modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
+               color: #999; text-decoration: none; }
+.modal-close:hover { color: #333; }
 """
 
 
@@ -590,33 +604,42 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             maps_html.append(f"<h3 class='mapcap'>{caption}</h3>")
             maps_html.append(f"<img class='map' src='{src}' alt='{caption}'>")
 
-        orders_html: list[str] = []
+        narration_rows = [
+            f"<div class='nrow'><b style='color:{POWER_COLORS.get(pw, '#777')}'>{pw}</b> {_esc(text)}</div>"
+            for pw, text in (sl.get("narration") or [])
+        ]
+        # "What happened" narration, with a link that pops the raw orders.
+        recap_html: list[str] = []
+        if narration_rows:
+            recap_html.append("<h2>What happened this phase</h2>")
         if sl["orders"] is not None:
-            orders_html.append("<h2>Orders this phase</h2>")
-            orders_html.extend(_orders_block(sl["orders"]))
+            recap_html.append("<a class='orders-link' href='#orders-modal'>▤ Orders this phase</a>")
+        if narration_rows:
+            recap_html += ["<div class='narr'>"] + narration_rows + ["</div>"]
 
-        narration_html: list[str] = []
-        for pw, text in sl.get("narration") or []:
-            color = POWER_COLORS.get(pw, "#777")
-            narration_html.append(
-                f"<div class='nrow'><b style='color:{color}'>{pw}</b> {_esc(text)}</div>"
-            )
-        if narration_html:
-            narration_html = (
-                ["<h2>What happened this phase</h2>", "<div class='narr'>"]
-                + narration_html
-                + ["</div>"]
-            )
+        # Raw orders live in a no-JS CSS :target popup, hidden until the link
+        # above is clicked.
+        orders_modal: list[str] = []
+        if sl["orders"] is not None:
+            orders_modal = [
+                "<div id='orders-modal' class='modal'>",
+                "<a class='modal-backdrop' href='#'></a>",
+                "<div class='modal-card'>",
+                "<a class='modal-close' href='#' title='close'>&times;</a>",
+                "<h2>Orders this phase</h2>",
+                *_orders_block(sl["orders"]),
+                "</div></div>",
+            ]
 
         body = "\n".join(
             [
                 nav,
                 f"<h1>{sl['heading']}</h1>",
-                *orders_html,
-                *narration_html,
+                *recap_html,
                 *maps_html,
                 *_dialogue_threads(sl["dialogue_label"], sl["dialogue"]),
                 nav,
+                *orders_modal,
             ]
         )
         (out_dir / sl["file"]).write_text(
