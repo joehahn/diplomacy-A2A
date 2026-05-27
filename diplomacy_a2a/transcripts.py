@@ -382,6 +382,8 @@ ol.phases { line-height: 1.8; }
              font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
              border-radius: 6px; text-decoration: none; }
 .nego-link:hover { background: #fde0ec; }
+.narr .r-fail { color: #0a8fa8; }
+.narr .r-bad { color: #c0392b; }
 """
 
 
@@ -411,6 +413,25 @@ POWER_COLORS = {
 
 def _esc(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+# Outcome words worth flagging in the "What happened" narration. Failures
+# (order didn't take effect) render cyan; bad outcomes (unit lost) render red.
+_FAIL_WORDS = ("bounced", "void", "no convoy", "support cut", "disrupted")
+
+
+def _colorize_outcomes(html_text: str) -> str:
+    """Bold/color the result annotations inside an (already-escaped) narration line."""
+
+    def _paren(m: "re.Match[str]") -> str:
+        inner = m.group(1)
+        if any(w in inner for w in _FAIL_WORDS):
+            return f"<b class='r-fail'>({inner})</b>"
+        return m.group(0)
+
+    out = re.sub(r"\(([^)]*)\)", _paren, html_text)
+    out = re.sub(r"(\[dislodged:[^\]]*\])", r"<b class='r-bad'>\1</b>", out)
+    return out
 
 
 def _bubble(snd: str, rec: str, rnd: int, text: str) -> str:
@@ -621,10 +642,17 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             maps_html.append(f"<h3 class='mapcap'>{caption}</h3>")
             maps_html.append(f"<img class='map' src='{src}' alt='{caption}'>")
 
-        narration_rows = [
-            f"<div class='nrow'><b style='color:{POWER_COLORS.get(pw, '#777')}'>{pw}</b> {_esc(text)}</div>"
-            for pw, text in (sl.get("narration") or [])
-        ]
+        narration_rows = []
+        for pw, text in (sl.get("narration") or []):
+            color = POWER_COLORS.get(pw, "#777")
+            body = _colorize_outcomes(_esc(text))
+            invalid = (sl.get("orders") or {}).get(pw, {}).get("invalid", [])
+            if invalid:
+                ill = " · ".join(_esc(o) for o in invalid)
+                body += f" <b class='r-bad'>(illegal: {ill})</b>"
+            narration_rows.append(
+                f"<div class='nrow'><b style='color:{color}'>{pw}</b> {body}</div>"
+            )
         # "What happened" narration, with a link that pops the raw orders.
         recap_html: list[str] = []
         if narration_rows:
