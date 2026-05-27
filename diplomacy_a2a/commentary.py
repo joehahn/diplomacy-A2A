@@ -12,20 +12,33 @@ useful color for a human reader, never fed back to the agents.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from diplomacy_a2a.llm.client import LLMClient, Message
 from diplomacy_a2a.narration import narrate_phase
 
 _SYSTEM = (
-    "You are a sharp, concise Diplomacy commentator. Given what each power did in "
-    "a phase and the private messages they exchanged just before it, write 2-4 "
-    "sentences of strategic commentary for a spectator: who is now threatening whom "
-    "(name powers and provinces), who appears to be cooperating, and any apparent "
-    "betrayal — a power that promised one thing in the messages but did another. Be "
-    "concrete and brief. This is your read of the board, not a recap; don't restate "
-    "every move and don't hedge with disclaimers."
+    "You are a sharp Diplomacy commentator. Given what each power did in a phase and "
+    "the private messages they exchanged just before it, write strategic commentary "
+    "for a spectator as 3-5 bullet points. Each bullet is ONE self-contained "
+    "observation about a single relationship or development — who is now threatening "
+    "whom (name powers and provinces), who appears to be cooperating, or an apparent "
+    "betrayal (a power that promised one thing in the messages but did another). Keep "
+    "each relationship in its own bullet. Start every bullet with '- '. Be concrete "
+    "and brief; this is your read of the board, not a move recap. No preamble, no "
+    "disclaimers."
 )
+
+
+def _parse_bullets(text: str) -> list[str]:
+    """Split the model's response into clean bullet strings."""
+    items: list[str] = []
+    for line in text.strip().splitlines():
+        line = re.sub(r"^\s*(?:[-*•]|\d+[.)])\s*", "", line.strip())
+        if line:
+            items.append(line)
+    return items
 
 
 def _phase_context(long_name: str, narration, standings, dialogue) -> str:
@@ -50,14 +63,15 @@ def generate_commentary(
     client: LLMClient,
     *,
     out_path: Path | None = None,
-    max_tokens: int = 260,
+    max_tokens: int = 320,
     temperature: float = 0.7,
-) -> dict[str, str]:
+) -> dict[str, list[str]]:
     """Write per-phase strategic commentary to commentary.json; return it.
 
-    One LLM call per phase, grounded in that phase's deterministic narration,
-    supply-center standing, and the negotiation that preceded it (so it can
-    spot promise-vs-action betrayals).
+    Each phase maps to a list of bullet observations. One LLM call per phase,
+    grounded in that phase's deterministic narration, supply-center standing,
+    and the negotiation that preceded it (so it can spot promise-vs-action
+    betrayals).
     """
     events = [json.loads(line) for line in jsonl_path.read_text().splitlines() if line.strip()]
 
@@ -78,7 +92,7 @@ def generate_commentary(
             results_by_phase[e["resolved_phase"]] = e.get("results", {})
             centers_by_phase[e["resolved_phase"]] = e.get("centers", {})
 
-    commentary: dict[str, str] = {}
+    commentary: dict[str, list[str]] = {}
     for short, long_name in phase_order:
         orders = orders_by_phase.get(short, {})
         if not orders:
@@ -93,7 +107,7 @@ def generate_commentary(
             max_tokens=max_tokens,
             temperature=temperature,
         )
-        commentary[short] = chat.text.strip()
+        commentary[short] = _parse_bullets(chat.text)
 
     out_path = out_path or (jsonl_path.parent / "commentary.json")
     out_path.write_text(json.dumps(commentary, indent=2))

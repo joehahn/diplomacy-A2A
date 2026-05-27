@@ -375,7 +375,13 @@ ol.phases { line-height: 1.8; }
               color: #333; }
 .commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
                       text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
-                      margin-right: 6px; }
+                      display: block; margin-bottom: 6px; }
+.commentary .clist { margin: 0; padding-left: 20px; }
+.commentary .clist li { margin: 5px 0; }
+.nego-link { display: inline-block; margin: 14px 0; padding: 9px 16px; font-size: 0.95em;
+             font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
+             border-radius: 6px; text-decoration: none; }
+.nego-link:hover { background: #fde0ec; }
 """
 
 
@@ -643,11 +649,34 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             ]
 
         commentary_html: list[str] = []
-        if sl.get("commentary"):
+        comm = sl.get("commentary")
+        if comm:
+            if isinstance(comm, list):
+                inner = "<ul class='clist'>" + "".join(f"<li>{_esc(x)}</li>" for x in comm) + "</ul>"
+            else:  # back-compat: a single string
+                inner = f" {_esc(comm)}"
             commentary_html = [
-                "<div class='commentary'><span class='clabel'>Commentary</span> "
-                f"{_esc(sl['commentary'])}</div>"
+                f"<div class='commentary'><span class='clabel'>Commentary</span>{inner}</div>"
             ]
+
+        # The negotiation lives on its own child page, reached via a link here.
+        nego_link_html: list[str] = []
+        if sl["dialogue"]:
+            child_file = sl["file"][:-5] + ".negotiation.html"  # strip ".html"
+            nego_link_html = [
+                f"<a class='nego-link' href='{child_file}'>"
+                f"💬 Read the negotiation before {sl['dialogue_label']} →</a>"
+            ]
+            back = (
+                f"<nav><a href='{sl['file']}'>← back to {sl['title']}</a>"
+                "<a href='index.html'>index</a></nav>"
+            )
+            child_body = "\n".join(
+                [back, *_dialogue_threads(sl["dialogue_label"], sl["dialogue"]), back]
+            )
+            (out_dir / child_file).write_text(
+                _html_page(title=f"Negotiation — {sl['title']} — {run_id}", body=child_body)
+            )
 
         body = "\n".join(
             [
@@ -656,7 +685,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 *recap_html,
                 *maps_html,
                 *commentary_html,
-                *_dialogue_threads(sl["dialogue_label"], sl["dialogue"]),
+                *nego_link_html,
                 nav,
                 *orders_modal,
             ]
