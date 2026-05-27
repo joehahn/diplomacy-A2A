@@ -73,8 +73,15 @@ def run_game(
     negotiation_rounds: int = 3,  # rounds per MOVEMENT phase (0 = skip)
     max_phases: int = 50,  # safety stop
     verbose: bool = True,
+    log_prompts: bool = False,  # also dump full agent prompts to prompts.jsonl
 ) -> Path:
-    """Run a full game, save artifacts under results_root/<run-id>/."""
+    """Run a full game, save artifacts under results_root/<run-id>/.
+
+    If `log_prompts` is set, the exact prompt each agent receives is written
+    to a separate `prompts.jsonl` (system prompt once per power, then the
+    per-call user message). Off by default — a full grid of games would
+    otherwise produce a lot of large, redundant prompt dumps.
+    """
     if personas is None:
         personas = DEFAULT_PERSONAS
 
@@ -85,6 +92,11 @@ def run_game(
 
     state = GameState.new()
     agents = {p: Agent(power=p, persona=personas[p], client=client) for p in POWERS}
+
+    prompts_writer = TranscriptWriter(run_dir / "prompts.jsonl").open() if log_prompts else None
+    if prompts_writer is not None:
+        for p in POWERS:
+            prompts_writer.write("agent_system", power=p, system=agents[p]._system)
 
     end_year = 1900 + years
     tokens = {"input": 0, "output": 0, "cache_create": 0, "cache_read": 0}
@@ -155,6 +167,11 @@ def run_game(
                                 "cache_read": res.chat.cache_read_input_tokens,
                             },
                         )
+                        if prompts_writer is not None:
+                            prompts_writer.write(
+                                "agent_prompt", phase=short, round=round_idx + 1,
+                                kind="negotiate", power=power, prompt=res.prompt,
+                            )
                     dialogue_history.extend(new_msgs)
                     phase_dialogue.extend(new_msgs)
                     if verbose:
@@ -168,6 +185,11 @@ def run_game(
                 # this phase + any history from prior phases.
                 result = agents[power].submit_orders(state, dialogue=dialogue_history)
                 _accumulate_tokens(tokens, result.chat)
+                if prompts_writer is not None:
+                    prompts_writer.write(
+                        "agent_prompt", phase=short, kind="orders",
+                        power=power, prompt=result.prompt,
+                    )
 
                 valid, invalid = validate_orders(state, power, result.orders)
 
@@ -200,9 +222,14 @@ def run_game(
             state.advance()
             phases_played += 1
 
+            # Capture the just-resolved phase's per-unit results (bounce,
+            # dislodged, …) so the viewer/report can narrate it from the JSONL.
+            resolved = state.game.get_phase_history()[-1]
             tw.write(
                 "phase_resolved",
+                resolved_phase=resolved.name,
                 next_phase=state.short_phase,
+                results={u: [str(t) for t in r] for u, r in resolved.results.items()},
                 units={p: state.units(p) for p in POWERS},
                 centers={p: state.centers(p) for p in POWERS},
             )
@@ -219,6 +246,9 @@ def run_game(
             tokens=tokens,
             cost_usd=_estimate_cost(tokens),
         )
+
+    if prompts_writer is not None:
+        prompts_writer.close()
 
     # Maps are regenerated from the completed transcript by replaying the
     # recorded orders through the library — the same deterministic path used

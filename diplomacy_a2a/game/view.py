@@ -11,6 +11,7 @@ with the cached system prefix (rules + persona) for each LLM call.
 from __future__ import annotations
 
 from diplomacy_a2a.game.state import POWERS, GameState
+from diplomacy_a2a.narration import narrate_phase
 
 
 def render_for_power(state: GameState, power: str) -> str:
@@ -20,6 +21,20 @@ def render_for_power(state: GameState, power: str) -> str:
     lines: list[str] = []
     lines.append(f"## Current phase: {state.phase}  ({state.short_phase})")
     lines.append("")
+
+    # What happened last turn — plain-English recap of every power's orders
+    # and how they resolved (bounces, dislodgements, supports), so you can
+    # see who helped or attacked whom without decoding raw order syntax.
+    recap = state.recent_resolved()
+    if recap:
+        lines.append("## What happened last turn")
+        for short, orders, results in recap:
+            lines.append(f"### {short}")
+            for p, text in narrate_phase(orders, results, powers_order=list(POWERS)):
+                marker = " ← YOU" if p == power else ""
+                lines.append(f"- {p}{marker}: {text}")
+        lines.append("")
+
     lines.append("## Unit positions (all powers — Diplomacy is open information)")
     for p in POWERS:
         units = state.units(p)

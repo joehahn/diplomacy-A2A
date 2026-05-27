@@ -19,6 +19,8 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+
+from diplomacy_a2a.narration import narrate_phase
 from typing import Any, TextIO
 
 
@@ -155,9 +157,10 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
     agent_responses: dict[str, dict[str, Any]] = {}
     orders_submitted: dict[str, dict[str, Any]] = {}
     dialogue_events: list[dict[str, Any]] = []  # agent_messages events for this phase
+    phase_results: dict[str, list[str]] = {}  # unit -> result tokens, for this phase
 
     def flush_phase() -> None:
-        nonlocal current_phase, agent_responses, orders_submitted, dialogue_events
+        nonlocal current_phase, agent_responses, orders_submitted, dialogue_events, phase_results
         if current_phase is None:
             return
         short = current_phase.get("short_phase", "?")
@@ -167,6 +170,15 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
         svg_name = f"{short}.svg"
         lines.append(f'<img src="{svg_name}" alt="{short} map" width="700">')
         lines.append("")
+        # Plain-English recap of what each power did and how it resolved.
+        valid_by_power = {p: s.get("valid", []) for p, s in orders_submitted.items()}
+        narration = narrate_phase(valid_by_power, phase_results)
+        if narration:
+            lines.append("### What happened")
+            lines.append("")
+            for power, text in narration:
+                lines.append(f"- **{power}**: {text}")
+            lines.append("")
         # Dialogue (if any messages were exchanged this phase)
         all_msgs = [
             (ev["power"], recipient, text)
@@ -207,6 +219,7 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
         agent_responses = {}
         orders_submitted = {}
         dialogue_events = []
+        phase_results = {}
 
     for e in events:
         t = e["type"]
@@ -219,6 +232,8 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
             agent_responses[e["power"]] = e
         elif t == "orders_submitted":
             orders_submitted[e["power"]] = e
+        elif t == "phase_resolved" and e.get("resolved_phase"):
+            phase_results = e.get("results", {})
     flush_phase()
 
     # Final state
@@ -279,6 +294,10 @@ ol.phases { line-height: 1.8; }
 .bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
                margin-left: 6px; font-weight: 700; }
 .bubble .btext { color: #222; line-height: 1.35; }
+.narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
+        margin: 10px 0; font-size: 0.9em; }
+.narr .nrow { margin: 4px 0; line-height: 1.4; }
+.narr .nrow b { display: inline-block; min-width: 78px; }
 """
 
 
@@ -393,6 +412,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     # movement phase it precedes.
     phases: list[dict[str, Any]] = []
     dialogue_by_phase: dict[str, list[tuple[int, str, str, str]]] = {}
+    results_by_phase: dict[str, dict[str, list[str]]] = {}  # short -> {unit: [tokens]}
     current: dict[str, Any] | None = None
     for e in events:
         if e["type"] == "phase_started":
@@ -408,6 +428,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 dialogue_by_phase.setdefault(e["phase"], []).append(
                     (e.get("round", 1), e["power"], recipient, text)
                 )
+        elif e["type"] == "phase_resolved" and e.get("resolved_phase"):
+            results_by_phase[e["resolved_phase"]] = e.get("results", {})
         elif e["type"] == "orders_submitted" and current is not None:
             current["orders"][e["power"]] = {
                 "valid": e.get("valid", []),
@@ -429,12 +451,14 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         }
     ]
     for ph in phases:
+        valid_orders = {pw: od["valid"] for pw, od in ph["orders"].items()}
         slides.append(
             {
                 "file": f"{ph['short']}.html",
                 "title": f"{ph['long']} ({ph['short']})",
                 "heading": f"{ph['long']} <code>({ph['short']})</code>",
                 "orders": ph["orders"],
+                "narration": narrate_phase(valid_orders, results_by_phase.get(ph["short"], {})),
                 "maps": [
                     ("Orders — start positions, arrows show moves", f"{ph['short']}.svg"),
                     ("Result — positions after this phase resolved", f"{ph['short']}.result.svg"),
@@ -501,11 +525,25 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             orders_html.append("<h2>Orders this phase</h2>")
             orders_html.extend(_orders_block(sl["orders"]))
 
+        narration_html: list[str] = []
+        for pw, text in sl.get("narration") or []:
+            color = POWER_COLORS.get(pw, "#777")
+            narration_html.append(
+                f"<div class='nrow'><b style='color:{color}'>{pw}</b> {_esc(text)}</div>"
+            )
+        if narration_html:
+            narration_html = (
+                ["<h2>What happened this phase</h2>", "<div class='narr'>"]
+                + narration_html
+                + ["</div>"]
+            )
+
         body = "\n".join(
             [
                 nav,
                 f"<h1>{sl['heading']}</h1>",
                 *orders_html,
+                *narration_html,
                 *maps_html,
                 *_dialogue_threads(sl["dialogue_label"], sl["dialogue"]),
                 nav,

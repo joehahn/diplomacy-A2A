@@ -78,3 +78,22 @@ class GameState:
     def advance(self) -> None:
         """Process the current phase (adjudicate orders, advance to next)."""
         self.game.process()
+
+    def recent_resolved(self) -> list[tuple[str, dict[str, list[str]], dict[str, list[str]]]]:
+        """Resolved phases since (and including) the most recent movement phase.
+
+        Returns, in chronological order, (short_phase, orders_by_power,
+        results_by_unit) for the last "turn cycle" — i.e. the latest
+        movement phase plus any retreat/adjustment phases after it. This is
+        the "what just happened" recap an agent needs; results carry the
+        adjudication outcomes (bounce, dislodged, …) that bare orders don't.
+        """
+        history = self.game.get_phase_history()
+        out: list[tuple[str, dict[str, list[str]], dict[str, list[str]]]] = []
+        for ph in reversed(history):
+            orders = {p: list(o) for p, o in ph.orders.items() if o}
+            results = {u: [str(t) for t in r] for u, r in ph.results.items()}
+            out.append((ph.name, orders, results))
+            if ph.name.endswith("M"):  # stop once we've included a movement phase
+                break
+        return list(reversed(out))

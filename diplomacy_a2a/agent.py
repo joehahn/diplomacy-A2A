@@ -43,6 +43,7 @@ class DialogueMessage:
 class OrderResult:
     orders: list[str]
     chat: ChatResult
+    prompt: str = ""  # the user message sent this call (for optional prompt logging)
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,7 @@ class MessagesResult:
 
     messages: dict[str, str]
     chat: ChatResult
+    prompt: str = ""  # the user message sent this call (for optional prompt logging)
 
 
 class Agent:
@@ -151,7 +153,9 @@ class Agent:
             max_tokens=max_tokens,
             temperature=temperature,
         )
-        return MessagesResult(messages=parse_messages(chat.text, self.power), chat=chat)
+        return MessagesResult(
+            messages=parse_messages(chat.text, self.power), chat=chat, prompt=user_msg
+        )
 
     # ------------------------------------------------------------------
     # Orders
@@ -178,7 +182,7 @@ class Agent:
             max_tokens=max_tokens,
             temperature=temperature,
         )
-        return OrderResult(orders=parse_orders(chat.text), chat=chat)
+        return OrderResult(orders=parse_orders(chat.text), chat=chat, prompt=user_msg)
 
 
 # ----------------------------------------------------------------------

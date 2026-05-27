@@ -123,6 +123,24 @@ mechanics live in [`agent.py`](diplomacy_a2a/agent.py) (`negotiate`, the system
 prompt, dialogue formatting) and [`negotiation.py`](diplomacy_a2a/negotiation.py)
 (`run_negotiation_round`); [`runner.py`](diplomacy_a2a/runner.py) drives the rounds.
 
+## Turn narration & observability
+
+After each phase, a **deterministic plain-English narration** of what every
+power did and how it resolved is generated straight from the orders + adjudication
+results — e.g. *"AUSTRIA: A BUD → SER; F ALB supports A SER → GRE; ITALY: A VEN →
+TRI (bounced)"*. No LLM, so it's faithful and reproducible
+([`narration.py`](diplomacy_a2a/narration.py)). It serves two consumers:
+
+- **Humans** — shown beside the maps on each slideshow/report phase, so the action
+  reads at a glance instead of as raw order syntax.
+- **Agents** — fed into each agent's view as a "what happened last turn" recap,
+  so they reason about who supported or attacked whom from readable facts (and see
+  *outcomes* like bounces/dislodgements that bare orders don't convey).
+
+For debugging, `run_game(log_prompts=True)` dumps the exact prompt each agent
+receives to a separate `prompts.jsonl` (off by default, and gitignored, so a full
+grid of games isn't bloated with large redundant prompt dumps).
+
 ## Cost
 
 TBD. A small-mode `smoke` run will cost pennies; a full grid will cost
