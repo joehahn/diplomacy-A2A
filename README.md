@@ -141,6 +141,14 @@ For debugging, `run_game(log_prompts=True)` dumps the exact prompt each agent
 receives to a separate `prompts.jsonl` (off by default, and gitignored, so a full
 grid of games isn't bloated with large redundant prompt dumps).
 
+Separately, **optional LLM commentary** ([`commentary.py`](diplomacy_a2a/commentary.py))
+can add a narrator's strategic read to each slide — who's threatening whom, who's
+cooperating, who appears to have betrayed a promise — shown between the result map
+and the negotiation. Unlike the deterministic narration, this is *interpretation*
+(human-facing only, never fed to agents), so it's a separate opt-in pass over a
+finished transcript (one LLM call per phase) rather than part of `run_game` — kept
+out of the game loop so a full experiment grid stays cheap.
+
 ## Cost
 
 TBD. A small-mode `smoke` run will cost pennies; a full grid will cost

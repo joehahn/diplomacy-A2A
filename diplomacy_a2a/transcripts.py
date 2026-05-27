@@ -370,6 +370,12 @@ ol.phases { line-height: 1.8; }
 .modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
                color: #999; text-decoration: none; }
 .modal-close:hover { color: #333; }
+.commentary { background: #f0f4ff; border-left: 3px solid #7a8fd8; padding: 10px 14px;
+              margin: 14px 0; font-size: 0.92em; line-height: 1.5; font-style: italic;
+              color: #333; }
+.commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
+                      text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
+                      margin-right: 6px; }
 """
 
 
@@ -534,6 +540,10 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             "dialogue": [],
         }
     ]
+    # Optional LLM commentary (commentary.py), if it's been generated.
+    commentary_path = out_dir / "commentary.json"
+    commentary = json.loads(commentary_path.read_text()) if commentary_path.exists() else {}
+
     for ph in phases:
         valid_orders = {pw: od["valid"] for pw, od in ph["orders"].items()}
         slides.append(
@@ -543,6 +553,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "heading": f"{ph['long']} <code>({ph['short']})</code>",
                 "orders": ph["orders"],
                 "narration": narrate_phase(valid_orders, results_by_phase.get(ph["short"], {})),
+                "commentary": commentary.get(ph["short"], ""),
                 "maps": [
                     ("Orders — start positions, arrows show moves", f"{ph['short']}.svg"),
                     ("Result — positions after this phase resolved", f"{ph['short']}.result.svg"),
@@ -631,12 +642,20 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "</div></div>",
             ]
 
+        commentary_html: list[str] = []
+        if sl.get("commentary"):
+            commentary_html = [
+                "<div class='commentary'><span class='clabel'>Commentary</span> "
+                f"{_esc(sl['commentary'])}</div>"
+            ]
+
         body = "\n".join(
             [
                 nav,
                 f"<h1>{sl['heading']}</h1>",
                 *recap_html,
                 *maps_html,
+                *commentary_html,
                 *_dialogue_threads(sl["dialogue_label"], sl["dialogue"]),
                 nav,
                 *orders_modal,
