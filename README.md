@@ -45,6 +45,13 @@ Building toward goal 3:
   anecdote.
 - **Cheap "smoke" mode** — a one-game Haiku entry point so anyone can verify the
   whole pipeline end-to-end for pennies before committing to a full run.
+- **Full order visibility (tabletop-faithful)** *(nice-to-have, not core)* —
+  after each turn, show agents the complete set of submitted orders and how they
+  resolved, the way players around a table see every order at the reveal. Today
+  agents see only the resulting board, and illegal orders are dropped before
+  anyone sees them. Surfacing orders would also let agents *deliberately* submit
+  unusual or illegal orders as bluffs/signals — an order-level deception channel
+  to complement the message-level lying that personalities will already do.
 
 ## Status
 
