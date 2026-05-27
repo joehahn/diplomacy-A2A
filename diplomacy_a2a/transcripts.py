@@ -416,9 +416,11 @@ def _esc(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-# Outcome words worth flagging in the "What happened" narration. Failures
-# (order didn't take effect) render cyan; bad outcomes (unit lost) render red.
-_FAIL_WORDS = ("bounced", "void", "no convoy", "support cut", "disrupted")
+# Coloring in the "What happened" narration:
+#   red   (r-bad)  — a unit/right was lost or an order was illegal
+#   amber (r-warn) — an order failed to take effect
+#   cyan  (r-fail) — coordination actions (support, convoy)
+_AMBER_WORDS = ("bounced", "void", "no convoy", "support cut", "disrupted")
 
 
 def _colorize_outcomes(html_text: str) -> str:
@@ -426,14 +428,15 @@ def _colorize_outcomes(html_text: str) -> str:
 
     def _paren(m: "re.Match[str]") -> str:
         inner = m.group(1)
-        if any(w in inner for w in _FAIL_WORDS):
-            return f"<b class='r-fail'>({inner})</b>"
+        if any(w in inner for w in _AMBER_WORDS):
+            return f"<b class='r-warn'>({inner})</b>"
         return m.group(0)
 
-    out = re.sub(r"\(([^)]*)\)", _paren, html_text)
-    out = re.sub(r"(\[dislodged:[^\]]*\])", r"<b class='r-bad'>\1</b>", out)
-    # A disband shrinks a power — flag the unit it loses (amber).
-    out = re.sub(r"\bdisbands (A|F) ([A-Z/]+)", r"<b class='r-warn'>disbands \1 \2</b>", out)
+    out = re.sub(r"\(([^)]*)\)", _paren, html_text)  # amber: failed orders
+    out = re.sub(r"(\[dislodged:[^\]]*\])", r"<b class='r-bad'>\1</b>", out)  # red
+    out = re.sub(r"\bdisbands (A|F) ([A-Z/]+)", r"<b class='r-bad'>disbands \1 \2</b>", out)  # red
+    out = re.sub(r"\bwaives a build\b", r"<b class='r-bad'>waives a build</b>", out)  # red
+    out = re.sub(r"\b(supports|convoys)\b", r"<b class='r-fail'>\1</b>", out)  # cyan
     return out
 
 
