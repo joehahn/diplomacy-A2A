@@ -98,7 +98,7 @@ python -m diplomacy_a2a experiment # full persona × matchup × seed grid
 - **`results/`** — pre-rendered transcripts so visitors can see output
   without spending money. Flip through a game phase by phase in the
   turn-by-turn viewer (hosted on GitHub Pages):
-  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260527T133022Z/index.html)
+  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260527T184246Z/index.html)
   (3 rounds of negotiation per turn, with turn-by-turn narration).
 
 ## What each agent sees
@@ -163,9 +163,30 @@ TRI (bounced)"*. No LLM, so it's faithful and reproducible
   so they reason about who supported or attacked whom from readable facts (and see
   *outcomes* like bounces/dislodgements that bare orders don't convey).
 
-For debugging, `run_game(log_prompts=True)` dumps the exact prompt each agent
-receives to a separate `prompts.jsonl` (off by default, and gitignored, so a full
-grid of games isn't bloated with large redundant prompt dumps).
+### Seeing the exact agent prompts
+
+For transparency/debugging, `run_game(log_prompts=True)` writes the exact prompt
+each agent receives — the system prompt once per power, then every per-call user
+message — to **`results/<run-id>/prompts.jsonl`**. The canonical run's dump **is
+committed** (≈1.7 MB) so you can read precisely what the agents saw without
+spending anything: see
+[`results/20260527T184246Z/prompts.jsonl`](results/20260527T184246Z/prompts.jsonl).
+
+It's off by default and otherwise gitignored, so a full experiment grid isn't
+bloated with large, redundant dumps. To generate one yourself from the command
+line (no CLI subcommand yet — call `run_game` directly):
+
+```bash
+python -c "from dotenv import load_dotenv; load_dotenv('.env'); \
+from diplomacy_a2a.llm.anthropic_client import AnthropicClient as C; \
+from diplomacy_a2a.runner import run_game; \
+run_game(client=C(model='claude-sonnet-4-6'), model='claude-sonnet-4-6', \
+years=2, negotiation_rounds=3, log_prompts=True)"
+```
+
+That's a full 2-year, 3-round game (~$2–2.5 on Sonnet); `log_prompts` itself adds
+no API cost — it only saves prompts that are sent anyway. The run prints its
+artifact directory; the prompts land in `prompts.jsonl` there.
 
 Separately, **optional LLM commentary** ([`commentary.py`](diplomacy_a2a/commentary.py))
 can add a narrator's strategic read to each slide — who's threatening whom, who's

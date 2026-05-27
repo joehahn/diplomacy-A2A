@@ -22,26 +22,27 @@ Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
 ## Canonical run
 
-### `20260527T133022Z/` — **3-round negotiation, with turn narration**
+### `20260527T184246Z/` — **3-round negotiation, with turn narration**
 
 Seven Sonnet-backed agents, 2 years, with **three rounds** of private pairwise
 messaging before each movement phase — agents are told the protocol, so they
 probe in round 1, negotiate in round 2, and close in round 3. Each slide shows a
-plain-English **"what happened this phase"** narration beside the maps, and that
-same recap is fed back to the agents so they reason about prior-turn outcomes.
-6 phases, ~$2.22, ~23 minutes.
+plain-English **"what happened this phase"** narration beside the maps, that same
+recap is fed back to the agents so they reason about prior-turn outcomes, and an
+LLM **commentary** block flags threats, cooperation, and betrayals.
+8 phases, ~$2.43, ~24 minutes. This run also includes the full agent-prompt dump
+(`prompts.jsonl`) — see the project README's *Seeing the exact agent prompts*.
 
-Highlights:
+Highlights (F1902M):
 
-- **The narration loop closing** — after Germany and Russia *both bounced* trying
-  to take Sweden in F1901M, Germany opens F1902M with *"The SWE situation last
-  spring was frustrating for both of us — I'd like to finally resolve it this
-  fall. If F BOT supports F DEN into SWE, I take it cleanly and you get a favor
-  owed."* The agent remembered the bounce (from the recap) and proposed a fix.
-- **Honest pressure** — Italy, stuck at 4 centers, to Austria: *"I need to be
-  honest — you're at 5 centers and I'm stuck at 4… I need a deal, not just
-  promises. Can you support my move into SMY?"* — a coalition forming around
-  who's pulling ahead.
+- **A double-cross over Belgium** — France reassured Germany with "ceasefire"
+  messages, then drove `A PIC → BEL` with Burgundy support and took the center,
+  dislodging Germany's fleet. In the *same* round England told France it would
+  help, but secretly confirmed to Germany it would support the Belgian hold —
+  a final-hour deception caught in the transcript.
+- **Turkey collapsing** — its `CON → BUL` and `BLA → BUL` attacks both bounced
+  off Austria's supported `A BUL`, Russia drove its fleet out of the Black Sea,
+  and it ends the run squeezed to 3 centers despite courting both Rome and Moscow.
 
-[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260527T133022Z/index.html)
-(GitHub Pages) to flip through the maps, narration, and dialogue phase by phase.
+[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260527T184246Z/index.html)
+(GitHub Pages) to flip through the maps, narration, commentary, and dialogue.
