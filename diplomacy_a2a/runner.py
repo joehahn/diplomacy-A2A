@@ -194,7 +194,7 @@ def run_game(
 
                 state.submit(power, valid)
                 if verbose:
-                    badge = "" if not invalid else f"  (filtered {len(invalid)} invalid)"
+                    badge = "" if not invalid else f"  (dropped {len(invalid)} illegal)"
                     print(f"  {power}: {valid}{badge}")
 
             state.advance()

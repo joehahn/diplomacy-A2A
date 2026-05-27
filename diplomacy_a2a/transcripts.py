@@ -190,7 +190,7 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
             else:
                 lines.append("Orders: *(none submitted)*")
             if invalid:
-                lines.append(f"Invalid (filtered): " + " · ".join(f"`{o}`" for o in invalid))
+                lines.append(f"Illegal (dropped): " + " · ".join(f"`{o}`" for o in invalid))
             text = resp.get("text", "").strip()
             if text:
                 reasoning = text.split("ORDERS:", 1)[0].strip()
@@ -364,7 +364,7 @@ def _orders_block(orders: dict[str, dict[str, Any]]) -> list[str]:
         line = f"<div class='power'><b>{power}</b>: {valid_str}"
         if ods["invalid"]:
             inv = " · ".join(f"<code>{o}</code>" for o in ods["invalid"])
-            line += f" <span class='invalid'>(filtered: {inv})</span>"
+            line += f" <span class='invalid'>(illegal: {inv})</span>"
         out.append(line + "</div>")
     out.append("</div>")
     return out

@@ -395,7 +395,7 @@ Orders: `F DEN - SWE` · `A KIE S A RUH - HOL` · `A RUH - HOL`
 
 ### ITALY
 Orders: `A VEN - TRI` · `F ION - TUN`
-Invalid (filtered): `A APU S A VEN - TRI`
+Illegal (dropped): `A APU S A VEN - TRI`
 
 <details><summary>Reasoning</summary>
 
@@ -774,7 +774,7 @@ Orders: `F BRE - MAO` · `F POR H` · `A SPA - MAR` · `A GAS S A SPA - MAR` · 
 
 ### GERMANY
 Orders: `A HOL - BEL` · `F DEN - SWE` · `A BER H` · `A MUN H`
-Invalid (filtered): `A KIE S A HOL - BEL`
+Illegal (dropped): `A KIE S A HOL - BEL`
 
 <details><summary>Reasoning</summary>
 
@@ -1123,7 +1123,7 @@ Orders: `A TRI H` · `A APU - VEN` · `F TYS - ION` · `F NAP - TYS`
 
 ### RUSSIA
 Orders: `A FIN S F SWE` · `F RUM - BUL/EC` · `F SEV - BLA` · `F SWE H`
-Invalid (filtered): `A UKR S F RUM - BUL/EC`
+Illegal (dropped): `A UKR S F RUM - BUL/EC`
 
 <details><summary>Reasoning</summary>
 
