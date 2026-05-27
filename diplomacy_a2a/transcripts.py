@@ -16,11 +16,54 @@ re-render postmortems with improved templates without re-running games.
 from __future__ import annotations
 
 import json
+import os
+import re
+import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 from diplomacy_a2a.narration import narrate_phase
+
+# Unit glyphs redrawn as physical-game-style blocks: an Army is a short, fat
+# rounded rectangle; a Fleet is a long, narrow one. Each keeps the stock
+# viewBox "0 0 23 15" so the library's placement/scaling is unchanged, and
+# the body rect has no fill so the per-power CSS class still colors it. The
+# dislodged variants use a red outline to flag units that must retreat.
+_UNIT_SYMBOLS = {
+    "Army": (
+        '<symbol id="Army" viewBox="0 0 23 15" overflow="visible"><g>'
+        '<rect x="5" y="3" width="15" height="12" rx="2" fill="black" opacity="0.40"/>'
+        '<rect x="4" y="1" width="15" height="12" rx="2" stroke="black" stroke-width="1"/>'
+        "</g></symbol>"
+    ),
+    "Fleet": (
+        '<symbol id="Fleet" viewBox="0 0 23 15" overflow="visible"><g>'
+        '<rect x="1" y="6" width="22" height="7" rx="3.5" fill="black" opacity="0.40"/>'
+        '<rect x="0" y="4" width="22" height="7" rx="3.5" stroke="black" stroke-width="1"/>'
+        "</g></symbol>"
+    ),
+    "DislodgedArmy": (
+        '<symbol id="DislodgedArmy" viewBox="0 0 23 15" overflow="visible"><g>'
+        '<rect x="5" y="3" width="15" height="12" rx="2" fill="black" opacity="0.40"/>'
+        '<rect x="4" y="1" width="15" height="12" rx="2" stroke="red" stroke-width="1.5"/>'
+        "</g></symbol>"
+    ),
+    "DislodgedFleet": (
+        '<symbol id="DislodgedFleet" viewBox="0 0 23 15" overflow="visible"><g>'
+        '<rect x="1" y="6" width="22" height="7" rx="3.5" fill="black" opacity="0.40"/>'
+        '<rect x="0" y="4" width="22" height="7" rx="3.5" stroke="red" stroke-width="1.5"/>'
+        "</g></symbol>"
+    ),
+}
+
+
+def _custom_unit_svg(base_svg: str) -> str:
+    """Return the map SVG template with Army/Fleet symbols swapped for blocks."""
+    out = base_svg
+    for sid, replacement in _UNIT_SYMBOLS.items():
+        out = re.sub(rf'<symbol id="{sid}".*?</symbol>', replacement, out, count=1, flags=re.S)
+    return out
 from typing import Any, TextIO
 
 
@@ -75,6 +118,9 @@ def regenerate_maps(jsonl_path: Path, out_dir: Path) -> None:
     """
     # Lazy import: keep the game/adjudicator dependency out of the module's
     # import path so plain JSONL→markdown/HTML rendering stays dependency-light.
+    import diplomacy
+    from diplomacy.engine.renderer import Renderer
+
     from diplomacy_a2a.game.state import GameState
 
     events = [json.loads(line) for line in jsonl_path.read_text().splitlines() if line.strip()]
@@ -93,30 +139,43 @@ def regenerate_maps(jsonl_path: Path, out_dir: Path) -> None:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     state = GameState.new()
-    (out_dir / "initial.svg").write_text(
-        state.game.render(incl_orders=False, incl_abbrev=False)
-    )
 
-    for short in phase_order:
-        # Skip any interstitial phases the original run had no orders for
-        # (the runner advances past phases with no orderable powers without
-        # logging them). Guard against runaway loops.
-        for _ in range(10):
-            if state.short_phase == short:
-                break
+    # Render with our physical-game-style unit blocks: build a one-off SVG
+    # template (stock map + redefined Army/Fleet symbols) and bind a Renderer
+    # to it. incl_abbrev=True labels each province with its code.
+    svg_dir = Path(diplomacy.__file__).parent / "maps" / "svg"
+    base_svg = (svg_dir / f"{state.game.map.root_map}.svg").read_text()
+    tmp = tempfile.NamedTemporaryFile("w", suffix=".svg", delete=False)
+    tmp.write(_custom_unit_svg(base_svg))
+    tmp.close()
+    state.game.renderer = Renderer(state.game, svg_path=tmp.name)
+
+    try:
+        (out_dir / "initial.svg").write_text(
+            state.game.render(incl_orders=False, incl_abbrev=True)
+        )
+        for short in phase_order:
+            # Skip any interstitial phases the original run had no orders for
+            # (the runner advances past phases with no orderable powers without
+            # logging them). Guard against runaway loops.
+            for _ in range(10):
+                if state.short_phase == short:
+                    break
+                state.advance()
+            else:
+                raise RuntimeError(f"Replay could not reach phase {short!r}")
+
+            for power, orders in orders_by_phase.get(short, {}).items():
+                state.submit(power, orders)
+            (out_dir / f"{short}.svg").write_text(
+                state.game.render(incl_orders=True, incl_abbrev=True)
+            )
             state.advance()
-        else:
-            raise RuntimeError(f"Replay could not reach phase {short!r}")
-
-        for power, orders in orders_by_phase.get(short, {}).items():
-            state.submit(power, orders)
-        (out_dir / f"{short}.svg").write_text(
-            state.game.render(incl_orders=True, incl_abbrev=False)
-        )
-        state.advance()
-        (out_dir / f"{short}.result.svg").write_text(
-            state.game.render(incl_orders=False, incl_abbrev=False)
-        )
+            (out_dir / f"{short}.result.svg").write_text(
+                state.game.render(incl_orders=False, incl_abbrev=True)
+            )
+    finally:
+        os.unlink(tmp.name)
 
 
 def render_markdown(jsonl_path: Path, out_path: Path) -> None:
@@ -284,11 +343,10 @@ ol.phases { line-height: 1.8; }
 .thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
 .thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
 .thread-head .arr { color: #aaa; font-weight: 400; }
-.bubbles { display: flex; flex-direction: column; gap: 6px; }
-.bubble { max-width: 72%; padding: 7px 11px; border-radius: 12px; background: #f6f6f8;
-          border: 1px solid #e6e6ec; font-size: 0.9em; }
-.bubble.left  { align-self: flex-start; border-top-left-radius: 3px; }
-.bubble.right { align-self: flex-end;   border-top-right-radius: 3px; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-items: start; }
+.bubble { padding: 7px 11px; border-radius: 12px; border-top-left-radius: 3px;
+          background: #f6f6f8; border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.empty { background: none; border: none; }
 .bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
                  letter-spacing: 0.02em; }
 .bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
@@ -329,20 +387,31 @@ def _esc(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _bubble(snd: str, rec: str, rnd: int, text: str) -> str:
+    color = POWER_COLORS.get(snd, "#777")
+    return (
+        f"<div class='bubble' style='border-left:4px solid {color}'>"
+        f"<div class='bmeta' style='color:{color}'>{snd} → {rec}"
+        f"<span class='rnd'>R{rnd}</span></div>"
+        f"<div class='btext'>{_esc(text)}</div></div>"
+    )
+
+
 def _dialogue_threads(label: str, msgs: list[tuple[int, str, str, str]]) -> list[str]:
     """Render the phase's negotiation as per-pair chat threads.
 
     `msgs` is a list of (round, sender, recipient, text). Messages are
-    grouped into bilateral threads (most active first); within a thread
-    they're ordered by round, with the alphabetically-first power's
-    bubbles on the left and the other's on the right, each tinted by
-    sender and tagged with its round.
+    grouped into bilateral threads (most active first). Within a thread the
+    two powers occupy two columns (alphabetically-first on the left), and
+    each round is a row — so a round's A→B and B→A messages sit side by
+    side, with empty cells where one side stayed silent.
     """
     if not msgs:
         return []
-    threads: dict[tuple[str, str], list[tuple[int, str, str, str]]] = {}
+    threads: dict[tuple[str, str], dict[int, dict[str, tuple[str, str]]]] = {}
     for rnd, snd, rec, text in msgs:
-        threads.setdefault(tuple(sorted((snd, rec))), []).append((rnd, snd, rec, text))
+        key = tuple(sorted((snd, rec)))
+        threads.setdefault(key, {}).setdefault(rnd, {})[snd] = (rec, text)
 
     present = sorted({p for key in threads for p in key})
     legend = " ".join(
@@ -351,7 +420,11 @@ def _dialogue_threads(label: str, msgs: list[tuple[int, str, str, str]]) -> list
     )
     out = [f"<h2>Negotiation before {label}</h2>", f"<div class='legend'>{legend}</div>"]
 
-    for key in sorted(threads, key=lambda k: (-len(threads[k]), k)):
+    # Most active threads first (by total message count).
+    def _count(rounds: dict) -> int:
+        return sum(len(by_sender) for by_sender in rounds.values())
+
+    for key in sorted(threads, key=lambda k: (-_count(threads[k]), k)):
         left, right = key
         cl, cr = POWER_COLORS.get(left, "#777"), POWER_COLORS.get(right, "#777")
         out.append("<div class='thread'>")
@@ -360,18 +433,15 @@ def _dialogue_threads(label: str, msgs: list[tuple[int, str, str, str]]) -> list
             f"<span class='arr'> ⇄ </span>"
             f"<span style='color:{cr}'>{right}</span></div>"
         )
-        out.append("<div class='bubbles'>")
-        for rnd, snd, rec, text in sorted(
-            threads[key], key=lambda m: (m[0], 0 if m[1] == left else 1)
-        ):
-            side = "left" if snd == left else "right"
-            color = POWER_COLORS.get(snd, "#777")
-            out.append(
-                f"<div class='bubble {side}' style='border-left:4px solid {color}'>"
-                f"<div class='bmeta' style='color:{color}'>{snd} → {rec}"
-                f"<span class='rnd'>R{rnd}</span></div>"
-                f"<div class='btext'>{_esc(text)}</div></div>"
-            )
+        out.append("<div class='rgrid'>")
+        for rnd in sorted(threads[key]):
+            by_sender = threads[key][rnd]
+            for power in (left, right):  # left column then right column
+                if power in by_sender:
+                    rec, text = by_sender[power]
+                    out.append(_bubble(power, rec, rnd, text))
+                else:
+                    out.append("<div class='bubble empty'></div>")
         out.append("</div></div>")
     return out
 
