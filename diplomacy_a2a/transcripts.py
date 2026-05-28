@@ -101,6 +101,101 @@ class TranscriptWriter:
         self.close()
 
 
+def render_prompts_md(prompts_path: Path, out_path: Path) -> None:
+    """Render `prompts.jsonl` as a readable markdown file.
+
+    The JSONL is one-event-per-line and great for machines but unreadable for
+    people (every prompt is a long escaped string). This emits the same
+    information as a navigable markdown document: collapsible sections per
+    system prompt and per call, grouped by phase / round, so a reader can
+    skim the index and expand only the prompts they want to inspect.
+    """
+    from collections import OrderedDict
+
+    events = [json.loads(line) for line in prompts_path.read_text().splitlines() if line.strip()]
+    systems = {e["power"]: e["system"] for e in events if e["type"] == "agent_system"}
+    calls = [e for e in events if e["type"] == "agent_prompt"]
+
+    by_phase: "OrderedDict[str, list[dict]]" = OrderedDict()
+    for c in calls:
+        by_phase.setdefault(c["phase"], []).append(c)
+
+    run_id = prompts_path.parent.name
+    lines: list[str] = []
+    lines.append(f"# Agent prompts — `{run_id}`")
+    lines.append("")
+    lines.append(
+        "Readable rendering of `prompts.jsonl` (the JSON Lines source) — what "
+        "every agent saw on every call. Each agent receives a **system prompt** "
+        "once per game (cached on Anthropic's side via `cache_control: ephemeral`, "
+        "so it's billed at ~10% of input price after the first write) and a fresh "
+        "**user message** per call (board view, dialogue, instruction). The "
+        "sections below are collapsed — click any to expand."
+    )
+    lines.append("")
+    lines.append(f"- **{len(systems)} system prompts** (one per power).")
+    lines.append(f"- **{len(calls)} per-call user messages**, grouped by phase.")
+    lines.append("")
+
+    # TOC
+    lines.append("**Phases:** " + " · ".join(f"[{ph}](#phase-{ph.lower()})" for ph in by_phase))
+    lines.append("")
+
+    # System prompts (collapsible)
+    lines.append("## System prompts")
+    lines.append("")
+    for power, sys in systems.items():
+        lines.append(f"<details><summary><b>{power}</b> — system prompt</summary>")
+        lines.append("")
+        lines.append("~~~")
+        lines.append(sys)
+        lines.append("~~~")
+        lines.append("")
+        lines.append("</details>")
+        lines.append("")
+
+    # Per-call user prompts
+    for ph, ph_calls in by_phase.items():
+        lines.append(f'<a id="phase-{ph.lower()}"></a>')
+        lines.append(f"## Phase `{ph}`")
+        lines.append("")
+        nego_by_round: "OrderedDict[int, list[dict]]" = OrderedDict()
+        orders: list[dict] = []
+        for c in ph_calls:
+            if c.get("kind") == "negotiate":
+                nego_by_round.setdefault(c.get("round", 1), []).append(c)
+            else:
+                orders.append(c)
+        for rnd in sorted(nego_by_round):
+            lines.append(f"### Round {rnd} negotiation")
+            lines.append("")
+            for c in nego_by_round[rnd]:
+                lines.append(
+                    f"<details><summary><b>{c['power']}</b> — negotiate (round {rnd})</summary>"
+                )
+                lines.append("")
+                lines.append("~~~")
+                lines.append(c["prompt"])
+                lines.append("~~~")
+                lines.append("")
+                lines.append("</details>")
+                lines.append("")
+        if orders:
+            lines.append("### Orders")
+            lines.append("")
+            for c in orders:
+                lines.append(f"<details><summary><b>{c['power']}</b> — orders</summary>")
+                lines.append("")
+                lines.append("~~~")
+                lines.append(c["prompt"])
+                lines.append("~~~")
+                lines.append("")
+                lines.append("</details>")
+                lines.append("")
+
+    out_path.write_text("\n".join(lines) + "\n")
+
+
 def regenerate_maps(jsonl_path: Path, out_dir: Path) -> None:
     """Replay the recorded orders through the library to (re)render all map SVGs.
 
@@ -619,6 +714,11 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     index_body.append("<ul>")
     index_body.append("  <li><a href='report.md'>report.md</a> — full postmortem with reasoning</li>")
     index_body.append("  <li><a href='transcript.jsonl'>transcript.jsonl</a> — raw event log</li>")
+    if (out_dir / "prompts.md").exists():
+        index_body.append(
+            "  <li><a href='prompts.md'>prompts.md</a> — every prompt each agent received "
+            "(readable rendering of <code>prompts.jsonl</code>)</li>"
+        )
     index_body.append("</ul>")
     (out_dir / "index.html").write_text(
         _html_page(title=f"Diplomacy A2A — {run_id}", body="\n".join(index_body))

@@ -31,6 +31,7 @@ from diplomacy_a2a.transcripts import (
     regenerate_maps,
     render_html_viewer,
     render_markdown,
+    render_prompts_md,
 )
 
 # Sonnet pricing per million tokens (current published rates).
@@ -249,6 +250,7 @@ def run_game(
 
     if prompts_writer is not None:
         prompts_writer.close()
+        render_prompts_md(run_dir / "prompts.jsonl", run_dir / "prompts.md")
 
     # Maps are regenerated from the completed transcript by replaying the
     # recorded orders through the library — the same deterministic path used

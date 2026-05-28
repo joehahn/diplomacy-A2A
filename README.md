@@ -167,10 +167,12 @@ TRI (bounced)"*. No LLM, so it's faithful and reproducible
 
 For transparency/debugging, `run_game(log_prompts=True)` writes the exact prompt
 each agent receives — the system prompt once per power, then every per-call user
-message — to **`results/<run-id>/prompts.jsonl`**. The canonical run's dump **is
-committed** (≈1.7 MB) so you can read precisely what the agents saw without
-spending anything: see
-[`results/20260527T184246Z/prompts.jsonl`](results/20260527T184246Z/prompts.jsonl).
+message — to **`results/<run-id>/prompts.jsonl`**, plus a human-readable
+**`prompts.md`** that's the same content as collapsible sections (skim the index,
+click any prompt to expand). The canonical run's dumps **are committed** so you
+can read precisely what the agents saw without spending anything:
+[**`prompts.md`**](results/20260527T184246Z/prompts.md) (~1.6 MB, GitHub renders
+it inline) or the raw [`prompts.jsonl`](results/20260527T184246Z/prompts.jsonl).
 
 It's off by default and otherwise gitignored, so a full experiment grid isn't
 bloated with large, redundant dumps. To generate one yourself from the command
