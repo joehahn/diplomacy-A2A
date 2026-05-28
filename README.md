@@ -158,6 +158,55 @@ mechanics live in [`agent.py`](diplomacy_a2a/agent.py) (`negotiate`, the system
 prompt, dialogue formatting) and [`negotiation.py`](diplomacy_a2a/negotiation.py)
 (`run_negotiation_round`); [`runner.py`](diplomacy_a2a/runner.py) drives the rounds.
 
+## Agent strategy & memory (`--strategy`)
+
+By default an agent's only "memory" across turns is the dialogue history and the
+deterministic narration recap — it can *infer* allies and enemies from positions
+and conversations, but it has no explicit recollection of "Russia stabbed me last
+fall" beyond what's parseable from the board.
+
+`--strategy` adds a self-authored **strategy log** per agent. On every movement
+phase the runner asks each power to write a 1–2 sentence note twice:
+
+- **Before negotiation** — *initial strategy*: goals for the turn (named powers,
+  named provinces, intended deals), informed by the board and the agent's own
+  strategy history from prior turns.
+- **After the final round, before orders** — *revised strategy*: an updated
+  stance reflecting what the negotiation actually produced (deals struck, refused,
+  or broken).
+
+Every subsequent call (later negotiation rounds, order submission, future turns)
+is given **that agent's own strategy history** (capped to the last 6 entries),
+so agents carry an explicit, persistent memory of their stated plans and how
+those plans evolved.
+
+This makes the agents work smarter in three concrete ways:
+
+1. **Planning-then-acting sharpens decisions.** Forcing the model to articulate
+   a plan before it speaks or moves is a well-established way to make its
+   reasoning more coherent — the strategy note functions as a brief planning
+   step that constrains the negotiation messages and the orders that follow.
+2. **Cross-turn memory of allies and rivals.** Without the log, an agent can
+   forget a betrayal two turns ago. With it, the exact phrasing the agent itself
+   wrote ("Russia stabbed me at Galicia in F1901M; treat as hostile.") is back
+   in front of it next turn — far more reliable than re-inferring trust from
+   positions and a long dialogue history.
+3. **Observable intent.** Strategy notes are first-class artifacts: shown in the
+   slideshow as a per-power collapsible block on each movement-phase slide, and
+   captured in `prompts.md`. Detecting a betrayal becomes "stated goal X, did
+   Y" — clean and unambiguous. This is also the per-persona behavioral
+   fingerprint goal-3's personality experiment needs: aggressive, conservative,
+   or backstabbing traits will produce visibly different strategy notes,
+   complementing what dialogue alone shows.
+
+Strategy notes are **private to each agent** (opponents see only the messages it
+chooses to send, mirroring how Diplomacy works at a table). Cost: about
+**+25–35% per game** — two extra short LLM calls per power per movement phase
+plus a small token bump for carrying history. Opt in with `--strategy`; off by
+default. Mechanics live in
+[`agent.py`](diplomacy_a2a/agent.py) (`state_strategy` / `revise_strategy`) and
+[`runner.py`](diplomacy_a2a/runner.py).
+
 ## Turn narration & observability
 
 After each phase, a **deterministic plain-English narration** of what every
