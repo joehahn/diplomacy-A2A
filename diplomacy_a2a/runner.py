@@ -75,6 +75,7 @@ def run_game(
     max_phases: int = 50,  # safety stop
     verbose: bool = True,
     log_prompts: bool = False,  # also dump full agent prompts to prompts.jsonl
+    log_prompts_years: int = 1,  # how many opening years to log when log_prompts is on
 ) -> Path:
     """Run a full game, save artifacts under results_root/<run-id>/.
 
@@ -122,6 +123,13 @@ def run_game(
             if year > end_year:
                 break
 
+            # Only capture the first N years of prompts (keeps the artifact
+            # focused — opening play is the part worth showing).
+            log_this_phase = (
+                prompts_writer is not None
+                and year <= 1900 + log_prompts_years
+            )
+
             powers_acting = [p for p in POWERS if state.legal_orders(p)]
             if not powers_acting:
                 state.advance()
@@ -168,7 +176,7 @@ def run_game(
                                 "cache_read": res.chat.cache_read_input_tokens,
                             },
                         )
-                        if prompts_writer is not None:
+                        if log_this_phase:
                             prompts_writer.write(
                                 "agent_prompt", phase=short, round=round_idx + 1,
                                 kind="negotiate", power=power, prompt=res.prompt,
@@ -186,7 +194,7 @@ def run_game(
                 # this phase + any history from prior phases.
                 result = agents[power].submit_orders(state, dialogue=dialogue_history)
                 _accumulate_tokens(tokens, result.chat)
-                if prompts_writer is not None:
+                if log_this_phase:
                     prompts_writer.write(
                         "agent_prompt", phase=short, kind="orders",
                         power=power, prompt=result.prompt,
@@ -250,7 +258,11 @@ def run_game(
 
     if prompts_writer is not None:
         prompts_writer.close()
-        render_prompts_md(run_dir / "prompts.jsonl", run_dir / "prompts.md")
+        render_prompts_md(
+            run_dir / "prompts.jsonl",
+            run_dir / "prompts.md",
+            transcript_path=jsonl_path,
+        )
 
     # Maps are regenerated from the completed transcript by replaying the
     # recorded orders through the library — the same deterministic path used

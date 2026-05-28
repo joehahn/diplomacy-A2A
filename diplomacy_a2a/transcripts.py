@@ -101,7 +101,12 @@ class TranscriptWriter:
         self.close()
 
 
-def render_prompts_md(prompts_path: Path, out_path: Path) -> None:
+def render_prompts_md(
+    prompts_path: Path,
+    out_path: Path,
+    *,
+    transcript_path: Path | None = None,
+) -> None:
     """Render `prompts.jsonl` as a readable markdown file.
 
     The JSONL is one-event-per-line and great for machines but unreadable for
@@ -109,12 +114,27 @@ def render_prompts_md(prompts_path: Path, out_path: Path) -> None:
     information as a navigable markdown document: collapsible sections per
     system prompt and per call, grouped by phase / round, so a reader can
     skim the index and expand only the prompts they want to inspect.
+
+    If `transcript_path` is given, each call also shows the **agent's response**
+    paired from the transcript (matched by phase/round/kind/power).
     """
     from collections import OrderedDict
 
     events = [json.loads(line) for line in prompts_path.read_text().splitlines() if line.strip()]
     systems = {e["power"]: e["system"] for e in events if e["type"] == "agent_system"}
     calls = [e for e in events if e["type"] == "agent_prompt"]
+
+    # Pair each call to the response the model produced (from the transcript).
+    responses: dict[tuple[str, int, str, str], str] = {}
+    if transcript_path is not None and transcript_path.exists():
+        for line in transcript_path.read_text().splitlines():
+            if not line.strip():
+                continue
+            e = json.loads(line)
+            if e["type"] == "agent_messages":
+                responses[(e["phase"], int(e.get("round", 1)), "negotiate", e["power"])] = e.get("text", "")
+            elif e["type"] == "agent_response":
+                responses[(e["phase"], 0, "orders", e["power"])] = e.get("text", "")
 
     by_phase: "OrderedDict[str, list[dict]]" = OrderedDict()
     for c in calls:
@@ -166,32 +186,44 @@ def render_prompts_md(prompts_path: Path, out_path: Path) -> None:
                 nego_by_round.setdefault(c.get("round", 1), []).append(c)
             else:
                 orders.append(c)
+        def _emit_call(c: dict, summary: str, response_key: tuple) -> None:
+            lines.append(f"<details><summary>{summary}</summary>")
+            lines.append("")
+            lines.append("**Prompt (user message):**")
+            lines.append("")
+            lines.append("~~~")
+            lines.append(c["prompt"])
+            lines.append("~~~")
+            lines.append("")
+            resp = responses.get(response_key)
+            if resp:
+                lines.append("**Response:**")
+                lines.append("")
+                lines.append("~~~")
+                lines.append(resp)
+                lines.append("~~~")
+                lines.append("")
+            lines.append("</details>")
+            lines.append("")
+
         for rnd in sorted(nego_by_round):
             lines.append(f"### Round {rnd} negotiation")
             lines.append("")
             for c in nego_by_round[rnd]:
-                lines.append(
-                    f"<details><summary><b>{c['power']}</b> — negotiate (round {rnd})</summary>"
+                _emit_call(
+                    c,
+                    f"<b>{c['power']}</b> — negotiate (round {rnd})",
+                    (ph, rnd, "negotiate", c["power"]),
                 )
-                lines.append("")
-                lines.append("~~~")
-                lines.append(c["prompt"])
-                lines.append("~~~")
-                lines.append("")
-                lines.append("</details>")
-                lines.append("")
         if orders:
             lines.append("### Orders")
             lines.append("")
             for c in orders:
-                lines.append(f"<details><summary><b>{c['power']}</b> — orders</summary>")
-                lines.append("")
-                lines.append("~~~")
-                lines.append(c["prompt"])
-                lines.append("~~~")
-                lines.append("")
-                lines.append("</details>")
-                lines.append("")
+                _emit_call(
+                    c,
+                    f"<b>{c['power']}</b> — orders",
+                    (ph, 0, "orders", c["power"]),
+                )
 
     out_path.write_text("\n".join(lines) + "\n")
 

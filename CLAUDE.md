@@ -26,17 +26,15 @@ record of it — not by game outcomes. This is a portfolio demo, so output legib
 
 ## Current reality vs. the README (as of this writing)
 
-The README documents the *intended* CLI. It isn't wired up yet:
+The CLI in `cli.py` / `__main__.py` is wired up: `python -m diplomacy_a2a [opts]`
+runs one game via `run_game`. Flags: `--model`, `--years`, `--rounds`,
+`--log-prompts` (+ `--log-prompts-years`, default 1), `--smoke`, `--results-dir`,
+`--quiet`. The README's "Running" section reflects this.
 
-- `python -m diplomacy_a2a ...` → `cli.main()` raises `NotImplementedError`. The
-  documented `smoke` / `run` / `experiment` subcommands do **not** work yet.
-- `tests/test_smoke.py` is a single `@pytest.mark.skip` stub.
-- The **real, working entry point is `run_game(...)` in `runner.py`** — a keyword-only
-  function called programmatically. The committed `results/<run-id>/` artifacts were
-  produced this way, not via the CLI.
-
-When wiring up the CLI/tests, make them call `run_game`, and update the README so its
-commands stop being aspirational.
+The function `run_game(...)` in `runner.py` is still the programmatic entry —
+the CLI is a thin argparse wrapper around it. `tests/test_smoke.py` is still a
+single `@pytest.mark.skip` stub; the smoke is effectively covered by
+`python -m diplomacy_a2a --smoke` (Haiku, 1yr, 1 round, pennies).
 
 ## Running & cost
 

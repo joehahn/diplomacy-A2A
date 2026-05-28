@@ -74,13 +74,22 @@ cp .env.example .env          # then paste your key into .env
 
 ## Running
 
-Entry points TBD. Once implemented:
-
 ```bash
-python -m diplomacy_a2a smoke      # cheap end-to-end verification (~pennies)
-python -m diplomacy_a2a run        # one full game
-python -m diplomacy_a2a experiment # full persona × matchup × seed grid
+# default: one full Opus game, 2 years, 3 negotiation rounds
+python -m diplomacy_a2a
+
+# cheap end-to-end verification (Haiku, 1 year, 1 round) — pennies
+python -m diplomacy_a2a --smoke
+
+# Sonnet, also save every agent prompt + response (first year, see below)
+python -m diplomacy_a2a --model claude-sonnet-4-6 --log-prompts
+
+python -m diplomacy_a2a --help     # full option list
 ```
+
+Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
+A `--smoke` run costs pennies; a full Sonnet game runs ~$2; a full grid of
+persona × matchup × seed experiments will run ~hundreds of dollars (see **Cost**).
 
 ## Architecture
 
@@ -163,32 +172,31 @@ TRI (bounced)"*. No LLM, so it's faithful and reproducible
   so they reason about who supported or attacked whom from readable facts (and see
   *outcomes* like bounces/dislodgements that bare orders don't convey).
 
-### Seeing the exact agent prompts
+### Seeing the exact agent prompts and responses
 
-For transparency/debugging, `run_game(log_prompts=True)` writes the exact prompt
-each agent receives — the system prompt once per power, then every per-call user
-message — to **`results/<run-id>/prompts.jsonl`**, plus a human-readable
-**`prompts.md`** that's the same content as collapsible sections (skim the index,
-click any prompt to expand). The canonical run's dumps **are committed** so you
-can read precisely what the agents saw without spending anything:
-[**`prompts.md`**](results/20260527T184246Z/prompts.md) (~1.6 MB, GitHub renders
-it inline) or the raw [`prompts.jsonl`](results/20260527T184246Z/prompts.jsonl).
+For transparency/debugging, `--log-prompts` writes the exact **prompt** each
+agent receives plus the **response** it produced to `results/<run-id>/prompts.jsonl`,
+and renders a navigable, GitHub-friendly **`prompts.md`** alongside it
+(collapsible per-call sections grouped by phase / round / power — skim the index,
+click any prompt to expand). By default it only captures **the first game-year**,
+which is where the opening negotiation/coordination is most legible and keeps the
+artifact focused (`--log-prompts-years N` extends that).
 
-It's off by default and otherwise gitignored, so a full experiment grid isn't
-bloated with large, redundant dumps. To generate one yourself from the command
-line (no CLI subcommand yet — call `run_game` directly):
+The canonical run's dumps **are committed** so you can read precisely what
+the agents said without spending anything:
+[**`prompts.md`**](results/20260527T184246Z/prompts.md) (≈ 580 KB; GitHub
+renders the collapsibles inline) or the raw
+[`prompts.jsonl`](results/20260527T184246Z/prompts.jsonl).
+
+The flag is off by default and otherwise gitignored, so a full experiment grid
+isn't bloated with redundant dumps. To produce one yourself:
 
 ```bash
-python -c "from dotenv import load_dotenv; load_dotenv('.env'); \
-from diplomacy_a2a.llm.anthropic_client import AnthropicClient as C; \
-from diplomacy_a2a.runner import run_game; \
-run_game(client=C(model='claude-sonnet-4-6'), model='claude-sonnet-4-6', \
-years=2, negotiation_rounds=3, log_prompts=True)"
+python -m diplomacy_a2a --model claude-sonnet-4-6 --log-prompts
 ```
 
-That's a full 2-year, 3-round game (~$2–2.5 on Sonnet); `log_prompts` itself adds
-no API cost — it only saves prompts that are sent anyway. The run prints its
-artifact directory; the prompts land in `prompts.jsonl` there.
+That's a full 2-year, 3-round game (~$2–2.5 on Sonnet); `--log-prompts` itself
+adds no API cost — it only saves prompts that are sent anyway.
 
 Separately, **optional LLM commentary** ([`commentary.py`](diplomacy_a2a/commentary.py))
 can add a narrator's strategic read to each slide — who's threatening whom, who's
