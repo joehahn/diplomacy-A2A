@@ -19,11 +19,34 @@ import json
 import os
 import re
 import tempfile
+import textwrap
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 from diplomacy_a2a.narration import narrate_phase
+
+
+def _softwrap(text: str, width: int = 78) -> str:
+    """Word-wrap long lines so a fenced code block in prompts.md doesn't need
+    horizontal scrolling on GitHub. Preserves existing newlines and short lines
+    untouched; wraps any line longer than `width` to that width.
+    """
+    out: list[str] = []
+    for line in text.splitlines():
+        if len(line) <= width:
+            out.append(line)
+        else:
+            out.append(
+                textwrap.fill(
+                    line,
+                    width=width,
+                    break_long_words=False,
+                    break_on_hyphens=False,
+                    subsequent_indent="  ",
+                )
+            )
+    return "\n".join(out)
 
 # Unit glyphs redrawn as physical-game-style blocks: an Army is a short, fat
 # rounded rectangle; a Fleet is a long, narrow one. Each keeps the stock
@@ -168,7 +191,7 @@ def render_prompts_md(
         lines.append(f"<details><summary><b>{power}</b> — system prompt</summary>")
         lines.append("")
         lines.append("~~~")
-        lines.append(sys)
+        lines.append(_softwrap(sys))
         lines.append("~~~")
         lines.append("")
         lines.append("</details>")
@@ -192,7 +215,7 @@ def render_prompts_md(
             lines.append("**Prompt (user message):**")
             lines.append("")
             lines.append("~~~")
-            lines.append(c["prompt"])
+            lines.append(_softwrap(c["prompt"]))
             lines.append("~~~")
             lines.append("")
             resp = responses.get(response_key)
@@ -200,7 +223,7 @@ def render_prompts_md(
                 lines.append("**Response:**")
                 lines.append("")
                 lines.append("~~~")
-                lines.append(resp)
+                lines.append(_softwrap(resp))
                 lines.append("~~~")
                 lines.append("")
             lines.append("</details>")
