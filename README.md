@@ -107,8 +107,9 @@ persona × matchup × seed experiments will run ~hundreds of dollars (see **Cost
 - **`results/`** — pre-rendered transcripts so visitors can see output
   without spending money. Flip through a game phase by phase in the
   turn-by-turn viewer (hosted on GitHub Pages):
-  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260527T184246Z/index.html)
-  (3 rounds of negotiation per turn, with turn-by-turn narration).
+  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260528T214253Z/index.html)
+  (3 rounds of negotiation per turn, turn-by-turn narration, and the new
+  `--strategy` log per agent).
 
 ## What each agent sees
 
@@ -233,9 +234,9 @@ artifact focused (`--log-prompts-years N` extends that).
 
 The canonical run's dumps **are committed** so you can read precisely what
 the agents said without spending anything:
-[**`prompts.md`**](results/20260527T184246Z/prompts.md) (≈ 580 KB; GitHub
+[**`prompts.md`**](results/20260528T214253Z/prompts.md) (≈ 836 KB; GitHub
 renders the collapsibles inline) or the raw
-[`prompts.jsonl`](results/20260527T184246Z/prompts.jsonl).
+[`prompts.jsonl`](results/20260528T214253Z/prompts.jsonl).
 
 The flag is off by default and otherwise gitignored, so a full experiment grid
 isn't bloated with redundant dumps. To produce one yourself:

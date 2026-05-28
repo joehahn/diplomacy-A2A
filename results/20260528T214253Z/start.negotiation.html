@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset='utf-8'><title>Negotiation — Initial position — 20260528T214253Z</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px;
+       margin: 0 auto; padding: 20px; color: #222; }
+h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
+h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
+.meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
+      gap: 8px; }
+nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
+                   font-size: 0.95em; }
+nav a { background: #eef; color: #224; }
+nav a:hover { background: #dde; }
+nav span.disabled { background: #f5f5f5; color: #bbb; }
+img.map { max-width: 100%; border: 1px solid #ddd; }
+h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em; }
+.orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
+          margin: 12px 0; font-size: 0.9em; }
+.orders .power { margin: 4px 0; }
+.orders .power b { display: inline-block; min-width: 80px; }
+.invalid { color: #c33; }
+ol.phases { line-height: 1.8; }
+.legend { font-size: 0.78em; color: #666; margin: 6px 0 10px; }
+.legend .chip { display: inline-block; padding: 1px 8px; margin: 2px 4px 2px 0;
+                border-radius: 10px; color: #fff; font-weight: 600; }
+.thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
+.thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
+.thread-head .arr { color: #aaa; font-weight: 400; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-items: start; }
+.bubble { padding: 7px 11px; border-radius: 12px; border-top-left-radius: 3px;
+          background: #f6f6f8; border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.empty { background: none; border: none; }
+.bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
+                 letter-spacing: 0.02em; }
+.bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
+               margin-left: 6px; font-weight: 700; }
+.bubble .btext { color: #222; line-height: 1.35; }
+.narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
+        margin: 10px 0; font-size: 0.9em; }
+.narr .nrow { margin: 4px 0; line-height: 1.4; }
+.narr .nrow > b:first-child { display: inline-block; min-width: 78px; }
+.orders-link { display: inline-block; margin: 2px 0 12px; padding: 4px 11px; font-size: 0.85em;
+               background: #eef; color: #224; border-radius: 4px; text-decoration: none; }
+.orders-link:hover { background: #dde; }
+.modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; }
+.modal:target { display: block; }
+.modal-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+                  background: rgba(0, 0, 0, 0.45); }
+.modal-card { position: relative; margin: 6vh auto; background: #fff; max-width: 620px;
+              max-height: 82vh; overflow: auto; padding: 14px 22px 20px; border-radius: 8px;
+              box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.modal-card h2 { margin-top: 4px; }
+.modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
+               color: #999; text-decoration: none; }
+.modal-close:hover { color: #333; }
+.commentary { background: #f0f4ff; border-left: 3px solid #7a8fd8; padding: 10px 14px;
+              margin: 14px 0; font-size: 0.92em; line-height: 1.5; font-style: italic;
+              color: #333; }
+.commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
+                      text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
+                      display: block; margin-bottom: 6px; }
+.commentary .clist { margin: 0; padding-left: 20px; }
+.commentary .clist li { margin: 5px 0; }
+.nego-link { display: inline-block; margin: 14px 0; padding: 9px 16px; font-size: 0.95em;
+             font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
+             border-radius: 6px; text-decoration: none; }
+.nego-link:hover { background: #fde0ec; }
+.narr .r-fail { color: #0a8fa8; }
+.narr .r-bad { color: #c0392b; }
+.narr .r-warn { color: #c77a0a; }
+.strategies { background: #fbf6ee; border-left: 3px solid #d8b870; padding: 8px 14px;
+              margin: 14px 0; font-size: 0.92em; }
+.strategies summary { cursor: pointer; }
+.strategies .slist { margin-top: 8px; }
+.strategies .srow { padding: 6px 0; border-top: 1px dotted #e8d8b8; }
+.strategies .srow:first-child { border-top: none; }
+.strategies .srow b { display: inline-block; min-width: 78px; }
+.strategies .sline { margin: 3px 0 3px 80px; line-height: 1.4; }
+.strategies .stag { display: inline-block; font-size: 0.72em; font-weight: 700;
+                    text-transform: uppercase; color: #8a6a2e; min-width: 56px;
+                    margin-right: 6px; letter-spacing: 0.04em; }
+</style>
+</head><body>
+<nav><a href='start.html'>← back to Initial position</a><a href='index.html'>index</a></nav>
+<h2>Negotiation before SPRING 1901 MOVEMENT</h2>
+<div class='legend'><span class='chip' style='background:#c0392b'>AUSTRIA</span> <span class='chip' style='background:#2c5fa8'>ENGLAND</span> <span class='chip' style='background:#1f8aa8'>FRANCE</span> <span class='chip' style='background:#555555'>GERMANY</span> <span class='chip' style='background:#2e8b57'>ITALY</span> <span class='chip' style='background:#7d3c98'>RUSSIA</span> <span class='chip' style='background:#cc8a00'>TURKEY</span></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Austria and Turkey have natural room to coexist — I'm focused on Serbia and Romania, not the Straits or Anatolia. I'd welcome an early understanding so we can both expand without stepping on each other. Happy to discuss how we divide Balkan growth.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>I'd like a friendly opening between us. I'm heading into BUL, which is my natural first move, and I have no designs on GRE or further Austrian territory in 1901. If we can agree on spheres — Balkans divided sensibly — we avoid a costly early war that only helps Russia and Italy. What are your thoughts?</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R2</span></div><div class='btext'>Thanks for the clarity — Bulgaria is certainly your natural first move and I have no objection. I'm heading to Serbia, which keeps us well separated. Let's stay in touch and make sure we're not creating problems for each other as the game develops.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>Good to hear we're on the same page. I'm moving A CON to BUL as planned, and I'll leave GRE and Serbia to you — those are clearly in your sphere. A quiet Austro-Turkish border in 1901 lets us both grow at the expense of weaker positions. I'd like to build on this understanding into 1902.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>We're in good shape — BUL for me, SER for you, and a quiet border between us. Let's keep this understanding into 1902 and make sure neither Russia nor Italy exploits our cooperation. I look forward to building on this foundation.</div></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R1</span></div><div class='btext'>I'm keeping a close eye on Kiel — I hope your fleet heads east or south rather than toward the North Sea. If we can agree to stay out of each other's way early, there's real room for cooperation against shared rivals later.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Let's avoid stepping on each other's toes in the North Sea. I'm planning to send my fleet toward Holland — no interest in Denmark if you want it. Happy to coordinate against France down the line if you're open to it.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R2</span></div><div class='btext'>That works well — Holland for you, and I'll focus on Norway and Denmark. If your fleet heads to Holland and mine to the North Sea, we stay out of each other's way entirely. Let's keep this understanding through the year.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Glad we're on the same page. My fleet is heading to Holland — Denmark is yours if you want it. I think there's a real opportunity to squeeze France together once we're both established. Let's keep talking.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>We're all set — fleet to Holland, you take Norway and Denmark. I think we'll both be in strong positions heading into Fall. Let's stay in close contact about France's moves.</div></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R1</span></div><div class='btext'>I'd like to propose a DMZ in Burgundy this year — neither of us moves there in Spring. I'll focus south and west, you focus east. Interested?</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>I have no designs on Burgundy this spring — my army in Munich is heading south or east. Let's keep the border quiet between us and both focus on our respective opportunities.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Perfect, glad we're on the same page about Burgundy. I'll be moving south and west — Spain and the Atlantic are my focus. Let's keep this friendly arrangement going into Fall.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R2</span></div><div class='btext'>Agreed on the Burgundy DMZ — Munich is moving east this spring, not west. I think a quiet Franco-German border benefits us both while we each pursue our real opportunities elsewhere.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R3</span></div><div class='btext'>Confirmed on my end — Munich is heading east, Burgundy stays quiet. Looking forward to a stable western front while we both build strength. Talk soon.</div></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Hello from Italy! I'm interested in establishing a friendly Mediterranean arrangement early on. I have no hostile intentions toward you this year and would rather we discuss how to divide influence in the Balkans cooperatively. What's your opening plan?</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R1</span></div><div class='btext'>I want to keep things simple between us in 1901 — I'm focused on the Balkans and have no fleet heading west. A quiet opening for both of us seems wise while the board sorts itself out. I hope we can stay on good terms.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R2</span></div><div class='btext'>Good to hear we're thinking alike — a quiet opening benefits us both while the board develops. I'm moving my fleet toward the Ionian, purely to contest the western Mediterranean, not aimed at you. Let's keep communication open and see where we can find common ground as things develop.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R2</span></div><div class='btext'>Glad we're thinking alike. I'll stay focused on the Balkans and eastern Mediterranean — no fleet moves toward your waters this year. A stable relationship between us is valuable as the board develops.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R3</span></div><div class='btext'>I'm glad we're keeping things calm between us. My focus is firmly eastward this year — no interference in your western plans. Let's stay in touch as the board develops.</div></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#7d3c98'>RUSSIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>I'll be frank: F SEV is heading to the Black Sea this spring. I'm not looking for a long war with you — let's talk about dividing the Balkans so we both grow. Rumania can be yours if we can agree on spheres.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I want to be transparent: I'm moving F ANK to BLA and A CON to BUL this spring. My ambitions are in the Balkans and Mediterranean — SEV and your northern holdings are of no interest to me. A non-aggression understanding between us would let us both focus on our real rivals. I hope we can build trust from the start.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R2</span></div><div class='btext'>We're going to bounce in the Black Sea — both of us moving there helps neither of us. I'd propose you hold ANK or move to ARM instead, and we negotiate a Black Sea arrangement. Otherwise we both waste a move and someone else profits.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>I see we both have eyes on the Black Sea — a bounce there helps neither of us. I'm still committed to moving there, as I can't leave it uncontested. But I want to reiterate: I have no interest in SEV or your northern centers. If we bounce in BLA, let's agree to a truce afterward and focus our energies elsewhere — Romania can go to you if we can establish a stable frontier.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>I respect your position, but I can't leave the Black Sea uncontested — it's essential to my security. A bounce is unfortunate but not catastrophic; let's agree now that after Spring resolves, we establish a truce and focus on our respective spheres. Romania is yours, and I'll push west through the Balkans — no threat to SEV ever.</div></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R1</span></div><div class='btext'>I'd like a friendly opening between us — I'll keep F TRI out of Venice if you keep A VEN out of Trieste. We both benefit more from expanding south and east rather than fighting over the same corner. Let's agree to a mutual hands-off on each other's home centers this year.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Greetings from Rome! I believe Italy and Austria have natural complementary interests — I'm planning to push south and east toward the Mediterranean and Turkey, not north into your territory. I'd love to discuss coordinating against Turkey in the Balkans. What are your opening intentions?</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R2</span></div><div class='btext'>Great to hear we're on the same page. I'll keep F TRI out of Venice, and I'm moving toward Serbia this spring — no threat to you at all. Coordinating against Turkey is worth discussing; let's see how the board looks after Spring and talk about fall moves.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>Glad we're on the same page — I'll keep A VEN away from Trieste this spring, and I'm moving south toward the Ionian to contest the eastern Mediterranean. I think we can carve out complementary spheres: you take the northern Balkans, I'll push into Greece and beyond. Let's stay in close contact.</div></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I'm moving A BUD toward Serbia and hoping to work toward Romania — I'd appreciate a non-aggression agreement in Galicia so we don't bump into each other. If you're heading into Galicia, let's coordinate so neither of us wastes a move. A friendly Austria-Russia border early on helps us both grow.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>I have no designs on Galicia this spring — I'd rather we coordinate against Turkey together. If you push toward Rumania from Budapest, I can support from Sevastopol. Let's keep the Balkans stable between us.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Glad we're aligned — I'll push A BUD to Serbia this spring and leave Galicia open for now. If you're moving F SEV toward Romania, we could coordinate so I support from Budapest next fall. Let's keep communication open and build on this.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>Glad we're aligned — GAL stays clear between us. I'm moving F SEV toward the Black Sea and A WAR is staying defensive. Let's both grow in 1901 and talk coordination against Turkey in the fall.</div></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R1</span></div><div class='btext'>I'd like to propose a friendly opening — I have no designs on Brest or the English Channel this year, and I hope you feel the same about the North Sea. Let's both focus on our natural spheres and avoid an early Anglo-French war.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>I'd like to propose a friendly start — I have no interest in the Channel or northern waters if you stay out of my western sphere. Let's both focus elsewhere in 1901.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R2</span></div><div class='btext'>Glad we're aligned — I'll stay out of the Channel and your western sphere, and I trust you'll keep clear of the North Sea. Let's both have a productive 1901 and revisit cooperation opportunities in the fall.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Glad we're aligned — I'll keep my fleet out of the Channel and focus on the Atlantic and Iberia. Looking forward to a peaceful western front this year.</div></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I'd like to keep things calm in the north. I have no designs on Scandinavia beyond what's natural for England, and I hope we can avoid stepping on each other's toes — perhaps we can even coordinate against a common threat.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Sweden is a natural target for me from St. Petersburg; I'd like to avoid bumping into you in Scandinavia. Can we agree that Sweden goes to me and Norway to you?</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Agreed — Norway for me, Sweden for you. That's a clean division and avoids any friction between us in Scandinavia. I'm happy to honor that arrangement and hope we can build on it.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Sweden to me, Norway to you — that works perfectly. I'll move F STP/SC toward the Gulf of Bothnia to set up Sweden, and I expect we won't interfere with each other in Scandinavia.</div></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R1</span></div><div class='btext'>Let's stay out of each other's way — I'll keep out of Piedmont if you keep out of Marseilles. A quiet border benefits us both in 1901.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Greetings, neighbor! I think Italy and France can coexist peacefully in the Mediterranean — I'm focused eastward this year. Perhaps we can stay out of each other's way and even coordinate against common rivals down the line?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R2</span></div><div class='btext'>Great to hear — I'll stay out of Piedmont and focus on Spain and the Atlantic. I think we can build a solid working relationship as the game develops.</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I'm not pushing into Silesia or Prussia this year — purely defensive posture on my eastern front. Hope we can keep things calm between us while we both develop.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R1</span></div><div class='btext'>I have no interest in Silesia or Prussia this year — my eyes are south and north. Want to coordinate on Scandinavia, or at least stay out of each other's way in the north?</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>Sounds good — I'll keep my eastern units quiet this spring. Let's both focus on our natural expansion zones and check in after the moves resolve.</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Hello from France! Just wanted to open a line of communication — I'm focused entirely on the western Mediterranean this year. How are things looking on your end?</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<nav><a href='start.html'>← back to Initial position</a><a href='index.html'>index</a></nav>
+</body></html>

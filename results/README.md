@@ -22,27 +22,32 @@ Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
 ## Canonical run
 
-### `20260527T184246Z/` — **3-round negotiation, with turn narration**
+### `20260528T214253Z/` — **3-round negotiation, with strategy log + narration**
 
-Seven Sonnet-backed agents, 2 years, with **three rounds** of private pairwise
-messaging before each movement phase — agents are told the protocol, so they
-probe in round 1, negotiate in round 2, and close in round 3. Each slide shows a
-plain-English **"what happened this phase"** narration beside the maps, that same
-recap is fed back to the agents so they reason about prior-turn outcomes, and an
-LLM **commentary** block flags threats, cooperation, and betrayals.
-8 phases, ~$2.43, ~24 minutes. This run also includes the full agent-prompt dump
-(`prompts.jsonl`) — see the project README's *Seeing the exact agent prompts*.
+Seven Sonnet-backed agents, 2 years, three rounds of private messaging per
+movement phase, plus the new `--strategy` flag: each agent writes a 1–2 sentence
+**self-authored strategy/goals note** before negotiation begins and a **revised
+note** after the final round, with its own strategy history carried into every
+later call. Each slide also shows the deterministic narration, the LLM
+commentary, and a collapsible **"Agent strategies this phase"** block exposing
+each power's plan-vs-revision. 7 phases, **~$3.20**, ~29 minutes. The full
+agent-prompt + response dump (`prompts.jsonl` / `prompts.md`) is committed —
+see the project README's *Seeing the exact agent prompts*.
 
-Highlights (F1902M):
+Headline highlight (S1901M, Italy):
 
-- **A double-cross over Belgium** — France reassured Germany with "ceasefire"
-  messages, then drove `A PIC → BEL` with Burgundy support and took the center,
-  dislodging Germany's fleet. In the *same* round England told France it would
-  help, but secretly confirmed to Germany it would support the Belgian hold —
-  a final-hour deception caught in the transcript.
-- **Turkey collapsing** — its `CON → BUL` and `BLA → BUL` attacks both bounced
-  off Austria's supported `A BUL`, Russia drove its fleet out of the Black Sea,
-  and it ends the run squeezed to 3 centers despite courting both Rome and Moscow.
+- **Italy's hidden mind, made visible.** Italy's *initial* strategy note —
+  written before negotiation, private to the agent — explicitly says:
+  *"I'll court Austria with vague promises while positioning to stab if
+  opportunity arises."* Its public message to Austria the same round:
+  *"I have no designs on your Balkan centers… I'm planning a quiet opening."*
+  After Austria reciprocated, Italy's **revised** strategy note pulled back:
+  *"I've agreed with Austria to keep A VEN out of Trieste… I'll honor those
+  commitments while pushing aggressively toward the eastern Mediterranean —
+  A VEN to TYR keeps pressure on Austria without violating the letter of our
+  deal."* Same agent, same turn, two recorded stances — exactly the
+  intent-vs-action artifact `--strategy` is built to surface.
 
-[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260527T184246Z/index.html)
-(GitHub Pages) to flip through the maps, narration, commentary, and dialogue.
+[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260528T214253Z/index.html)
+(GitHub Pages) to flip through the maps, narration, commentary, agent
+strategies, and dialogue.
