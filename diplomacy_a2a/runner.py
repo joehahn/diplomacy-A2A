@@ -21,7 +21,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from diplomacy_a2a.agent import Agent, DialogueMessage, validate_orders
+from diplomacy_a2a.agent import Agent, DialogueMessage, StrategyNote, validate_orders
 from diplomacy_a2a.game.state import GameState, POWERS
 from diplomacy_a2a.llm.client import LLMClient
 from diplomacy_a2a.negotiation import run_negotiation_round
@@ -76,6 +76,7 @@ def run_game(
     verbose: bool = True,
     log_prompts: bool = False,  # also dump full agent prompts to prompts.jsonl
     log_prompts_years: int = 1,  # how many opening years to log when log_prompts is on
+    enable_strategy: bool = False,  # per-power 1-2 sentence strategy notes
 ) -> Path:
     """Run a full game, save artifacts under results_root/<run-id>/.
 
@@ -104,6 +105,7 @@ def run_game(
     tokens = {"input": 0, "output": 0, "cache_create": 0, "cache_read": 0}
     phases_played = 0
     dialogue_history: list[DialogueMessage] = []
+    strategies_by_power: dict[str, list[StrategyNote]] = {p: [] for p in POWERS}
     t0 = time.time()
 
     with TranscriptWriter(jsonl_path).open() as tw:
@@ -147,6 +149,38 @@ def run_game(
             if verbose:
                 print(f"=== {state.phase} ({short}) — {len(powers_acting)} acting ===")
 
+            # ----- Initial strategy notes (movement phases only) -----
+            if is_movement and enable_strategy:
+                if verbose:
+                    print("  --- Strategy: initial ---")
+                for power in powers_acting:
+                    res = agents[power].state_strategy(
+                        state,
+                        dialogue=dialogue_history,
+                        strategy_history=strategies_by_power[power],
+                    )
+                    _accumulate_tokens(tokens, res.chat)
+                    note = StrategyNote(phase=short, kind="initial", text=res.text)
+                    strategies_by_power[power].append(note)
+                    tw.write(
+                        "agent_strategy", phase=short, power=power, kind="initial",
+                        text=res.text,
+                        tokens={
+                            "input": res.chat.input_tokens,
+                            "output": res.chat.output_tokens,
+                            "cache_create": res.chat.cache_creation_input_tokens,
+                            "cache_read": res.chat.cache_read_input_tokens,
+                        },
+                    )
+                    if log_this_phase:
+                        prompts_writer.write(
+                            "agent_prompt", phase=short, kind="strategy_initial",
+                            power=power, prompt=res.prompt,
+                        )
+                    if verbose:
+                        preview = res.text if len(res.text) < 110 else res.text[:107] + "..."
+                        print(f"    {power}: {preview}")
+
             # ----- Negotiation rounds (movement phases only) -----
             phase_dialogue: list[DialogueMessage] = []
             if is_movement and negotiation_rounds > 0:
@@ -159,6 +193,9 @@ def run_game(
                         history=dialogue_history,
                         round_index=round_idx + 1,
                         total_rounds=negotiation_rounds,
+                        strategies_by_power=(
+                            strategies_by_power if enable_strategy else None
+                        ),
                     )
                     for power, res in results.items():
                         _accumulate_tokens(tokens, res.chat)
@@ -188,11 +225,49 @@ def run_game(
                             preview = m.text if len(m.text) < 80 else m.text[:77] + "..."
                             print(f"    {m.sender} → {m.recipient}: {preview}")
 
+            # ----- Revised strategy notes (after negotiation, before orders) -----
+            if is_movement and enable_strategy:
+                if verbose:
+                    print("  --- Strategy: revised ---")
+                for power in powers_acting:
+                    res = agents[power].revise_strategy(
+                        state,
+                        dialogue=dialogue_history,
+                        strategy_history=strategies_by_power[power],
+                    )
+                    _accumulate_tokens(tokens, res.chat)
+                    note = StrategyNote(phase=short, kind="revised", text=res.text)
+                    strategies_by_power[power].append(note)
+                    tw.write(
+                        "agent_strategy", phase=short, power=power, kind="revised",
+                        text=res.text,
+                        tokens={
+                            "input": res.chat.input_tokens,
+                            "output": res.chat.output_tokens,
+                            "cache_create": res.chat.cache_creation_input_tokens,
+                            "cache_read": res.chat.cache_read_input_tokens,
+                        },
+                    )
+                    if log_this_phase:
+                        prompts_writer.write(
+                            "agent_prompt", phase=short, kind="strategy_revised",
+                            power=power, prompt=res.prompt,
+                        )
+                    if verbose:
+                        preview = res.text if len(res.text) < 110 else res.text[:107] + "..."
+                        print(f"    {power}: {preview}")
+
             # ----- Order phase -----
             for power in powers_acting:
                 # Agents receiving dialogue context see their own messages
                 # this phase + any history from prior phases.
-                result = agents[power].submit_orders(state, dialogue=dialogue_history)
+                result = agents[power].submit_orders(
+                    state,
+                    dialogue=dialogue_history,
+                    strategy_history=(
+                        strategies_by_power[power] if enable_strategy else None
+                    ),
+                )
                 _accumulate_tokens(tokens, result.chat)
                 if log_this_phase:
                     prompts_writer.write(

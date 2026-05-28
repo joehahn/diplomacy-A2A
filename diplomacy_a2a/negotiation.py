@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from diplomacy_a2a.agent import Agent, DialogueMessage, MessagesResult
+from diplomacy_a2a.agent import Agent, DialogueMessage, MessagesResult, StrategyNote
 from diplomacy_a2a.game.state import GameState
 
 
@@ -25,6 +25,7 @@ def run_negotiation_round(
     powers: Iterable[str] | None = None,
     round_index: int = 1,
     total_rounds: int = 1,
+    strategies_by_power: dict[str, list[StrategyNote]] | None = None,
 ) -> tuple[list[DialogueMessage], dict[str, MessagesResult]]:
     """Run one round of messaging across the given powers.
 
@@ -43,8 +44,11 @@ def run_negotiation_round(
 
     for power in powers_iter:
         agent = agents[power]
+        sh = (strategies_by_power or {}).get(power)
         result = agent.negotiate(
-            state, history, round_index=round_index, total_rounds=total_rounds
+            state, history,
+            round_index=round_index, total_rounds=total_rounds,
+            strategy_history=sh,
         )
         results[power] = result
         for recipient, text in result.messages.items():

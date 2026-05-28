@@ -55,6 +55,22 @@ class MessagesResult:
     prompt: str = ""  # the user message sent this call (for optional prompt logging)
 
 
+@dataclass(frozen=True)
+class StrategyNote:
+    """One self-authored strategy note: a power's 1-2 sentence plan at a moment."""
+
+    phase: str  # short phase code, e.g. "S1901M"
+    kind: str   # "initial" (before negotiation) or "revised" (after)
+    text: str
+
+
+@dataclass(frozen=True)
+class StrategyResult:
+    text: str        # the strategy/goals statement, stripped of whitespace
+    chat: ChatResult
+    prompt: str = ""
+
+
 class Agent:
     def __init__(
         self,
@@ -121,6 +137,72 @@ class Agent:
         )
 
     # ------------------------------------------------------------------
+    # Strategy / goals (self-authored, private to this agent)
+    # ------------------------------------------------------------------
+
+    def _strategy_call(
+        self,
+        state: GameState,
+        *,
+        kind: str,  # "initial" or "revised"
+        dialogue: list[DialogueMessage] | None,
+        strategy_history: list[StrategyNote] | None,
+        max_tokens: int = 220,
+        temperature: float = 0.6,
+    ) -> StrategyResult:
+        view = render_for_power(state, self.power)
+        sh = format_strategy_history(strategy_history or [])
+        body = f"{view}\n\n## Your strategy history (private to you)\n{sh}\n\n"
+        if dialogue:
+            db = format_dialogue_for_agent(dialogue, self.power)
+            body += f"## Dialogue history (private to you)\n{db}\n\n"
+        if kind == "initial":
+            instruction = (
+                f"It is the start of {state.phase}. Before negotiation begins, "
+                "state your strategy and goals for this turn in 1-2 sentences. "
+                "Be concrete (name powers and provinces you care about), reflect "
+                "your standing relationships from the history above, and don't "
+                "hedge. No preamble, no headings, just the strategy."
+            )
+        else:
+            instruction = (
+                f"Negotiation for {state.phase} is complete. Re-state your "
+                "strategy and goals for the orders you're about to submit, in "
+                "1-2 sentences. Acknowledge any updates from the negotiation "
+                "(deals made, broken, or refused). No preamble, just the strategy."
+            )
+        user_msg = body + instruction
+        chat = self.client.chat(
+            system=self._system,
+            messages=[Message(role="user", content=user_msg)],
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+        return StrategyResult(text=chat.text.strip(), chat=chat, prompt=user_msg)
+
+    def state_strategy(
+        self,
+        state: GameState,
+        *,
+        dialogue: list[DialogueMessage] | None = None,
+        strategy_history: list[StrategyNote] | None = None,
+    ) -> StrategyResult:
+        return self._strategy_call(
+            state, kind="initial", dialogue=dialogue, strategy_history=strategy_history,
+        )
+
+    def revise_strategy(
+        self,
+        state: GameState,
+        *,
+        dialogue: list[DialogueMessage] | None = None,
+        strategy_history: list[StrategyNote] | None = None,
+    ) -> StrategyResult:
+        return self._strategy_call(
+            state, kind="revised", dialogue=dialogue, strategy_history=strategy_history,
+        )
+
+    # ------------------------------------------------------------------
     # Negotiation
     # ------------------------------------------------------------------
 
@@ -131,11 +213,13 @@ class Agent:
         *,
         round_index: int = 1,
         total_rounds: int = 1,
+        strategy_history: list[StrategyNote] | None = None,
         max_tokens: int = 1024,
         temperature: float = 0.8,
     ) -> MessagesResult:
         view = render_for_power(state, self.power)
         dialogue_block = format_dialogue_for_agent(history or [], self.power)
+        strategy_block = format_strategy_history(strategy_history or [])
         round_note = (
             f"This is negotiation round {round_index} of {total_rounds} before "
             f"orders for {state.phase}. All powers message simultaneously this "
@@ -147,6 +231,7 @@ class Agent:
             round_note += "Further rounds follow, so you can open threads now and react to replies later. "
         user_msg = (
             f"{view}\n\n"
+            f"## Your strategy history (private to you)\n{strategy_block}\n\n"
             f"## Dialogue history (private to you)\n{dialogue_block}\n\n"
             f"{round_note}"
             f"Send private messages to any subset of the other powers (or none). "
@@ -171,11 +256,15 @@ class Agent:
         state: GameState,
         *,
         dialogue: list[DialogueMessage] | None = None,
+        strategy_history: list[StrategyNote] | None = None,
         max_tokens: int = 1024,
         temperature: float = 0.7,
     ) -> OrderResult:
         view = render_for_power(state, self.power)
         user_msg = view
+        if strategy_history:
+            sh = format_strategy_history(strategy_history)
+            user_msg += f"\n\n## Your strategy history (private to you)\n{sh}"
         if dialogue:
             dialogue_block = format_dialogue_for_agent(dialogue, self.power)
             user_msg += f"\n\n## Dialogue history (private to you)\n{dialogue_block}"
@@ -262,6 +351,21 @@ def validate_orders(state: GameState, power: str, orders: list[str]) -> tuple[li
 # ----------------------------------------------------------------------
 # Dialogue formatting (rendered into the user message)
 # ----------------------------------------------------------------------
+
+
+def format_strategy_history(history: list[StrategyNote], *, recent: int = 6) -> str:
+    """Render a power's own strategy/goals notes (most recent at the bottom).
+
+    Capped to the last `recent` entries to bound token cost.
+    """
+    if not history:
+        return "(No strategy notes yet — this is your first turn.)"
+    notes = history[-recent:]
+    out: list[str] = []
+    for n in notes:
+        tag = "initial" if n.kind == "initial" else "revised"
+        out.append(f"- {n.phase} ({tag}): {n.text}")
+    return "\n".join(out)
 
 
 def format_dialogue_for_agent(history: list[DialogueMessage], power: str) -> str:

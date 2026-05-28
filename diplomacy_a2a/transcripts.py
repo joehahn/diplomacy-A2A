@@ -158,6 +158,8 @@ def render_prompts_md(
                 responses[(e["phase"], int(e.get("round", 1)), "negotiate", e["power"])] = e.get("text", "")
             elif e["type"] == "agent_response":
                 responses[(e["phase"], 0, "orders", e["power"])] = e.get("text", "")
+            elif e["type"] == "agent_strategy":
+                responses[(e["phase"], 0, f"strategy_{e['kind']}", e["power"])] = e.get("text", "")
 
     by_phase: "OrderedDict[str, list[dict]]" = OrderedDict()
     for c in calls:
@@ -204,9 +206,16 @@ def render_prompts_md(
         lines.append("")
         nego_by_round: "OrderedDict[int, list[dict]]" = OrderedDict()
         orders: list[dict] = []
+        strategy_initial: list[dict] = []
+        strategy_revised: list[dict] = []
         for c in ph_calls:
-            if c.get("kind") == "negotiate":
+            k = c.get("kind")
+            if k == "negotiate":
                 nego_by_round.setdefault(c.get("round", 1), []).append(c)
+            elif k == "strategy_initial":
+                strategy_initial.append(c)
+            elif k == "strategy_revised":
+                strategy_revised.append(c)
             else:
                 orders.append(c)
         def _emit_call(c: dict, summary: str, response_key: tuple) -> None:
@@ -229,6 +238,15 @@ def render_prompts_md(
             lines.append("</details>")
             lines.append("")
 
+        if strategy_initial:
+            lines.append("### Strategy (initial)")
+            lines.append("")
+            for c in strategy_initial:
+                _emit_call(
+                    c,
+                    f"<b>{c['power']}</b> — strategy (initial)",
+                    (ph, 0, "strategy_initial", c["power"]),
+                )
         for rnd in sorted(nego_by_round):
             lines.append(f"### Round {rnd} negotiation")
             lines.append("")
@@ -237,6 +255,15 @@ def render_prompts_md(
                     c,
                     f"<b>{c['power']}</b> — negotiate (round {rnd})",
                     (ph, rnd, "negotiate", c["power"]),
+                )
+        if strategy_revised:
+            lines.append("### Strategy (revised)")
+            lines.append("")
+            for c in strategy_revised:
+                _emit_call(
+                    c,
+                    f"<b>{c['power']}</b> — strategy (revised)",
+                    (ph, 0, "strategy_revised", c["power"]),
                 )
         if orders:
             lines.append("### Orders")
@@ -535,6 +562,17 @@ ol.phases { line-height: 1.8; }
 .narr .r-fail { color: #0a8fa8; }
 .narr .r-bad { color: #c0392b; }
 .narr .r-warn { color: #c77a0a; }
+.strategies { background: #fbf6ee; border-left: 3px solid #d8b870; padding: 8px 14px;
+              margin: 14px 0; font-size: 0.92em; }
+.strategies summary { cursor: pointer; }
+.strategies .slist { margin-top: 8px; }
+.strategies .srow { padding: 6px 0; border-top: 1px dotted #e8d8b8; }
+.strategies .srow:first-child { border-top: none; }
+.strategies .srow b { display: inline-block; min-width: 78px; }
+.strategies .sline { margin: 3px 0 3px 80px; line-height: 1.4; }
+.strategies .stag { display: inline-block; font-size: 0.72em; font-weight: 700;
+                    text-transform: uppercase; color: #8a6a2e; min-width: 56px;
+                    margin-right: 6px; letter-spacing: 0.04em; }
 """
 
 
@@ -686,6 +724,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     phases: list[dict[str, Any]] = []
     dialogue_by_phase: dict[str, list[tuple[int, str, str, str]]] = {}
     results_by_phase: dict[str, dict[str, list[str]]] = {}  # short -> {unit: [tokens]}
+    strategies_by_phase: dict[str, dict[str, dict[str, str]]] = {}  # short -> power -> kind -> text
     current: dict[str, Any] | None = None
     for e in events:
         if e["type"] == "phase_started":
@@ -703,6 +742,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 )
         elif e["type"] == "phase_resolved" and e.get("resolved_phase"):
             results_by_phase[e["resolved_phase"]] = e.get("results", {})
+        elif e["type"] == "agent_strategy":
+            strategies_by_phase.setdefault(e["phase"], {}).setdefault(e["power"], {})[e["kind"]] = e.get("text", "")
         elif e["type"] == "orders_submitted" and current is not None:
             current["orders"][e["power"]] = {
                 "valid": e.get("valid", []),
@@ -737,6 +778,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "orders": ph["orders"],
                 "narration": narrate_phase(valid_orders, results_by_phase.get(ph["short"], {})),
                 "commentary": commentary.get(ph["short"], ""),
+                "strategies": strategies_by_phase.get(ph["short"], {}),
                 "maps": [
                     ("Orders — start positions, arrows show moves", f"{ph['short']}.svg"),
                     ("Result — positions after this phase resolved", f"{ph['short']}.result.svg"),
@@ -837,6 +879,35 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "</div></div>",
             ]
 
+        strategies_html: list[str] = []
+        strat = sl.get("strategies") or {}
+        if strat:
+            strategies_html.append(
+                "<details class='strategies'><summary>"
+                "<b>Agent strategies this phase</b> — each power's self-authored plan "
+                "(initial · revised) — private to that agent."
+                "</summary>"
+            )
+            strategies_html.append("<div class='slist'>")
+            for pw in sorted(strat):
+                color = POWER_COLORS.get(pw, "#777")
+                entries = strat[pw]
+                initial = entries.get("initial", "")
+                revised = entries.get("revised", "")
+                strategies_html.append(
+                    f"<div class='srow'><b style='color:{color}'>{pw}</b>"
+                )
+                if initial:
+                    strategies_html.append(
+                        f"<div class='sline'><span class='stag'>initial</span> {_esc(initial)}</div>"
+                    )
+                if revised:
+                    strategies_html.append(
+                        f"<div class='sline'><span class='stag'>revised</span> {_esc(revised)}</div>"
+                    )
+                strategies_html.append("</div>")
+            strategies_html.append("</div></details>")
+
         commentary_html: list[str] = []
         comm = sl.get("commentary")
         if comm:
@@ -873,6 +944,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 f"<h1>{sl['heading']}</h1>",
                 *recap_html,
                 *maps_html,
+                *strategies_html,
                 *commentary_html,
                 *nego_link_html,
                 nav,

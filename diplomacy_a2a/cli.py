@@ -36,6 +36,10 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--log-prompts-years", type=int, default=1,
                    help="when --log-prompts is on, only log the first N years "
                         "(default: 1; keeps the artifact focused on opening play)")
+    p.add_argument("--strategy", action="store_true",
+                   help="have each agent state a 1-2 sentence strategy before negotiation "
+                        "and revise it after, exposing their own history across turns "
+                        "(roughly +25-35%% cost; movement phases only)")
     p.add_argument("--smoke", action="store_true",
                    help=f"cheap-mode shortcut: use {SMOKE_MODEL}, 1 year, 1 round")
     p.add_argument("--quiet", action="store_true",
@@ -67,4 +71,5 @@ def main(argv: list[str] | None = None) -> None:
         verbose=not args.quiet,
         log_prompts=args.log_prompts,
         log_prompts_years=args.log_prompts_years,
+        enable_strategy=args.strategy,
     )
