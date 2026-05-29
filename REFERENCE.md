@@ -28,7 +28,7 @@ models are *over-estimated*, not silently under-estimated.
 Anthropic's **prompt caching** is on by default
 ([`AnthropicClient`](diplomacy_a2a/llm/anthropic_client.py) sets
 `cache_control: ephemeral` on the system prompt) — for a 2-year Sonnet game
-this saves ~22% ($0.69 of $3.12) by serving the rules + persona prefix as
+this saves ≈22% ($0.69 of $3.12) by serving the rules + persona prefix as
 cache reads (10% of input price) after the first write. The fix to make
 the estimator **model-aware** landed in commit `7358cdd`; before that,
 mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
@@ -41,18 +41,18 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 |---|---|---|---:|---:|---:|---:|
 | 20260524T031616Z | Sonnet | no negotiation | 7 | – | – | $0.35 |
 | 20260524T034819Z | Sonnet | 1 round, 2 yr | 7 | – | – | $0.88 |
-| 20260527T184246Z | Sonnet | 3 rounds, 2 yr, `--log-prompts` | 8 | 1419s | **~177** | $2.43 |
-| 20260528T214253Z (canonical) | Sonnet | 3 rounds, 2 yr, `--strategy`, `--log-prompts` | 7 | 1713s | **~245** | $3.20 |
-| 20260528T213153Z (smoke) | Haiku | 1 round, 1 yr, `--strategy` | 3 | 214s | **~71** | $0.85 *(Sonnet-inflated; actual ≈ $0.28)* |
-| 20260527T132540Z (smoke) | Haiku | 1 round, 1 yr | 3 | 180s | **~60** | $0.46 *(actual ≈ $0.15)* |
-| 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, `--strategy`, `--log-prompts-years 5` | 13 of ≈17 | ~3300s | **~252** | – |
-| 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no `--strategy` | 14 | 2030s | **~145** | **$2.93** (Haiku rates) |
+| 20260527T184246Z | Sonnet | 3 rounds, 2 yr, `--log-prompts` | 8 | 1419s | **≈177** | $2.43 |
+| 20260528T214253Z (canonical) | Sonnet | 3 rounds, 2 yr, `--strategy`, `--log-prompts` | 7 | 1713s | **≈245** | $3.20 |
+| 20260528T213153Z (smoke) | Haiku | 1 round, 1 yr, `--strategy` | 3 | 214s | **≈71** | $0.85 *(Sonnet-inflated; actual ≈ $0.28)* |
+| 20260527T132540Z (smoke) | Haiku | 1 round, 1 yr | 3 | 180s | **≈60** | $0.46 *(actual ≈ $0.15)* |
+| 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, `--strategy`, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
+| 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no `--strategy` | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
 
-**Headline:** Haiku is ~3–4× faster than Sonnet *per phase on simple workloads*
+**Headline:** Haiku is ≈3–4× faster than Sonnet *per phase on simple workloads*
 (1 round, no strategy). On the full canonical workload (3 rounds × `--strategy`)
 the per-phase advantage **collapses to roughly parity** because per-phase call
 count dominates — Haiku doesn't make fewer calls than Sonnet, and the strategy +
-3-round combo is call-heavy. Cost is still ~1/3 across the board.
+3-round combo is call-heavy. Cost is still ≈1/3 across the board.
 
 ---
 
@@ -73,7 +73,7 @@ committed canonical run (`20260528T214253Z`). This is the published demo.
   and less quotable than Sonnet's.
 - **Pulled toward mutual-defensive stalemates when `--strategy` is on.** In
   the partial 5-year run (`20260529T151442Z`), every power's SC count stayed
-  at 3–5 from F1901M through F1903M — basically nothing happened for ~2.5
+  at 3–5 from F1901M through F1903M — basically nothing happened for ≈2.5
   game years. The strategy log seems to reinforce a "consolidate, don't
   antagonize" stance across the table.
 - **Without `--strategy`, Haiku plays a noticeably more dynamic game** — the
@@ -170,20 +170,20 @@ signal of an incomplete run.
 ## Known issues & errata
 
 - **Pre-`7358cdd` cost reports** for Haiku-only and mixed-model runs were
-  inflated ~3× because the estimator was hardcoded to Sonnet rates. Earlier
+  inflated ≈3× because the estimator was hardcoded to Sonnet rates. Earlier
   reported costs in this file's table show both numbers where applicable.
 - **Prompt caching may not be firing on Haiku 4.5.** The plain-vanilla
   baseline `20260529T191351Z` ran 2.23 M input tokens and the transcript
   recorded `cache_create = 0` and `cache_read = 0` for the entire run —
   i.e. zero cache savings. For comparison, the Sonnet canonical's
-  `cache_read` is 260 K tokens (~22% cost savings). Probable causes to
+  `cache_read` is 260 K tokens (≈22% cost savings). Probable causes to
   investigate next: (a) Haiku's 2048-token cacheable-prefix minimum
   combined with how `system` is assembled, (b) a per-Haiku-version
   difference in `cache_control: ephemeral` handling, (c) something the
   model-aware refactor in `7358cdd` perturbed. Until resolved, treat
-  the Haiku per-game cost as **~$2.9 / 5-year game**, not ~$1.0.
+  the Haiku per-game cost as **≈$2.9 / 5-year game**, not ≈$1.0.
 - **`20260529T151442Z`** ended at `S1905M round 1` because the API key ran
-  out of credits mid-game (~$0.07 unpaid balance at termination). The
+  out of credits mid-game (≈$0.07 unpaid balance at termination). The
   partial transcript still has 13 phases of usable data; the rendered viewer
   / `prompts.md` cover what was completed. Not pushed; remains in `results/`
   locally for forensic value.

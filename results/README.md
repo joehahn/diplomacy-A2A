@@ -30,7 +30,7 @@ movement phase, plus the new `--strategy` flag: each agent writes a 1–2 senten
 note** after the final round, with its own strategy history carried into every
 later call. Each slide also shows the deterministic narration, the LLM
 commentary, and a collapsible **"Agent strategies this phase"** block exposing
-each power's plan-vs-revision. 7 phases, **~$3.20**, ~29 minutes. The full
+each power's plan-vs-revision. 7 phases, **≈$3.20**, ≈29 minutes. The full
 agent-prompt + response dump (`prompts.jsonl` / `prompts.md`) is committed —
 see the project README's *Seeing the exact agent prompts*.
 
