@@ -498,6 +498,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 12
 h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
 h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
 .meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
+table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
+                                       vertical-align: top; }
+table.settings th { font-weight: 600; color: #555; white-space: nowrap;
+                    min-width: 160px; }
+table.settings td { color: #222; }
 nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
       gap: 8px; }
 nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
@@ -970,13 +976,58 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             slides[mi]["dialogue_label"] = ph["long"]
 
     # --- index.html ---
-    meta_bits = [f"Model <code>{run_started.get('model', '?')}</code>"]
+    # Settings table: what the game was actually configured with.
+    default_model = run_started.get("model", "?")
+    power_models = run_started.get("power_models") or {}
+    settings_rows: list[tuple[str, str]] = []
+    # Model line: show overrides if any of the per-power models differ from default
+    overrides = sorted(
+        (p, m) for p, m in power_models.items() if m != default_model
+    )
+    if overrides:
+        settings_rows.append(("Model (default)", f"<code>{_esc(default_model)}</code>"))
+        settings_rows.append((
+            "Per-power overrides",
+            ", ".join(f"{p}=<code>{_esc(m)}</code>" for p, m in overrides),
+        ))
+    else:
+        settings_rows.append(("Model", f"<code>{_esc(default_model)}</code>"))
+    settings_rows.append(("Game years", str(run_started.get("years_target", "?"))))
+    settings_rows.append(("Negotiation rounds", str(run_started.get("negotiation_rounds", "?"))))
+    has_strategy = any(e.get("type") == "agent_strategy" for e in events)
+    settings_rows.append(("Strategy log", "on" if has_strategy else "off"))
+    prompts_jsonl = out_dir / "prompts.jsonl"
+    settings_rows.append((
+        "Prompt logging",
+        f"on — see <a href='prompts.md'>prompts.md</a>" if prompts_jsonl.exists() else "off",
+    ))
     if run_ended:
-        meta_bits.append(f"{run_ended.get('phases_played', '?')} phases")
-        meta_bits.append(f"${run_ended.get('cost_usd', 0):.4f}")
+        settings_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
+        elapsed = run_ended.get("elapsed_seconds", 0)
+        settings_rows.append(("Wall time", f"{elapsed/60:.1f} min ({elapsed:.0f} s)"))
+        settings_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
+        # Final standings ordered by SC count
+        final_centers = run_ended.get("final_state", {}).get("centers", {})
+        if final_centers:
+            standing = sorted(
+                ((p, len(c)) for p, c in final_centers.items()), key=lambda kv: -kv[1]
+            )
+            settings_rows.append((
+                "Final standing",
+                " · ".join(f"{p} {n}" for p, n in standing),
+            ))
+    else:
+        settings_rows.append(("Run state", "<i>incomplete (no run_ended event)</i>"))
+
+    settings_html = "<table class='settings'>" + "".join(
+        f"<tr><th>{label}</th><td>{value}</td></tr>"
+        for label, value in settings_rows
+    ) + "</table>"
+
     index_body = [
         f"<h1>Diplomacy A2A — Run <code>{run_id}</code></h1>",
-        f"<div class='meta'>{' · '.join(meta_bits)}</div>",
+        "<h2>Game settings</h2>",
+        settings_html,
         "<h2>Slides</h2>",
         "<ol class='phases'>",
     ]
