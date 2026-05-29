@@ -23,9 +23,10 @@ def _parser() -> argparse.ArgumentParser:
         description="Run a single Diplomacy game; artifacts land in results/<run-id>/.",
     )
     p.add_argument("--model", default=DEFAULT_MODEL,
-                   help=f"Anthropic model id (default: {DEFAULT_MODEL})")
-    p.add_argument("--years", type=int, default=2,
-                   help="how many game-years to play (default: 2)")
+                   help=f"Anthropic model id used as the default for all powers "
+                        f"(default: {DEFAULT_MODEL})")
+    p.add_argument("--years", type=int, default=5,
+                   help="how many game-years to play (default: 5)")
     p.add_argument("--rounds", type=int, default=3, dest="negotiation_rounds",
                    help="negotiation rounds before each movement phase (default: 3)")
     p.add_argument("--results-dir", default="results", type=Path,
@@ -36,14 +37,19 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--log-prompts-years", type=int, default=1,
                    help="when --log-prompts is on, only log the first N years "
                         "(default: 1; keeps the artifact focused on opening play)")
-    p.add_argument("--strategy", action="store_true",
-                   help="have each agent state a 1-2 sentence strategy before negotiation "
-                        "and revise it after, exposing their own history across turns "
-                        "(roughly +25-35%% cost; movement phases only)")
-    p.add_argument("--upgrade", action="append", default=[], metavar="POWER=MODEL",
-                   help="override the model used by one power (repeatable). Example: "
-                        "--upgrade TURKEY=claude-sonnet-4-6 in an otherwise Haiku game. "
-                        "Plumbing for the axis-A controlled experiment.")
+    p.add_argument("--downgrade", action="append", default=[], metavar="POWER=MODEL",
+                   help="give one power a different (typically cheaper) model than the "
+                        "default. Repeatable. Example: --downgrade TURKEY=claude-haiku-4-5-20251001 "
+                        "while everyone else stays on Opus. Plumbing for the axis-A "
+                        "controlled experiment.")
+    p.add_argument("--memory", type=int, default=6, metavar="N",
+                   help="default strategy-history depth for every agent — how many of "
+                        "their own past strategy notes they see (default: 6). Use 0 for a "
+                        "memoryless agent.")
+    p.add_argument("--memory-power", action="append", default=[], metavar="POWER=N",
+                   help="override the strategy-history depth for one power (repeatable). "
+                        "Example: --memory-power TURKEY=20 gives Turkey a much longer "
+                        "memory than the rest. Plumbing for the axis-C experiment.")
     p.add_argument("--smoke", action="store_true",
                    help=f"cheap-mode shortcut: use {SMOKE_MODEL}, 1 year, 1 round")
     p.add_argument("--quiet", action="store_true",
@@ -61,24 +67,31 @@ def main(argv: list[str] | None = None) -> None:
     if args.smoke:
         model, years, rounds = SMOKE_MODEL, 1, 1
 
-    # Parse --upgrade POWER=MODEL entries into per-power client overrides.
-    power_clients = {}
-    upgrade_specs: list[tuple[str, str]] = []
-    for spec in args.upgrade:
+    # Parse --downgrade POWER=MODEL entries into per-power client overrides.
+    downgrade_specs: list[tuple[str, str]] = []
+    for spec in args.downgrade:
         if "=" not in spec:
-            raise SystemExit(f"--upgrade expects POWER=MODEL, got {spec!r}")
+            raise SystemExit(f"--downgrade expects POWER=MODEL, got {spec!r}")
         pw, mdl = spec.split("=", 1)
-        upgrade_specs.append((pw.strip().upper(), mdl.strip()))
+        downgrade_specs.append((pw.strip().upper(), mdl.strip()))
+
+    # Parse --memory-power POWER=N entries into per-power memory-depth overrides.
+    power_memory: dict[str, int] = {}
+    for spec in args.memory_power:
+        if "=" not in spec:
+            raise SystemExit(f"--memory-power expects POWER=N, got {spec!r}")
+        pw, depth = spec.split("=", 1)
+        try:
+            power_memory[pw.strip().upper()] = int(depth)
+        except ValueError:
+            raise SystemExit(f"--memory-power N must be an integer, got {depth!r}")
 
     # Lazy-import so `--help` works without an API key or the LLM SDK setup.
     load_dotenv(".env")
-    from diplomacy_a2a.llm.anthropic_client import AnthropicClient
+    from diplomacy_a2a.llm.anthropic_client import AnthropicClient, RunnerError
     from diplomacy_a2a.runner import run_game
 
-    for pw, mdl in upgrade_specs:
-        power_clients[pw] = AnthropicClient(model=mdl)
-
-    from diplomacy_a2a.llm.anthropic_client import RunnerError
+    power_clients = {pw: AnthropicClient(model=mdl) for pw, mdl in downgrade_specs}
 
     try:
         run_game(
@@ -90,8 +103,10 @@ def main(argv: list[str] | None = None) -> None:
             verbose=not args.quiet,
             log_prompts=args.log_prompts,
             log_prompts_years=args.log_prompts_years,
-            enable_strategy=args.strategy,
+            enable_strategy=True,  # hardwired on
             power_clients=power_clients or None,
+            memory=args.memory,
+            power_memory=power_memory or None,
         )
     except RunnerError as e:
         import sys

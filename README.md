@@ -100,19 +100,20 @@ cp .env.example .env          # then paste your key into .env
 ## Running
 
 ```bash
-# default: one full Opus game, 2 years, 3 negotiation rounds
+# default: one full Opus game, 5 years, 3 negotiation rounds, strategy log on
 python -m diplomacy_a2a
 
 # cheap end-to-end verification (Haiku, 1 year, 1 round) — pennies
 python -m diplomacy_a2a --smoke
 
-# Sonnet, save every agent prompt + response (first year), with strategy log
-python -m diplomacy_a2a --model claude-sonnet-4-6 --strategy --log-prompts
+# Sonnet showcase with prompt/response dump (first year)
+python -m diplomacy_a2a --model claude-sonnet-4-6 --log-prompts
 
-# axis-A controlled experiment: 6 Haikus + 1 Sonnet (rotate the position over seeds)
-python -m diplomacy_a2a --model claude-haiku-4-5-20251001 \
-                        --upgrade TURKEY=claude-sonnet-4-6 \
-                        --years 4
+# axis-A controlled experiment: 6 Opuses + 1 Haiku (rotate the position over seeds)
+python -m diplomacy_a2a --downgrade TURKEY=claude-haiku-4-5-20251001
+
+# axis-C controlled experiment: one agent with much longer memory than the rest
+python -m diplomacy_a2a --memory-power TURKEY=20
 
 python -m diplomacy_a2a --help     # full option list
 ```
@@ -123,16 +124,23 @@ Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
 
 | Flag | Default | What it does |
 |---|---|---|
-| `--model MODEL` | `claude-opus-4-7` | Anthropic model id used by every power that doesn't have an `--upgrade` override. Use `claude-sonnet-4-6` for the showcase canonical or `claude-haiku-4-5-20251001` for cheap experiments. |
-| `--years N` | `2` | Game-years to play. Solo wins (18 SCs) end the game early regardless. |
+| `--model MODEL` | `claude-opus-4-7` | Anthropic model id used as the default for every power. Use `claude-sonnet-4-6` for the showcase canonical, `claude-haiku-4-5-20251001` for cheap experiments. |
+| `--years N` | `5` | Game-years to play. Solo wins (18 SCs) end the game early regardless. |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
-| `--strategy` | off | Have each agent write a 1–2 sentence strategy note *before* negotiation and a revised one *after*, exposing the history across turns. Adds ~25–35% cost. See **Agent strategy & memory**. |
-| `--upgrade POWER=MODEL` *(repeatable)* | – | Override the model used by one power. Plumbing for the axis-A controlled experiment, e.g. `--upgrade TURKEY=claude-sonnet-4-6` in an otherwise Haiku game. Costs are reported per-model. |
+| `--downgrade POWER=MODEL` *(repeatable)* | – | Give one power a different (typically cheaper) model than the default. Plumbing for the **axis-A** controlled experiment, e.g. `--downgrade TURKEY=claude-haiku-4-5-20251001` while everyone else stays on Opus. Costs are reported per-model. |
+| `--memory N` | `6` | Default strategy-history depth for every agent — how many of their own past strategy notes they see in subsequent calls. `0` is a memoryless agent. |
+| `--memory-power POWER=N` *(repeatable)* | – | Override the strategy-history depth for one power. Plumbing for the **axis-C** experiment, e.g. `--memory-power TURKEY=20` gives Turkey a much longer memory than the rest. |
 | `--log-prompts` | off | Save every prompt each agent receives, paired with its response, to `prompts.jsonl` and `prompts.md`. See **Seeing the exact agent prompts and responses**. |
-| `--log-prompts-years N` | `1` | When `--log-prompts` is on, only log calls in the first N game-years (keeps the artifact focused on opening play). |
+| `--log-prompts-years N` | `1` | When `--log-prompts` is on, only log calls in the first N game-years. |
 | `--smoke` | off | Shortcut for cheap end-to-end verification: Haiku, 1 year, 1 round. Pennies. |
 | `--results-dir PATH` | `results` | Root directory for artifacts. |
 | `--quiet` | off | Suppress the verbose phase-by-phase trace. |
+
+**Strategy log is always on.** Each agent writes a 1–2 sentence strategy note
+*before* negotiation and revises it *after*, and carries its own past notes
+forward into every later call. This adds ~25–35% to the per-game cost but
+produces a much richer transcript (and is the basis of the axis-C memory-depth
+experiment). See **Agent strategy & memory** below.
 
 ### Options *not* in the CLI yet (Roadmap)
 
@@ -141,11 +149,6 @@ Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
   [`personas/registry.py`](diplomacy_a2a/personas/registry.py). The programmatic
   `run_game(personas={"TURKEY": "<prompt>"})` already accepts per-power
   overrides; the CLI flag is **axis B** in the Roadmap.
-- **Per-agent memory depth** — strategy history is currently capped at the last
-  6 entries (`format_strategy_history(recent=6)` in
-  [`agent.py`](diplomacy_a2a/agent.py)) and dialogue history is unbounded.
-  Making *one* agent see more or less context than the rest is **axis C** in
-  the Roadmap.
 - **Pre-game collusion** between two agents — **axis D** in the Roadmap.
 
 ### Cost / time per game

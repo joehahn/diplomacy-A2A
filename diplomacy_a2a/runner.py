@@ -90,7 +90,7 @@ def run_game(
     *,
     client: LLMClient,
     model: str,
-    years: int = 2,
+    years: int = 5,
     personas: dict[str, str] | None = None,
     results_root: Path = Path("results"),
     negotiation_rounds: int = 3,  # rounds per MOVEMENT phase (0 = skip)
@@ -98,8 +98,10 @@ def run_game(
     verbose: bool = True,
     log_prompts: bool = False,  # also dump full agent prompts to prompts.jsonl
     log_prompts_years: int = 1,  # how many opening years to log when log_prompts is on
-    enable_strategy: bool = False,  # per-power 1-2 sentence strategy notes
+    enable_strategy: bool = True,  # per-power 1-2 sentence strategy notes (hardwired on)
     power_clients: dict[str, LLMClient] | None = None,  # per-power model overrides (axis A)
+    memory: int = 6,  # default strategy-history depth for all agents
+    power_memory: dict[str, int] | None = None,  # per-power memory overrides (axis C)
 ) -> Path:
     """Run a full game, save artifacts under results_root/<run-id>/.
 
@@ -117,6 +119,7 @@ def run_game(
     if personas is None:
         personas = DEFAULT_PERSONAS
     power_clients = power_clients or {}
+    power_memory = power_memory or {}
 
     run_id = _run_id()
     run_dir = results_root / run_id
@@ -125,11 +128,17 @@ def run_game(
 
     state = GameState.new()
     agents = {
-        p: Agent(power=p, persona=personas[p], client=power_clients.get(p, client))
+        p: Agent(
+            power=p,
+            persona=personas[p],
+            client=power_clients.get(p, client),
+            strategy_memory=power_memory.get(p, memory),
+        )
         for p in POWERS
     }
-    # Per-power model id for cost attribution and transcript bookkeeping.
+    # Per-power model id and memory depth for cost attribution + transcript bookkeeping.
     power_model = {p: getattr(agents[p].client, "model", model) for p in POWERS}
+    power_memory_resolved = {p: agents[p].strategy_memory for p in POWERS}
 
     prompts_writer = TranscriptWriter(run_dir / "prompts.jsonl").open() if log_prompts else None
     if prompts_writer is not None:
@@ -159,6 +168,8 @@ def run_game(
             run_id=run_id,
             model=model,
             power_models=power_model,
+            power_memory=power_memory_resolved,
+            enable_strategy=enable_strategy,
             years_target=years,
             personas=personas,
             powers=list(POWERS),

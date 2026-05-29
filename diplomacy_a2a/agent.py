@@ -79,11 +79,17 @@ class Agent:
         persona: str,
         client: LLMClient,
         rules: str | None = None,
+        strategy_memory: int = 6,
     ) -> None:
         self.power = power
         self.persona = persona
         self.client = client
         self.rules = rules if rules is not None else _load_default_rules()
+        # How many of this agent's own past strategy notes it sees in any
+        # subsequent call. Wired through to format_strategy_history(recent=N).
+        # Axis C of the controlled-variation experiments uses this to give one
+        # agent more or less memory than the rest.
+        self.strategy_memory = max(0, strategy_memory)
         self._system = self._build_system_prompt()
 
     def _build_system_prompt(self) -> str:
@@ -151,7 +157,7 @@ class Agent:
         temperature: float = 0.6,
     ) -> StrategyResult:
         view = render_for_power(state, self.power)
-        sh = format_strategy_history(strategy_history or [])
+        sh = format_strategy_history(strategy_history or [], recent=self.strategy_memory)
         body = f"{view}\n\n## Your strategy history (private to you)\n{sh}\n\n"
         if dialogue:
             db = format_dialogue_for_agent(dialogue, self.power)
@@ -219,7 +225,9 @@ class Agent:
     ) -> MessagesResult:
         view = render_for_power(state, self.power)
         dialogue_block = format_dialogue_for_agent(history or [], self.power)
-        strategy_block = format_strategy_history(strategy_history or [])
+        strategy_block = format_strategy_history(
+            strategy_history or [], recent=self.strategy_memory
+        )
         round_note = (
             f"This is negotiation round {round_index} of {total_rounds} before "
             f"orders for {state.phase}. All powers message simultaneously this "
@@ -263,7 +271,7 @@ class Agent:
         view = render_for_power(state, self.power)
         user_msg = view
         if strategy_history:
-            sh = format_strategy_history(strategy_history)
+            sh = format_strategy_history(strategy_history, recent=self.strategy_memory)
             user_msg += f"\n\n## Your strategy history (private to you)\n{sh}"
         if dialogue:
             dialogue_block = format_dialogue_for_agent(dialogue, self.power)
