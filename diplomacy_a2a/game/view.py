@@ -46,10 +46,18 @@ def render_for_power(state: GameState, power: str, *, memory: int = 1) -> str:
         lines.append(f"- {p}{marker}: {', '.join(units) if units else '(none)'}")
     lines.append("")
     lines.append("## Supply centers")
+    owned: set[str] = set()
     for p in POWERS:
         centers = state.centers(p)
+        owned.update(centers)
         marker = " ← YOU" if p == power else ""
         lines.append(f"- {p}{marker} ({len(centers)}): {', '.join(centers) if centers else '(none)'}")
+    # Unowned (neutral) supply centers — grabbable targets the agent
+    # might otherwise have to infer from training-data map knowledge.
+    all_scs = sorted(getattr(state.game.map, "scs", []))
+    unowned = [s for s in all_scs if s not in owned]
+    if unowned:
+        lines.append(f"- Unowned ({len(unowned)}): {', '.join(unowned)}")
     lines.append("")
 
     legal = state.legal_orders(power)
