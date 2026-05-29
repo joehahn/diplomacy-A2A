@@ -40,6 +40,10 @@ def _parser() -> argparse.ArgumentParser:
                    help="have each agent state a 1-2 sentence strategy before negotiation "
                         "and revise it after, exposing their own history across turns "
                         "(roughly +25-35%% cost; movement phases only)")
+    p.add_argument("--upgrade", action="append", default=[], metavar="POWER=MODEL",
+                   help="override the model used by one power (repeatable). Example: "
+                        "--upgrade TURKEY=claude-sonnet-4-6 in an otherwise Haiku game. "
+                        "Plumbing for the axis-A controlled experiment.")
     p.add_argument("--smoke", action="store_true",
                    help=f"cheap-mode shortcut: use {SMOKE_MODEL}, 1 year, 1 round")
     p.add_argument("--quiet", action="store_true",
@@ -57,10 +61,22 @@ def main(argv: list[str] | None = None) -> None:
     if args.smoke:
         model, years, rounds = SMOKE_MODEL, 1, 1
 
+    # Parse --upgrade POWER=MODEL entries into per-power client overrides.
+    power_clients = {}
+    upgrade_specs: list[tuple[str, str]] = []
+    for spec in args.upgrade:
+        if "=" not in spec:
+            raise SystemExit(f"--upgrade expects POWER=MODEL, got {spec!r}")
+        pw, mdl = spec.split("=", 1)
+        upgrade_specs.append((pw.strip().upper(), mdl.strip()))
+
     # Lazy-import so `--help` works without an API key or the LLM SDK setup.
     load_dotenv(".env")
     from diplomacy_a2a.llm.anthropic_client import AnthropicClient
     from diplomacy_a2a.runner import run_game
+
+    for pw, mdl in upgrade_specs:
+        power_clients[pw] = AnthropicClient(model=mdl)
 
     run_game(
         client=AnthropicClient(model=model),
@@ -72,4 +88,5 @@ def main(argv: list[str] | None = None) -> None:
         log_prompts=args.log_prompts,
         log_prompts_years=args.log_prompts_years,
         enable_strategy=args.strategy,
+        power_clients=power_clients or None,
     )

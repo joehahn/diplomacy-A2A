@@ -34,34 +34,55 @@ from diplomacy_a2a.transcripts import (
     render_prompts_md,
 )
 
-# Sonnet pricing per million tokens (current published rates).
-# Used only for end-of-run cost estimation in the postmortem.
-PRICE_PER_MTOK = {
-    "input": 3.0,
-    "output": 15.0,
-    "cache_create": 3.75,
-    "cache_read": 0.30,
+# Per-million-token rates by model family (published Anthropic pricing).
+# Used only for end-of-run cost estimation. Unknown models fall back to the
+# default ("claude-sonnet-4-6") rates so cost is over-estimated rather than
+# silently under-estimated.
+_RATE_TABLE = {
+    "claude-sonnet-4-6": {"input": 3.0, "output": 15.0, "cache_create": 3.75, "cache_read": 0.30},
+    "claude-opus-4-7":   {"input": 15.0, "output": 75.0, "cache_create": 18.75, "cache_read": 1.50},
+    "claude-haiku-4-5":  {"input": 1.0, "output": 5.0, "cache_create": 1.25, "cache_read": 0.10},
 }
+
+
+def _rates_for(model: str) -> dict[str, float]:
+    for key, rates in _RATE_TABLE.items():
+        if model.startswith(key):
+            return rates
+    return _RATE_TABLE["claude-sonnet-4-6"]
+
+
+# Backwards-compatible alias: any consumers reading PRICE_PER_MTOK get Sonnet rates.
+PRICE_PER_MTOK = _RATE_TABLE["claude-sonnet-4-6"]
 
 
 def _run_id() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
-def _estimate_cost(tokens: dict[str, int]) -> float:
-    return (
-        tokens["input"] * PRICE_PER_MTOK["input"]
-        + tokens["output"] * PRICE_PER_MTOK["output"]
-        + tokens["cache_create"] * PRICE_PER_MTOK["cache_create"]
-        + tokens["cache_read"] * PRICE_PER_MTOK["cache_read"]
-    ) / 1_000_000
+def _estimate_cost(tokens_by_model: dict[str, dict[str, int]]) -> float:
+    total = 0.0
+    for model, tk in tokens_by_model.items():
+        rates = _rates_for(model)
+        total += (
+            tk["input"] * rates["input"]
+            + tk["output"] * rates["output"]
+            + tk["cache_create"] * rates["cache_create"]
+            + tk["cache_read"] * rates["cache_read"]
+        )
+    return total / 1_000_000
 
 
-def _accumulate_tokens(totals: dict[str, int], chat) -> None:
-    totals["input"] += chat.input_tokens
-    totals["output"] += chat.output_tokens
-    totals["cache_create"] += chat.cache_creation_input_tokens
-    totals["cache_read"] += chat.cache_read_input_tokens
+def _empty_bucket() -> dict[str, int]:
+    return {"input": 0, "output": 0, "cache_create": 0, "cache_read": 0}
+
+
+def _accumulate(buckets: dict[str, dict[str, int]], model: str, chat) -> None:
+    b = buckets.setdefault(model, _empty_bucket())
+    b["input"] += chat.input_tokens
+    b["output"] += chat.output_tokens
+    b["cache_create"] += chat.cache_creation_input_tokens
+    b["cache_read"] += chat.cache_read_input_tokens
 
 
 def run_game(
@@ -77,6 +98,7 @@ def run_game(
     log_prompts: bool = False,  # also dump full agent prompts to prompts.jsonl
     log_prompts_years: int = 1,  # how many opening years to log when log_prompts is on
     enable_strategy: bool = False,  # per-power 1-2 sentence strategy notes
+    power_clients: dict[str, LLMClient] | None = None,  # per-power model overrides (axis A)
 ) -> Path:
     """Run a full game, save artifacts under results_root/<run-id>/.
 
@@ -84,9 +106,16 @@ def run_game(
     to a separate `prompts.jsonl` (system prompt once per power, then the
     per-call user message). Off by default — a full grid of games would
     otherwise produce a lot of large, redundant prompt dumps.
+
+    `power_clients` lets specific powers use a different LLMClient (and thus
+    a different model) — e.g. `{"TURKEY": AnthropicClient("claude-sonnet-4-6")}`
+    while the rest use the default `client`. This is the plumbing for the
+    axis-A controlled experiment (one stronger model in an otherwise
+    homogeneous table).
     """
     if personas is None:
         personas = DEFAULT_PERSONAS
+    power_clients = power_clients or {}
 
     run_id = _run_id()
     run_dir = results_root / run_id
@@ -94,7 +123,12 @@ def run_game(
     jsonl_path = run_dir / "transcript.jsonl"
 
     state = GameState.new()
-    agents = {p: Agent(power=p, persona=personas[p], client=client) for p in POWERS}
+    agents = {
+        p: Agent(power=p, persona=personas[p], client=power_clients.get(p, client))
+        for p in POWERS
+    }
+    # Per-power model id for cost attribution and transcript bookkeeping.
+    power_model = {p: getattr(agents[p].client, "model", model) for p in POWERS}
 
     prompts_writer = TranscriptWriter(run_dir / "prompts.jsonl").open() if log_prompts else None
     if prompts_writer is not None:
@@ -102,7 +136,7 @@ def run_game(
             prompts_writer.write("agent_system", power=p, system=agents[p]._system)
 
     end_year = 1900 + years
-    tokens = {"input": 0, "output": 0, "cache_create": 0, "cache_read": 0}
+    tokens_by_model: dict[str, dict[str, int]] = {}
     phases_played = 0
     dialogue_history: list[DialogueMessage] = []
     strategies_by_power: dict[str, list[StrategyNote]] = {p: [] for p in POWERS}
@@ -113,6 +147,7 @@ def run_game(
             "run_started",
             run_id=run_id,
             model=model,
+            power_models=power_model,
             years_target=years,
             personas=personas,
             powers=list(POWERS),
@@ -159,7 +194,7 @@ def run_game(
                         dialogue=dialogue_history,
                         strategy_history=strategies_by_power[power],
                     )
-                    _accumulate_tokens(tokens, res.chat)
+                    _accumulate(tokens_by_model, power_model[power], res.chat)
                     note = StrategyNote(phase=short, kind="initial", text=res.text)
                     strategies_by_power[power].append(note)
                     tw.write(
@@ -198,7 +233,7 @@ def run_game(
                         ),
                     )
                     for power, res in results.items():
-                        _accumulate_tokens(tokens, res.chat)
+                        _accumulate(tokens_by_model, power_model[power], res.chat)
                         tw.write(
                             "agent_messages",
                             phase=short,
@@ -235,7 +270,7 @@ def run_game(
                         dialogue=dialogue_history,
                         strategy_history=strategies_by_power[power],
                     )
-                    _accumulate_tokens(tokens, res.chat)
+                    _accumulate(tokens_by_model, power_model[power], res.chat)
                     note = StrategyNote(phase=short, kind="revised", text=res.text)
                     strategies_by_power[power].append(note)
                     tw.write(
@@ -268,7 +303,7 @@ def run_game(
                         strategies_by_power[power] if enable_strategy else None
                     ),
                 )
-                _accumulate_tokens(tokens, result.chat)
+                _accumulate(tokens_by_model, power_model[power], result.chat)
                 if log_this_phase:
                     prompts_writer.write(
                         "agent_prompt", phase=short, kind="orders",
@@ -327,8 +362,8 @@ def run_game(
                 "units": {p: state.units(p) for p in POWERS},
                 "centers": {p: state.centers(p) for p in POWERS},
             },
-            tokens=tokens,
-            cost_usd=_estimate_cost(tokens),
+            tokens_by_model=tokens_by_model,
+            cost_usd=_estimate_cost(tokens_by_model),
         )
 
     if prompts_writer is not None:
@@ -349,7 +384,7 @@ def run_game(
     if verbose:
         elapsed = time.time() - t0
         print()
-        print(f"Run complete: {phases_played} phases in {elapsed:.1f}s, ~${_estimate_cost(tokens):.4f}")
+        print(f"Run complete: {phases_played} phases in {elapsed:.1f}s, ~${_estimate_cost(tokens_by_model):.4f}")
         print(f"Artifacts: {run_dir}")
 
     return run_dir
