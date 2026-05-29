@@ -106,15 +106,56 @@ python -m diplomacy_a2a
 # cheap end-to-end verification (Haiku, 1 year, 1 round) — pennies
 python -m diplomacy_a2a --smoke
 
-# Sonnet, also save every agent prompt + response (first year, see below)
-python -m diplomacy_a2a --model claude-sonnet-4-6 --log-prompts
+# Sonnet, save every agent prompt + response (first year), with strategy log
+python -m diplomacy_a2a --model claude-sonnet-4-6 --strategy --log-prompts
+
+# axis-A controlled experiment: 6 Haikus + 1 Sonnet (rotate the position over seeds)
+python -m diplomacy_a2a --model claude-haiku-4-5-20251001 \
+                        --upgrade TURKEY=claude-sonnet-4-6 \
+                        --years 4
 
 python -m diplomacy_a2a --help     # full option list
 ```
 
 Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
-A `--smoke` run costs pennies; a full Sonnet game runs ~$2; a full grid of
-persona × matchup × seed experiments will run ~hundreds of dollars (see **Cost**).
+
+### Options
+
+| Flag | Default | What it does |
+|---|---|---|
+| `--model MODEL` | `claude-opus-4-7` | Anthropic model id used by every power that doesn't have an `--upgrade` override. Use `claude-sonnet-4-6` for the showcase canonical or `claude-haiku-4-5-20251001` for cheap experiments. |
+| `--years N` | `2` | Game-years to play. Solo wins (18 SCs) end the game early regardless. |
+| `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
+| `--strategy` | off | Have each agent write a 1–2 sentence strategy note *before* negotiation and a revised one *after*, exposing the history across turns. Adds ~25–35% cost. See **Agent strategy & memory**. |
+| `--upgrade POWER=MODEL` *(repeatable)* | – | Override the model used by one power. Plumbing for the axis-A controlled experiment, e.g. `--upgrade TURKEY=claude-sonnet-4-6` in an otherwise Haiku game. Costs are reported per-model. |
+| `--log-prompts` | off | Save every prompt each agent receives, paired with its response, to `prompts.jsonl` and `prompts.md`. See **Seeing the exact agent prompts and responses**. |
+| `--log-prompts-years N` | `1` | When `--log-prompts` is on, only log calls in the first N game-years (keeps the artifact focused on opening play). |
+| `--smoke` | off | Shortcut for cheap end-to-end verification: Haiku, 1 year, 1 round. Pennies. |
+| `--results-dir PATH` | `results` | Root directory for artifacts. |
+| `--quiet` | off | Suppress the verbose phase-by-phase trace. |
+
+### Options *not* in the CLI yet (Roadmap)
+
+- **Per-agent personality traits** (aggressive, untruthful, backstabbing, crazy)
+  — currently every power shares the same persona prompt from
+  [`personas/registry.py`](diplomacy_a2a/personas/registry.py). The programmatic
+  `run_game(personas={"TURKEY": "<prompt>"})` already accepts per-power
+  overrides; the CLI flag is **axis B** in the Roadmap.
+- **Per-agent memory depth** — strategy history is currently capped at the last
+  6 entries (`format_strategy_history(recent=6)` in
+  [`agent.py`](diplomacy_a2a/agent.py)) and dialogue history is unbounded.
+  Making *one* agent see more or less context than the rest is **axis C** in
+  the Roadmap.
+- **Pre-game collusion** between two agents — **axis D** in the Roadmap.
+
+### Cost / time per game
+
+A `--smoke` run costs pennies. The published Sonnet canonical (2 years, 3 rounds,
+`--strategy`) runs ~$3.20 and ~28 min. Haiku at the same settings is ~$2.9 and
+~34 min on present evidence (prompt caching not yet firing on Haiku 4.5 — see
+[REFERENCE.md](REFERENCE.md) known issues). A controlled-variation experiment
+series (axis A–D) is budgeted under ~$300 total. Per-model rates and full
+per-run timing are in [REFERENCE.md](REFERENCE.md).
 
 ## Architecture
 
