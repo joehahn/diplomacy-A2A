@@ -112,11 +112,12 @@ python -m diplomacy_a2a --log-prompts
 # Opus showcase (more expensive, ~$15+ at 5 years × 3 rounds × strategy on)
 python -m diplomacy_a2a --model claude-opus-4-7
 
-# axis-A controlled experiment: 6 Sonnets + 1 Haiku (rotate the position over seeds)
-python -m diplomacy_a2a --downgrade TURKEY=claude-haiku-4-5-20251001
+# axis-A controlled experiment: 6 Sonnets + 1 Haiku (or 1 Opus) — varied position over seeds
+python -m diplomacy_a2a --power-model TURKEY=claude-haiku-4-5-20251001
+python -m diplomacy_a2a --power-model TURKEY=claude-opus-4-7
 
 # axis-C controlled experiment: one agent with much longer memory than the rest
-python -m diplomacy_a2a --memory-power TURKEY=20
+python -m diplomacy_a2a --power-memory TURKEY=20
 
 python -m diplomacy_a2a --help     # full option list
 ```
@@ -130,9 +131,9 @@ Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
 | `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the workhorse — the published canonical was Sonnet, and a 5-year game runs ~$8. Use `claude-opus-4-7` for a stronger (~$15+) showcase or `claude-haiku-4-5-20251001` for cheap experiments. |
 | `--years N` | `5` | Game-years to play. Solo wins (18 SCs) end the game early regardless. |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
-| `--downgrade POWER=MODEL` *(repeatable)* | – | Give one power a different (typically cheaper) model than the default. Plumbing for the **axis-A** controlled experiment, e.g. `--downgrade TURKEY=claude-haiku-4-5-20251001` while everyone else stays on Opus. Costs are reported per-model. |
+| `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default — weaker (Haiku) or stronger (Opus). Plumbing for the **axis-A** controlled experiment, e.g. `--power-model TURKEY=claude-opus-4-7` while everyone else stays on Sonnet. Costs are reported per-model. |
 | `--memory N` | `6` | Default strategy-history depth for every agent — how many of their own past strategy notes they see in subsequent calls. `0` is a memoryless agent. |
-| `--memory-power POWER=N` *(repeatable)* | – | Override the strategy-history depth for one power. Plumbing for the **axis-C** experiment, e.g. `--memory-power TURKEY=20` gives Turkey a much longer memory than the rest. |
+| `--power-memory POWER=N` *(repeatable)* | – | Override the strategy-history depth for one power. Plumbing for the **axis-C** experiment, e.g. `--power-memory TURKEY=20` gives Turkey a much longer memory than the rest. |
 | `--log-prompts` | off | Save every prompt each agent receives, paired with its response, to `prompts.jsonl` and `prompts.md`. See **Seeing the exact agent prompts and responses**. |
 | `--log-prompts-years N` | `1` | When `--log-prompts` is on, only log calls in the first N game-years. |
 | `--smoke` | off | Shortcut for cheap end-to-end verification: Haiku, 1 year, 1 round. Pennies. |

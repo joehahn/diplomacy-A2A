@@ -37,18 +37,19 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--log-prompts-years", type=int, default=1,
                    help="when --log-prompts is on, only log the first N years "
                         "(default: 1; keeps the artifact focused on opening play)")
-    p.add_argument("--downgrade", action="append", default=[], metavar="POWER=MODEL",
-                   help="give one power a different (typically cheaper) model than the "
-                        "default. Repeatable. Example: --downgrade TURKEY=claude-haiku-4-5-20251001 "
-                        "while everyone else stays on Opus. Plumbing for the axis-A "
-                        "controlled experiment.")
+    p.add_argument("--power-model", action="append", default=[], metavar="POWER=MODEL",
+                   help="give one power a different model than the default — either "
+                        "weaker (e.g. Haiku) or stronger (e.g. Opus). Repeatable. "
+                        "Example: --power-model TURKEY=claude-opus-4-7 while everyone "
+                        "else stays on Sonnet. Plumbing for the axis-A controlled "
+                        "experiment.")
     p.add_argument("--memory", type=int, default=6, metavar="N",
                    help="default strategy-history depth for every agent — how many of "
                         "their own past strategy notes they see (default: 6). Use 0 for a "
                         "memoryless agent.")
-    p.add_argument("--memory-power", action="append", default=[], metavar="POWER=N",
+    p.add_argument("--power-memory", action="append", default=[], metavar="POWER=N",
                    help="override the strategy-history depth for one power (repeatable). "
-                        "Example: --memory-power TURKEY=20 gives Turkey a much longer "
+                        "Example: --power-memory TURKEY=20 gives Turkey a much longer "
                         "memory than the rest. Plumbing for the axis-C experiment.")
     p.add_argument("--smoke", action="store_true",
                    help=f"cheap-mode shortcut: use {SMOKE_MODEL}, 1 year, 1 round")
@@ -67,31 +68,31 @@ def main(argv: list[str] | None = None) -> None:
     if args.smoke:
         model, years, rounds = SMOKE_MODEL, 1, 1
 
-    # Parse --downgrade POWER=MODEL entries into per-power client overrides.
-    downgrade_specs: list[tuple[str, str]] = []
-    for spec in args.downgrade:
+    # Parse --power-model POWER=MODEL entries into per-power client overrides.
+    power_model_specs: list[tuple[str, str]] = []
+    for spec in args.power_model:
         if "=" not in spec:
-            raise SystemExit(f"--downgrade expects POWER=MODEL, got {spec!r}")
+            raise SystemExit(f"--power-model expects POWER=MODEL, got {spec!r}")
         pw, mdl = spec.split("=", 1)
-        downgrade_specs.append((pw.strip().upper(), mdl.strip()))
+        power_model_specs.append((pw.strip().upper(), mdl.strip()))
 
-    # Parse --memory-power POWER=N entries into per-power memory-depth overrides.
+    # Parse --power-memory POWER=N entries into per-power memory-depth overrides.
     power_memory: dict[str, int] = {}
-    for spec in args.memory_power:
+    for spec in args.power_memory:
         if "=" not in spec:
-            raise SystemExit(f"--memory-power expects POWER=N, got {spec!r}")
+            raise SystemExit(f"--power-memory expects POWER=N, got {spec!r}")
         pw, depth = spec.split("=", 1)
         try:
             power_memory[pw.strip().upper()] = int(depth)
         except ValueError:
-            raise SystemExit(f"--memory-power N must be an integer, got {depth!r}")
+            raise SystemExit(f"--power-memory N must be an integer, got {depth!r}")
 
     # Lazy-import so `--help` works without an API key or the LLM SDK setup.
     load_dotenv(".env")
     from diplomacy_a2a.llm.anthropic_client import AnthropicClient, RunnerError
     from diplomacy_a2a.runner import run_game
 
-    power_clients = {pw: AnthropicClient(model=mdl) for pw, mdl in downgrade_specs}
+    power_clients = {pw: AnthropicClient(model=mdl) for pw, mdl in power_model_specs}
 
     try:
         run_game(
