@@ -529,6 +529,16 @@ ol.phases { line-height: 1.8; }
 .bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
                margin-left: 6px; font-weight: 700; }
 .bubble .btext { color: #222; line-height: 1.35; }
+.recap-row { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;
+             margin: 10px 0; }
+.recap-row .narr { flex: 1 1 60%; margin: 0; }
+.recap-row .kpi-charts { flex: 1 1 300px; display: flex; flex-direction: column;
+                         gap: 6px; min-width: 280px; }
+.kpi-svg { width: 100%; max-width: 360px; height: auto; background: #fafafa;
+           border: 1px solid #eee; border-radius: 4px; }
+.kpi-title { font-size: 9.5px; fill: #555; font-weight: 600; }
+.kpi-axis { stroke: #bbb; stroke-width: 0.6; }
+.kpi-tick { font-size: 8.5px; fill: #888; }
 .narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
         margin: 10px 0; font-size: 0.9em; }
 .narr .nrow { margin: 4px 0; line-height: 1.4; }
@@ -602,6 +612,103 @@ POWER_COLORS = {
 
 def _esc(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _kpi_chart(
+    title: str,
+    series: dict[str, list[float]],
+    ymax: float,
+    *,
+    width: int = 300,
+    height: int = 130,
+    y_ticks: list[tuple[float, str]] | None = None,
+) -> str:
+    """Render a tiny no-JS SVG line chart, one polyline per power, colored by
+    POWER_COLORS. `series` is {power: [value_at_phase_i for i in 0..N]}; all
+    series must have the same length N >= 2. `ymax` sets the y axis upper
+    bound. `y_ticks` is an optional list of (fractional_y, label) entries.
+    """
+    n = max((len(v) for v in series.values()), default=0)
+    if n < 2:
+        return ""
+    pad_l, pad_r, pad_t, pad_b = 24, 6, 14, 16
+    plot_w = width - pad_l - pad_r
+    plot_h = height - pad_t - pad_b
+    xs = [pad_l + i * plot_w / (n - 1) for i in range(n)]
+
+    def y_for(v: float) -> float:
+        v = max(0.0, min(v, ymax))
+        return height - pad_b - (v / ymax) * plot_h
+
+    parts: list[str] = [
+        f"<svg viewBox='0 0 {width} {height}' class='kpi-svg' "
+        f"xmlns='http://www.w3.org/2000/svg'>",
+        f"<text x='{width/2:.1f}' y='10' text-anchor='middle' class='kpi-title'>{title}</text>",
+        # axes
+        f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{height-pad_b}' class='kpi-axis'/>",
+        f"<line x1='{pad_l}' y1='{height-pad_b}' x2='{width-pad_r}' "
+        f"y2='{height-pad_b}' class='kpi-axis'/>",
+    ]
+    ticks = y_ticks if y_ticks is not None else [(0, "0"), (0.5, f"{ymax/2:g}"), (1, f"{ymax:g}")]
+    for frac, label in ticks:
+        y = height - pad_b - frac * plot_h
+        parts.append(
+            f"<line x1='{pad_l-2}' y1='{y:.1f}' x2='{pad_l}' y2='{y:.1f}' class='kpi-axis'/>"
+        )
+        parts.append(
+            f"<text x='{pad_l-3}' y='{y+3:.1f}' text-anchor='end' class='kpi-tick'>{label}</text>"
+        )
+    for power, pts in series.items():
+        color = POWER_COLORS.get(power, "#777")
+        coords = " ".join(
+            f"{xs[i]:.1f},{y_for(pts[i]):.1f}" for i in range(len(pts))
+        )
+        parts.append(
+            f"<polyline points='{coords}' fill='none' stroke='{color}' stroke-width='1.4'/>"
+        )
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def _kpi_charts_for_phase(
+    phase_order: list[str],
+    centers_by_phase: dict[str, dict[str, int]],
+    up_to: str,
+) -> str:
+    """Build the two stacked KPI charts (SC count and SoS share) that go on a
+    movement-phase slide, showing the running history up to and including
+    `up_to`. Returns an empty string if there aren't enough data points yet
+    (e.g. on the very first slide).
+    """
+    if up_to not in phase_order:
+        return ""
+    idx = phase_order.index(up_to)
+    phases = [p for p in phase_order[: idx + 1] if p in centers_by_phase]
+    if len(phases) < 2:
+        return ""
+    powers = sorted({pw for ph in phases for pw in centers_by_phase[ph].keys()})
+    sc_series: dict[str, list[float]] = {p: [] for p in powers}
+    sos_series: dict[str, list[float]] = {p: [] for p in powers}
+    for ph in phases:
+        c = centers_by_phase[ph]
+        total_sq = sum(v * v for v in c.values()) or 1
+        for p in powers:
+            v = c.get(p, 0)
+            sc_series[p].append(v)
+            sos_series[p].append((v * v) / total_sq)
+    sc_chart = _kpi_chart(
+        "Supply centers", sc_series, ymax=18,
+        y_ticks=[(0, "0"), (0.5, "9"), (1, "18")],
+    )
+    sos_chart = _kpi_chart(
+        "SoS share", sos_series, ymax=1.0,
+        y_ticks=[(0, "0"), (0.5, ".5"), (1, "1")],
+    )
+    return (
+        "<div class='kpi-charts'>"
+        f"{sc_chart}{sos_chart}"
+        "</div>"
+    )
 
 
 # Coloring in the "What happened" narration:
@@ -725,6 +832,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     dialogue_by_phase: dict[str, list[tuple[int, str, str, str]]] = {}
     results_by_phase: dict[str, dict[str, list[str]]] = {}  # short -> {unit: [tokens]}
     strategies_by_phase: dict[str, dict[str, dict[str, str]]] = {}  # short -> power -> kind -> text
+    centers_by_phase: dict[str, dict[str, int]] = {}  # short -> power -> SC count after this phase
     current: dict[str, Any] | None = None
     for e in events:
         if e["type"] == "phase_started":
@@ -742,6 +850,9 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 )
         elif e["type"] == "phase_resolved" and e.get("resolved_phase"):
             results_by_phase[e["resolved_phase"]] = e.get("results", {})
+            centers_by_phase[e["resolved_phase"]] = {
+                p: len(cs) for p, cs in e.get("centers", {}).items()
+            }
         elif e["type"] == "agent_strategy":
             strategies_by_phase.setdefault(e["phase"], {}).setdefault(e["power"], {})[e["kind"]] = e.get("text", "")
         elif e["type"] == "orders_submitted" and current is not None:
@@ -773,6 +884,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         slides.append(
             {
                 "file": f"{ph['short']}.html",
+                "short": ph["short"],
                 "title": f"{ph['long']} ({ph['short']})",
                 "heading": f"{ph['long']} <code>({ph['short']})</code>",
                 "orders": ph["orders"],
@@ -822,6 +934,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     )
 
     # --- per-slide pages ---
+    phase_order = [ph["short"] for ph in phases]
     n = len(slides)
     for i, sl in enumerate(slides):
         prev_link = (
@@ -856,14 +969,27 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             narration_rows.append(
                 f"<div class='nrow'><b style='color:{color}'>{pw}</b> {body}</div>"
             )
-        # "What happened" narration, with a link that pops the raw orders.
+        # "What happened" narration, with a link that pops the raw orders, and
+        # on movement-phase slides a pair of small KPI timeseries (SC count and
+        # SoS share) rendered to the right of the narration table.
         recap_html: list[str] = []
         if narration_rows:
             recap_html.append("<h2>What happened this phase</h2>")
         if sl["orders"] is not None:
             recap_html.append("<a class='orders-link' href='#orders-modal'>▤ Orders this phase</a>")
         if narration_rows:
-            recap_html += ["<div class='narr'>"] + narration_rows + ["</div>"]
+            short = sl.get("short", "")
+            charts_html = (
+                _kpi_charts_for_phase(phase_order, centers_by_phase, short)
+                if short.endswith("M") else ""
+            )
+            narration_block = "<div class='narr'>" + "".join(narration_rows) + "</div>"
+            if charts_html:
+                recap_html.append(
+                    f"<div class='recap-row'>{narration_block}{charts_html}</div>"
+                )
+            else:
+                recap_html.append(narration_block)
 
         # Raw orders live in a no-JS CSS :target popup, hidden until the link
         # above is clicked.

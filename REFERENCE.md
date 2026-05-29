@@ -1,0 +1,153 @@
+# REFERENCE.md — technical details, data, and experiment results
+
+The README's job is to tell a first-time visitor what this project is and why
+it's interesting. This file is for the underlying technical material: model
+pricing, observed timing, quality observations, and the controlled-variation
+experiment results as they accumulate.
+
+Links back to [README.md](README.md) and [results/README.md](results/README.md).
+
+---
+
+## Anthropic per-million-token rates (used by the cost estimator)
+
+The runner's cost estimator (`runner._RATE_TABLE`) keys on a model-id prefix
+and assumes the published list pricing. Rerunning a committed game gives you
+the same `cost_usd` because adjudication and token counts are deterministic
+from the recorded orders + dialogue.
+
+| Family prefix | Input | Output | Cache write | Cache read |
+|---|---:|---:|---:|---:|
+| `claude-sonnet-4-6` | $3.00 | $15.00 | $3.75 | $0.30 |
+| `claude-opus-4-7`   | $15.00 | $75.00 | $18.75 | $1.50 |
+| `claude-haiku-4-5`  | $1.00 | $5.00 | $1.25 | $0.10 |
+
+Anything that doesn't prefix-match falls back to the Sonnet row — so unknown
+models are *over-estimated*, not silently under-estimated.
+
+Anthropic's **prompt caching** is on by default
+([`AnthropicClient`](diplomacy_a2a/llm/anthropic_client.py) sets
+`cache_control: ephemeral` on the system prompt) — for a 2-year Sonnet game
+this saves ~22% ($0.69 of $3.12) by serving the rules + persona prefix as
+cache reads (10% of input price) after the first write. The fix to make
+the estimator **model-aware** landed in commit `7358cdd`; before that,
+mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
+
+---
+
+## Per-phase wall-time observations
+
+| Run | Model | Settings | Phases | Total time | **s / phase** | Cost reported |
+|---|---|---|---:|---:|---:|---:|
+| 20260524T031616Z | Sonnet | no negotiation | 7 | – | – | $0.35 |
+| 20260524T034819Z | Sonnet | 1 round, 2 yr | 7 | – | – | $0.88 |
+| 20260527T184246Z | Sonnet | 3 rounds, 2 yr, `--log-prompts` | 8 | 1419s | **~177** | $2.43 |
+| 20260528T214253Z (canonical) | Sonnet | 3 rounds, 2 yr, `--strategy`, `--log-prompts` | 7 | 1713s | **~245** | $3.20 |
+| 20260528T213153Z (smoke) | Haiku | 1 round, 1 yr, `--strategy` | 3 | 214s | **~71** | $0.85 *(Sonnet-inflated; actual ≈ $0.28)* |
+| 20260527T132540Z (smoke) | Haiku | 1 round, 1 yr | 3 | 180s | **~60** | $0.46 *(actual ≈ $0.15)* |
+| 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, `--strategy`, `--log-prompts-years 5` | 13 of ≈17 | ~3300s | **~252** | – |
+
+**Headline:** Haiku is ~3–4× faster than Sonnet *per phase on simple workloads*
+(1 round, no strategy). On the full canonical workload (3 rounds × `--strategy`)
+the per-phase advantage **collapses to roughly parity** because per-phase call
+count dominates — Haiku doesn't make fewer calls than Sonnet, and the strategy +
+3-round combo is call-heavy. Cost is still ~1/3 across the board.
+
+---
+
+## Quality observations
+
+### Sonnet (canonical model)
+
+Produces tight 1–2-sentence strategy notes (*"I'll court Austria with vague
+promises while positioning to stab if opportunity arises"*), clearly probes
+in early negotiation rounds, closes deals in round 3, and lets dialogue
+visibly steer orders. Multiple betrayals + coordinated handoffs across the
+committed canonical run (`20260528T214253Z`). This is the published demo.
+
+### Haiku (cheaper, fallback for experiments)
+
+- **Verbose strategy notes** — 4–6 sentences, often re-stating prior context
+  in markdown ("**F1903M Strategy:**"). Reasonable substance, but flatter
+  and less quotable than Sonnet's.
+- **Pulled toward mutual-defensive stalemates** when `--strategy` is on. In
+  the partial 5-year run (`20260529T151442Z`), every power's SC count stayed
+  at 3–5 from F1901M through F1903M — basically nothing happened for ~2.5
+  game years. The strategy log seems to reinforce a "consolidate, don't
+  antagonize" stance across the table.
+- Likely viable for the controlled experiments **if** persona prompts
+  (axis B) override the default cautious behavior; needs empirical
+  confirmation, which is what axis A's first run is for.
+
+---
+
+## Controlled-variation experiments
+
+The Roadmap's plan is N-1-identical / 1-varied A/B comparisons across four
+axes, replacing the original full persona grid. Each axis lands here as it
+runs, with method + per-power results table + verdict.
+
+### Axis A — model capability (one stronger model in a homogeneous table)
+
+**Method:** 6 Haikus + 1 Sonnet (rotating which power is the upgraded one,
+in later rounds), paired with an all-Haiku baseline at identical settings.
+3 rounds of negotiation per movement phase, `--strategy` on, 3 game-years
+each (longer than the canonical's 2 because Haiku tends to take longer to
+break stalemate).
+
+**Status:** *Plumbing landed in commit `7358cdd` (run_game `power_clients`
++ `--upgrade POWER=MODEL` CLI flag + model-aware cost estimator). First
+runs pending.*
+
+Results will land here when complete.
+
+### Axis B — personality trait (one aggressive / untruthful / backstabbing / crazy)
+
+*Not yet implemented.*
+
+### Axis C — memory depth (one short or long context)
+
+*Not yet implemented.*
+
+### Axis D — two-agent collusion (pre-game shared agreement)
+
+*Not yet implemented.*
+
+---
+
+## Known issues & errata
+
+- **Pre-`7358cdd` cost reports** for Haiku-only and mixed-model runs were
+  inflated ~3× because the estimator was hardcoded to Sonnet rates. Earlier
+  reported costs in this file's table show both numbers where applicable.
+- **`20260529T151442Z`** ended at `S1905M round 1` because the API key ran
+  out of credits mid-game (~$0.07 unpaid balance at termination). The
+  partial transcript still has 13 phases of usable data; the rendered viewer
+  / `prompts.md` cover what was completed. Not pushed; remains in `results/`
+  locally for forensic value.
+- **Capturing run output via `| tail -N`** has bitten us twice now — the
+  pipe masks the runner's exit code and hides any traceback in the
+  discarded portion of stdout. For long runs, prefer `tee` or no pipe.
+
+---
+
+## How metrics are computed (for the scorer + KPI charts)
+
+When the per-game scorer lands and the per-phase KPI charts go on the
+slideshow:
+
+- **PPSC** (final SC count): straight from `phase_resolved.centers` at the
+  last resolved phase.
+- **Sum-of-Squares share** (per phase, per power): `len(centers[p])²` ÷
+  `Σ len(centers[p])²` over survivors. Eliminated powers contribute 0.
+- **Survival rate**: `len(final_state.centers[p]) ≥ 1`.
+- **Peak SC** (per power): `max(len(centers[p]))` across all
+  `phase_resolved` events.
+- **Year-to-N centers**: first phase where `len(centers[p]) ≥ N`.
+
+Behavioral metrics (planned, axis B–D dependent):
+- **Promise→action fidelity**: parse stated intentions in negotiation
+  messages (e.g., "I'll move A BUL to GRE"), compare to the next phase's
+  submitted orders.
+- **Alliance duration**: consecutive phases of mutual support orders
+  between a pair of powers.

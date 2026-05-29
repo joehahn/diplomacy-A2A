@@ -283,9 +283,11 @@ out of the game loop so a full experiment grid stays cheap.
 
 ## Cost
 
-TBD. A small-mode `smoke` run will cost pennies; a full grid will cost
-~hundreds of dollars. Real numbers will land in this section once the
-runner is wired up.
+A `--smoke` run costs pennies; the published canonical run (Sonnet, 2 years,
+3 negotiation rounds, `--strategy`) cost **~$3.20** end-to-end. A full
+controlled-variation experiment series (axis A–D, see Roadmap) is budgeted
+under **~$300**. Per-million-token rates, per-phase timing, and per-run cost
+history are tracked in [REFERENCE.md](REFERENCE.md).
 
 ## Notes for re-running
 
@@ -293,3 +295,7 @@ LLM outputs are not byte-for-byte deterministic even at temperature 0,
 so a rerun will produce *similar* dynamics, not identical transcripts.
 Model IDs are pinned in `diplomacy_a2a/config.py` so reruns are
 comparable across model releases.
+
+For technical details (model pricing, per-phase timing observations,
+quality notes, experiment results as they land, known issues): see
+[**REFERENCE.md**](REFERENCE.md).
