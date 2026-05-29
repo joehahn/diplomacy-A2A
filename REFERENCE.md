@@ -89,6 +89,54 @@ committed canonical run (`20260528T214253Z`). This is the published demo.
 
 ---
 
+## Agent prompt: supply-center visibility
+
+The view rendered by [`game/view.py::render_for_power`](diplomacy_a2a/game/view.py)
+contains a single `## Supply centers` block that enumerates, for every power,
+who owns which centers. As of commit `86b3f83` (2026-05-29) the block also ends
+with an explicit **`Unowned (N): ...`** line listing the still-neutral SCs:
+
+```
+## Supply centers
+- AUSTRIA ← YOU (3): BUD, TRI, VIE
+- ENGLAND (3): EDI, LON, LVP
+- FRANCE  (3): BRE, MAR, PAR
+- GERMANY (3): BER, KIE, MUN
+- ITALY   (3): NAP, ROM, VEN
+- RUSSIA  (4): MOS, SEV, STP, WAR
+- TURKEY  (3): ANK, CON, SMY
+- Unowned (12): BEL, BUL, DEN, GRE, HOL, NWY, POR, RUM, SER, SPA, SWE, TUN
+```
+
+Before that commit, neutrals were invisible — the agent had to either recall
+the standard map's 12 neutral SCs from training data or infer them by
+intersecting the legal-orders menu with general map knowledge. The new line
+is computed from `state.game.map.scs` minus the union of all owned centers,
+so it (a) self-shrinks as the game progresses (by F1903 maybe only 2–3
+neutrals remain), (b) works unchanged on variant maps, and (c) costs ≈20
+extra tokens per prompt.
+
+**Where SC-value framing comes from.** The cached system prefix contains
+`rules.md`, whose `## Goal` section opens with:
+
+> Be the first power to **control 18 supply centers** (out of 34 on the
+> board). A solo victory ends the game. Anything less is a loss or a draw.
+
+…and the `## Strategy / context for negotiation` section reinforces it:
+
+> The supply-center count after Fall (especially Fall 1901, Fall 1902)
+> signals who is winning and reshapes alliances.
+
+So yes — agents are explicitly told that SCs are the win condition, that 18
+is the solo threshold, that 34 exist, and that the Fall SC count is the
+politically-charged number. They are not given a separate "you should
+strive to acquire SCs" directive beyond that, because the win condition
+already implies it and the personas (axis B, eventually) are where any
+extra acquisitiveness or restraint should be encoded — not in the shared
+rules prefix.
+
+---
+
 ## Controlled-variation experiments
 
 The Roadmap's plan is N-1-identical / 1-varied A/B comparisons across four
