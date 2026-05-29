@@ -1,5 +1,14 @@
 # diplomacy-A2A
 
+![Players at a Diplomacy board mid-negotiation](assets/diplomacy-board.jpg)
+
+<sub>*Players hunched over a Diplomacy board at the Deskohraní 2008 board-game
+festival. Photo by Matěj Baťha,
+[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), via
+[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Deskohran%C3%AD_2008_269.jpg).
+This project does the same thing — six players plotting, allying, and betraying
+each other across a Europe map — with LLM agents instead of humans.*</sub>
+
 A Claude-powered, agent-to-agent simulation of the board game **Diplomacy**.
 Persona-conditioned LLM agents negotiate, ally, and (often) betray each other
 across multiple turns of full-press play. The artifact that matters is the
