@@ -1,8 +1,8 @@
 # results/
 
-Pre-rendered transcripts of game runs. These are **committed** to the
-repo so visitors can read the interesting output without spending
-money on API calls.
+Rendered transcripts of game runs land here. The canonical run is **committed**
+to the repo so visitors can read the interesting output without spending money
+on API calls; throwaway runs live in `scratch/` (gitignored) instead.
 
 Each run lands as a directory:
 
@@ -17,37 +17,31 @@ Each run lands as a directory:
   (so you read the talk, then click ahead to see what it produced). The opening
   `start.html` shows the initial board and the first round of negotiation.
   **Easiest entry point**: open `index.html` and click through.
+- `prompts.jsonl` / `prompts.md` — only present when the run was launched with
+  `--log-prompts`; contains every agent's exact prompt and response for the
+  first `--log-prompts-years` years (default 1).
 
 Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
 ## Canonical run
 
-### `20260528T214253Z/` — **3-round negotiation, with strategy log + narration**
+The canonical configuration is:
 
-Seven Sonnet-backed agents, 2 years, three rounds of private messaging per
-movement phase, plus the new `--strategy` flag: each agent writes a 1–2 sentence
-**self-authored strategy/goals note** before negotiation begins and a **revised
-note** after the final round, with its own strategy history carried into every
-later call. Each slide also shows the deterministic narration, the LLM
-commentary, and a collapsible **"Agent strategies this phase"** block exposing
-each power's plan-vs-revision. 7 phases, **≈$3.20**, ≈29 minutes. The full
-agent-prompt + response dump (`prompts.jsonl` / `prompts.md`) is committed —
-see the project README's *Seeing the exact agent prompts*.
+```bash
+python -m diplomacy_a2a --log-prompts
+```
 
-Headline highlight (S1901M, Italy):
+Everything else takes its default value — Sonnet 4.6, 5 game-years, 3
+negotiation rounds per movement phase, agent memory = 3 movement turns,
+self-authored strategy notes on. `--log-prompts` saves the exact prompt +
+response pair for every agent call during the **first** game-year (the
+`--log-prompts-years` default), so the opening play is auditable down to the
+token without the later phases bloating the dump.
 
-- **Italy's hidden mind, made visible.** Italy's *initial* strategy note —
-  written before negotiation, private to the agent — explicitly says:
-  *"I'll court Austria with vague promises while positioning to stab if
-  opportunity arises."* Its public message to Austria the same round:
-  *"I have no designs on your Balkan centers… I'm planning a quiet opening."*
-  After Austria reciprocated, Italy's **revised** strategy note pulled back:
-  *"I've agreed with Austria to keep A VEN out of Trieste… I'll honor those
-  commitments while pushing aggressively toward the eastern Mediterranean —
-  A VEN to TYR keeps pressure on Austria without violating the letter of our
-  deal."* Same agent, same turn, two recorded stances — exactly the
-  intent-vs-action artifact `--strategy` is built to surface.
+Expected cost / wall-time at current Sonnet rates: ≈$8 / ≈80 minutes for the
+full 5-year game. The rendered slideshow + `prompts.md` are committed when a
+new canonical lands.
 
-[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260528T214253Z/index.html)
-(GitHub Pages) to flip through the maps, narration, commentary, agent
-strategies, and dialogue.
+*(The previous Sonnet 2-year canonical at `20260528T214253Z/` was deleted on
+2026-05-29 in favor of the new 5-year configuration. A replacement render is
+pending.)*

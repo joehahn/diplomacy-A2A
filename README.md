@@ -14,9 +14,17 @@ Persona-conditioned LLM agents negotiate, ally, and (often) betray each other
 across multiple turns of full-press play. The artifact that matters is the
 **negotiation transcript**, not whether any particular agent wins.
 
-→ **[See the canonical run](https://joehahn.github.io/diplomacy-A2A/results/20260528T214253Z/index.html)**
-on GitHub Pages — Sonnet × 7 powers × 2 years × 3 negotiation rounds, with
-turn-by-turn maps, narration, agent strategies, and LLM commentary.
+The **canonical run** is defined as:
+
+```bash
+python -m diplomacy_a2a --log-prompts
+```
+
+— Sonnet × 7 powers × 5 game-years × 3 negotiation rounds, with self-authored
+strategy notes, deterministic per-turn narration, and per-agent prompt+response
+dumps for the first game-year. When rendered, it lives at
+`results/<run-id>/index.html` and is committed so visitors can read the
+output without spending money.
 
 This is a portfolio demo for AI-consulting / forward-deployed-engineer work,
 in the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
@@ -95,7 +103,7 @@ Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
 
 | Flag | Default | What it does |
 |---|---|---|
-| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the workhorse — the published canonical was Sonnet, and a 5-year game runs ≈$8. Use `claude-opus-4-7` for a stronger (≈$15+) showcase or `claude-haiku-4-5-20251001` for cheap experiments. |
+| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the workhorse — the canonical is Sonnet, and a 5-year game runs ≈$8. Use `claude-opus-4-7` for a stronger (≈$15+) showcase or `claude-haiku-4-5-20251001` for cheap experiments. |
 | `--years N` | `5` | Game-years to play. Solo wins (18 SCs) end the game early regardless. |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
 | `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default — weaker (Haiku) or stronger (Opus). E.g. `--power-model TURKEY=claude-opus-4-7` while everyone else stays on Sonnet. Costs are reported per-model. |
@@ -123,9 +131,10 @@ produces a much richer transcript. See **Agent strategy & memory** below.
 
 ### Cost / time per game
 
-A `--smoke` run costs pennies. The published Sonnet canonical (2 years, 3 rounds,
-`--strategy`) runs ≈$3.20 and ≈28 min. Haiku at the same settings is ≈$2.9 and
-≈34 min on present evidence (prompt caching not yet firing on Haiku 4.5 — see
+A `--smoke` run costs pennies. The canonical Sonnet run (5 years, 3 rounds,
+strategy on, `--log-prompts` for year 1) is budgeted at ≈$8 and ≈80 min,
+extrapolating from the older 2-year canonical (≈$3.20 / 28 min). Haiku is
+≈⅓ the cost (prompt caching not yet firing on Haiku 4.5 — see
 [REFERENCE.md](REFERENCE.md) known issues). A controlled-variation experiment
 series (axis A–D) is budgeted under ≈$300 total. Per-model rates and full
 per-run timing are in [REFERENCE.md](REFERENCE.md).
@@ -144,11 +153,11 @@ per-run timing are in [REFERENCE.md](REFERENCE.md).
   private messages each turn, then commit orders, then the library adjudicates.
   See **Negotiation protocol** below.
 - **`results/`** — pre-rendered transcripts so visitors can see output
-  without spending money. Flip through a game phase by phase in the
-  turn-by-turn viewer (hosted on GitHub Pages):
-  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260528T214253Z/index.html)
-  (3 rounds of negotiation per turn, turn-by-turn narration, and the new
-  `--strategy` log per agent).
+  without spending money. Each game renders a turn-by-turn HTML slideshow
+  (maps, narration, agent strategies, dialogue) at
+  `results/<run-id>/index.html`, hosted on GitHub Pages. The canonical
+  configuration is the bare `python -m diplomacy_a2a --log-prompts`
+  command — see [results/README.md](results/README.md).
 
 ## What each agent sees
 
@@ -271,21 +280,19 @@ click any prompt to expand). By default it only captures **the first game-year**
 which is where the opening negotiation/coordination is most legible and keeps the
 artifact focused (`--log-prompts-years N` extends that).
 
-The canonical run's dumps **are committed** so you can read precisely what
-the agents said without spending anything:
-[**`prompts.md`**](results/20260528T214253Z/prompts.md) (≈ 836 KB; GitHub
-renders the collapsibles inline) or the raw
-[`prompts.jsonl`](results/20260528T214253Z/prompts.jsonl).
-
-The flag is off by default and otherwise gitignored, so a full experiment grid
-isn't bloated with redundant dumps. To produce one yourself:
+The canonical run's dumps **are committed** when it lands at
+`results/<run-id>/prompts.md` so you can read precisely what the agents said
+without spending anything (GitHub renders the collapsibles inline). The flag
+is off by default and otherwise gitignored, so a full experiment grid isn't
+bloated with redundant dumps. To produce one yourself:
 
 ```bash
-python -m diplomacy_a2a --model claude-sonnet-4-6 --log-prompts
+python -m diplomacy_a2a --log-prompts
 ```
 
-That's a full 2-year, 3-round game (≈$2–2.5 on Sonnet); `--log-prompts` itself
-adds no API cost — it only saves prompts that are sent anyway.
+That's the bare canonical: 5-year, 3-round, Sonnet, strategy on, log year 1
+(≈$8 / ≈80 min). `--log-prompts` itself adds no API cost — it only saves
+prompts that are sent anyway.
 
 Separately, **optional LLM commentary** ([`commentary.py`](diplomacy_a2a/commentary.py))
 can add a narrator's strategic read to each slide — who's threatening whom, who's
@@ -297,11 +304,12 @@ out of the game loop so a full experiment grid stays cheap.
 
 ## Cost
 
-A `--smoke` run costs pennies; the published canonical run (Sonnet, 2 years,
-3 negotiation rounds, `--strategy`) cost **≈$3.20** end-to-end. A full
-controlled-variation experiment series (axis A–D, see Roadmap) is budgeted
-under **≈$300**. Per-million-token rates, per-phase timing, and per-run cost
-history are tracked in [REFERENCE.md](REFERENCE.md).
+A `--smoke` run costs pennies; the canonical (Sonnet, 5 years, 3 rounds,
+strategy on, `--log-prompts` year 1) is budgeted at **≈$8** end-to-end —
+extrapolated from an earlier 2-year Sonnet canonical that came in at $3.20.
+A full controlled-variation experiment series (axis A–D, see Roadmap) is
+budgeted under **≈$300**. Per-million-token rates, per-phase timing, and
+per-run cost history are tracked in [REFERENCE.md](REFERENCE.md).
 
 ## Notes for re-running
 

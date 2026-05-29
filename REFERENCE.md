@@ -42,7 +42,7 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 | 20260524T031616Z | Sonnet | no negotiation | 7 | – | – | $0.35 |
 | 20260524T034819Z | Sonnet | 1 round, 2 yr | 7 | – | – | $0.88 |
 | 20260527T184246Z | Sonnet | 3 rounds, 2 yr, `--log-prompts` | 8 | 1419s | **≈177** | $2.43 |
-| 20260528T214253Z (canonical) | Sonnet | 3 rounds, 2 yr, `--strategy`, `--log-prompts` | 7 | 1713s | **≈245** | $3.20 |
+| 20260528T214253Z *(deleted; previous canonical)* | Sonnet | 3 rounds, 2 yr, `--strategy`, `--log-prompts` | 7 | 1713s | **≈245** | $3.20 |
 | 20260528T213153Z (smoke) | Haiku | 1 round, 1 yr, `--strategy` | 3 | 214s | **≈71** | $0.85 *(Sonnet-inflated; actual ≈ $0.28)* |
 | 20260527T132540Z (smoke) | Haiku | 1 round, 1 yr | 3 | 180s | **≈60** | $0.46 *(actual ≈ $0.15)* |
 | 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, `--strategy`, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
@@ -63,8 +63,11 @@ count dominates — Haiku doesn't make fewer calls than Sonnet, and the strategy
 Produces tight 1–2-sentence strategy notes (*"I'll court Austria with vague
 promises while positioning to stab if opportunity arises"*), clearly probes
 in early negotiation rounds, closes deals in round 3, and lets dialogue
-visibly steer orders. Multiple betrayals + coordinated handoffs across the
-committed canonical run (`20260528T214253Z`). This is the published demo.
+visibly steer orders. The previous 2-year canonical (`20260528T214253Z`,
+deleted 2026-05-29) showed multiple betrayals + coordinated handoffs. The
+new canonical configuration is the bare `python -m diplomacy_a2a
+--log-prompts` (Sonnet, 5 years, 3 rounds, strategy on, prompt-dump for
+year 1) — pending its first render.
 
 ### Haiku (cheaper, fallback for experiments)
 
