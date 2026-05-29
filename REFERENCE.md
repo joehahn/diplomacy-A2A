@@ -46,6 +46,7 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 | 20260528T213153Z (smoke) | Haiku | 1 round, 1 yr, `--strategy` | 3 | 214s | **~71** | $0.85 *(Sonnet-inflated; actual ≈ $0.28)* |
 | 20260527T132540Z (smoke) | Haiku | 1 round, 1 yr | 3 | 180s | **~60** | $0.46 *(actual ≈ $0.15)* |
 | 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, `--strategy`, `--log-prompts-years 5` | 13 of ≈17 | ~3300s | **~252** | – |
+| 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no `--strategy` | 14 | 2030s | **~145** | **$2.93** (Haiku rates) |
 
 **Headline:** Haiku is ~3–4× faster than Sonnet *per phase on simple workloads*
 (1 round, no strategy). On the full canonical workload (3 rounds × `--strategy`)
@@ -70,11 +71,18 @@ committed canonical run (`20260528T214253Z`). This is the published demo.
 - **Verbose strategy notes** — 4–6 sentences, often re-stating prior context
   in markdown ("**F1903M Strategy:**"). Reasonable substance, but flatter
   and less quotable than Sonnet's.
-- **Pulled toward mutual-defensive stalemates** when `--strategy` is on. In
+- **Pulled toward mutual-defensive stalemates when `--strategy` is on.** In
   the partial 5-year run (`20260529T151442Z`), every power's SC count stayed
   at 3–5 from F1901M through F1903M — basically nothing happened for ~2.5
   game years. The strategy log seems to reinforce a "consolidate, don't
   antagonize" stance across the table.
+- **Without `--strategy`, Haiku plays a noticeably more dynamic game** — the
+  plain-vanilla 5-year baseline `20260529T191351Z` ended at
+  `RUS 6 / AUS 5 / ENG 5 / FRA 4 / TUR 4 / GER 3 / ITA 3`, with real growth
+  and contraction (Germany and Italy actually shrank). Useful negative
+  finding: the verbose self-strategizing was hurting more than it helped.
+  Likely the right default for axis A and other Haiku-baseline experiments
+  is **strategy off**.
 - Likely viable for the controlled experiments **if** persona prompts
   (axis B) override the default cautious behavior; needs empirical
   confirmation, which is what axis A's first run is for.
@@ -164,6 +172,16 @@ signal of an incomplete run.
 - **Pre-`7358cdd` cost reports** for Haiku-only and mixed-model runs were
   inflated ~3× because the estimator was hardcoded to Sonnet rates. Earlier
   reported costs in this file's table show both numbers where applicable.
+- **Prompt caching may not be firing on Haiku 4.5.** The plain-vanilla
+  baseline `20260529T191351Z` ran 2.23 M input tokens and the transcript
+  recorded `cache_create = 0` and `cache_read = 0` for the entire run —
+  i.e. zero cache savings. For comparison, the Sonnet canonical's
+  `cache_read` is 260 K tokens (~22% cost savings). Probable causes to
+  investigate next: (a) Haiku's 2048-token cacheable-prefix minimum
+  combined with how `system` is assembled, (b) a per-Haiku-version
+  difference in `cache_control: ephemeral` handling, (c) something the
+  model-aware refactor in `7358cdd` perturbed. Until resolved, treat
+  the Haiku per-game cost as **~$2.9 / 5-year game**, not ~$1.0.
 - **`20260529T151442Z`** ended at `S1905M round 1` because the API key ran
   out of credits mid-game (~$0.07 unpaid balance at termination). The
   partial transcript still has 13 phases of usable data; the rendered viewer
