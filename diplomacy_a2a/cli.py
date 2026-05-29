@@ -78,15 +78,24 @@ def main(argv: list[str] | None = None) -> None:
     for pw, mdl in upgrade_specs:
         power_clients[pw] = AnthropicClient(model=mdl)
 
-    run_game(
-        client=AnthropicClient(model=model),
-        model=model,
-        years=years,
-        negotiation_rounds=rounds,
-        results_root=args.results_dir,
-        verbose=not args.quiet,
-        log_prompts=args.log_prompts,
-        log_prompts_years=args.log_prompts_years,
-        enable_strategy=args.strategy,
-        power_clients=power_clients or None,
-    )
+    from diplomacy_a2a.llm.anthropic_client import RunnerError
+
+    try:
+        run_game(
+            client=AnthropicClient(model=model),
+            model=model,
+            years=years,
+            negotiation_rounds=rounds,
+            results_root=args.results_dir,
+            verbose=not args.quiet,
+            log_prompts=args.log_prompts,
+            log_prompts_years=args.log_prompts_years,
+            enable_strategy=args.strategy,
+            power_clients=power_clients or None,
+        )
+    except RunnerError as e:
+        import sys
+        # Friendly, actionable error message; transcript will lack run_ended
+        # (signal of an incomplete run) and api_error events record the failure.
+        print(f"\nERROR: {e}\n", file=sys.stderr)
+        sys.exit(1)

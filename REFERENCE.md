@@ -115,6 +115,50 @@ Results will land here when complete.
 
 ---
 
+## Reliability: how API failures are handled
+
+The runner classifies every Anthropic API failure into *fatal* (abort the
+run, no retry) or *retryable* (exponential backoff). Logic lives in
+[`anthropic_client.py`](diplomacy_a2a/llm/anthropic_client.py). The SDK's
+built-in retries are **disabled** (`max_retries=0`) so our layer is the
+only one and every failure is visible.
+
+| Anthropic error | Category | Disposition |
+|---|---|---|
+| `AuthenticationError` (401) | `auth` | **Fatal** — "check `ANTHROPIC_API_KEY` in .env" |
+| `PermissionDeniedError` with "credit" in message | `permission_or_credits` | **Fatal** — "add funds at console.anthropic.com" |
+| `PermissionDeniedError` (other) | `permission_or_credits` | **Fatal** |
+| `BadRequestError` (400) | `bad_request` | **Fatal** — likely oversized prompt or bad model id |
+| `NotFoundError` (404) | `not_found` | **Fatal** |
+| `UnprocessableEntityError` (422) | `unprocessable` | **Fatal** |
+| `RateLimitError` (429) | `rate_limit` | Retry, honor `retry-after` header |
+| `InternalServerError` (5xx) | `server_error` | Retry with exponential backoff |
+| `APITimeoutError` | `timeout` | Retry |
+| `APIConnectionError` | `network` | Retry |
+
+Retry policy: up to **4 retries** by default (configurable via
+`AnthropicClient(max_retries=N)`), exponential backoff capped at 30 s, or
+the value of the `retry-after` header if present.
+
+Every retry attempt and the final disposition are logged into the
+transcript as `api_error` events with `{attempt, error_type, fatal,
+category, message, model, status, power}`. The viewer ignores these
+events; they're forensic-only. A quick way to summarize after a run:
+
+```bash
+python3 -c "
+import json, collections
+ev=[json.loads(l) for l in open('results/<run-id>/transcript.jsonl') if l.strip()]
+errs=[e for e in ev if e['type']=='api_error']
+print(collections.Counter((e['category'], e['fatal']) for e in errs))
+"
+```
+
+When a fatal error is raised, `run_game` lets `RunnerError` propagate;
+the CLI catches it and prints a friendly message before exiting 1. The
+transcript will lack a `run_ended` event — that absence is itself the
+signal of an incomplete run.
+
 ## Known issues & errata
 
 - **Pre-`7358cdd` cost reports** for Haiku-only and mixed-model runs were

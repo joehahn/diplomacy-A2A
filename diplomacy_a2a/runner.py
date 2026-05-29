@@ -23,6 +23,7 @@ from pathlib import Path
 
 from diplomacy_a2a.agent import Agent, DialogueMessage, StrategyNote, validate_orders
 from diplomacy_a2a.game.state import GameState, POWERS
+from diplomacy_a2a.llm.anthropic_client import RunnerError
 from diplomacy_a2a.llm.client import LLMClient
 from diplomacy_a2a.negotiation import run_negotiation_round
 from diplomacy_a2a.personas.registry import DEFAULT_PERSONAS
@@ -143,6 +144,16 @@ def run_game(
     t0 = time.time()
 
     with TranscriptWriter(jsonl_path).open() as tw:
+        # Attach an api_error logger to every client (incl. per-power overrides)
+        # so retries and final failures land in the transcript for forensics.
+        def _attach_logger(power: str, c) -> None:
+            if hasattr(c, "set_error_logger"):
+                c.set_error_logger(
+                    lambda info, p=power: tw.write("api_error", power=p, **info)
+                )
+        for p in POWERS:
+            _attach_logger(p, agents[p].client)
+
         tw.write(
             "run_started",
             run_id=run_id,
@@ -154,6 +165,7 @@ def run_game(
             negotiation_rounds=negotiation_rounds,
         )
 
+        short = "?"
         while not state.is_done and phases_played < max_phases:
             short = state.short_phase
             year = int(short[1:5])
