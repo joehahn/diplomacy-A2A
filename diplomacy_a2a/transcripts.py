@@ -625,38 +625,42 @@ def _kpi_chart(
     *,
     ymax: float,
     ylabel: str,
-    xlabel: str = "phase",
+    x_labels: list[str],
     width: int = 420,
-    height: int = 210,
+    height: int = 240,
 ) -> str:
     """Render a small no-JS SVG line+dot chart with axis labels. One polyline
     per power (colored from POWER_COLORS) with a marker dot at each data
     point. `ymax` is the y-axis upper bound; ticks are 0, ymax/2, ymax.
+    `x_labels` are the per-tick labels (e.g. phase shorts) shown rotated 90°
+    below the x axis to avoid overlap.
     """
-    n = max((len(v) for v in series.values()), default=0)
-    if n < 2:
+    n = len(x_labels)
+    if n < 2 or n != max(len(v) for v in series.values()):
         return ""
-    pad_l, pad_r, pad_t, pad_b = 46, 12, 20, 38
+    pad_l, pad_r, pad_t, pad_b = 46, 12, 20, 62
     plot_w = width - pad_l - pad_r
     plot_h = height - pad_t - pad_b
     xs = [pad_l + i * plot_w / (n - 1) for i in range(n)]
+    axis_y = height - pad_b
 
     def y_for(v: float) -> float:
         v = max(0.0, min(v, ymax))
-        return height - pad_b - (v / ymax) * plot_h
+        return axis_y - (v / ymax) * plot_h
 
     parts: list[str] = [
         f"<svg viewBox='0 0 {width} {height}' class='kpi-svg' "
         f"xmlns='http://www.w3.org/2000/svg'>",
         f"<text x='{width/2:.0f}' y='14' text-anchor='middle' class='kpi-title'>{title}</text>",
         # axes
-        f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{height-pad_b}' class='kpi-axis'/>",
-        f"<line x1='{pad_l}' y1='{height-pad_b}' x2='{width-pad_r}' "
-        f"y2='{height-pad_b}' class='kpi-axis'/>",
+        f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{axis_y}' class='kpi-axis'/>",
+        f"<line x1='{pad_l}' y1='{axis_y}' x2='{width-pad_r}' y2='{axis_y}' class='kpi-axis'/>",
     ]
-    # Y ticks: 0, mid, ymax (format mid/max as integers when sensible)
+    # Y ticks: 0, mid, ymax (format integers when the value is whole)
     def _fmt(v: float) -> str:
-        return f"{v:g}" if v < 10 else f"{int(round(v))}"
+        if abs(v - round(v)) < 1e-6:
+            return str(int(round(v)))
+        return f"{v:.2f}"
     for frac in (0.0, 0.5, 1.0):
         v = ymax * frac
         y = y_for(v)
@@ -666,22 +670,19 @@ def _kpi_chart(
         parts.append(
             f"<text x='{pad_l-5}' y='{y+3:.1f}' text-anchor='end' class='kpi-tick'>{_fmt(v)}</text>"
         )
-    # X tick labels at endpoints (1, n)
-    parts.append(
-        f"<text x='{pad_l:.1f}' y='{height-pad_b+11:.1f}' text-anchor='middle' "
-        f"class='kpi-tick'>1</text>"
-    )
-    parts.append(
-        f"<text x='{width-pad_r:.1f}' y='{height-pad_b+11:.1f}' text-anchor='middle' "
-        f"class='kpi-tick'>{n}</text>"
-    )
-    # X axis label (centered under the plot)
-    parts.append(
-        f"<text x='{(pad_l + width - pad_r)/2:.0f}' y='{height-6}' text-anchor='middle' "
-        f"class='kpi-axis-label'>{xlabel}</text>"
-    )
-    # Y axis label (rotated 90deg, anchored at the middle of the plot)
-    y_label_cx, y_label_cy = 12, (pad_t + height - pad_b) / 2
+    # X tick marks + per-phase labels rotated 90° (text reads top-to-bottom)
+    for i, lbl in enumerate(x_labels):
+        x = xs[i]
+        parts.append(
+            f"<line x1='{x:.1f}' y1='{axis_y}' x2='{x:.1f}' y2='{axis_y+2}' class='kpi-axis'/>"
+        )
+        tx, ty = x, axis_y + 5
+        parts.append(
+            f"<text x='{tx:.1f}' y='{ty:.1f}' text-anchor='start' class='kpi-tick' "
+            f"transform='rotate(90 {tx:.1f},{ty:.1f})'>{lbl}</text>"
+        )
+    # Y axis label (rotated, anchored at middle of plot area)
+    y_label_cx, y_label_cy = 12, (pad_t + axis_y) / 2
     parts.append(
         f"<text x='{y_label_cx}' y='{y_label_cy:.0f}' text-anchor='middle' "
         f"class='kpi-axis-label' "
@@ -748,8 +749,12 @@ def _kpi_charts_for_phase(
     sc_ymax = max(sc_max_obs + 1, 5)
     sos_max_obs = max(max(pts) for pts in sos_series.values())
     sos_ymax = max(round(sos_max_obs * 1.15, 2), 0.25)
-    sc_chart = _kpi_chart("Supply centers", sc_series, ymax=sc_ymax, ylabel="SC")
-    sos_chart = _kpi_chart("SoS share", sos_series, ymax=sos_ymax, ylabel="share")
+    sc_chart = _kpi_chart(
+        "Supply centers", sc_series, ymax=sc_ymax, ylabel="SC", x_labels=phases,
+    )
+    sos_chart = _kpi_chart(
+        "SoS share", sos_series, ymax=sos_ymax, ylabel="share", x_labels=phases,
+    )
     legend = _kpi_legend(powers)
     return f"<div class='kpi-row'>{sc_chart}{sos_chart}{legend}</div>"
 
