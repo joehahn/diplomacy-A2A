@@ -529,16 +529,21 @@ ol.phases { line-height: 1.8; }
 .bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
                margin-left: 6px; font-weight: 700; }
 .bubble .btext { color: #222; line-height: 1.35; }
-.recap-row { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;
-             margin: 10px 0; }
-.recap-row .narr { flex: 1 1 60%; margin: 0; }
-.recap-row .kpi-charts { flex: 1 1 300px; display: flex; flex-direction: column;
-                         gap: 6px; min-width: 280px; }
-.kpi-svg { width: 100%; max-width: 360px; height: auto; background: #fafafa;
-           border: 1px solid #eee; border-radius: 4px; }
-.kpi-title { font-size: 9.5px; fill: #555; font-weight: 600; }
+.kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+           margin: 10px 0; }
+.kpi-svg { flex: 0 1 420px; width: 100%; max-width: 460px; height: auto;
+           background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
 .kpi-axis { stroke: #bbb; stroke-width: 0.6; }
-.kpi-tick { font-size: 8.5px; fill: #888; }
+.kpi-tick { font-size: 9px; fill: #888; }
+.kpi-axis-label { font-size: 9.5px; fill: #666; font-weight: 500; }
+.kpi-legend { flex: 0 0 auto; font-size: 0.78em; line-height: 1.6;
+              padding: 6px 10px; background: #fafafa; border: 1px solid #eee;
+              border-radius: 4px; }
+.kpi-legend .leg-row { display: flex; align-items: center; gap: 6px; }
+.kpi-legend .leg-swatch { display: inline-block; width: 14px; height: 8px;
+                          border-radius: 2px; flex: 0 0 auto; }
+.kpi-legend .leg-label { font-weight: 600; color: #444; }
 .narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
         margin: 10px 0; font-size: 0.9em; }
 .narr .nrow { margin: 4px 0; line-height: 1.4; }
@@ -617,21 +622,21 @@ def _esc(text: str) -> str:
 def _kpi_chart(
     title: str,
     series: dict[str, list[float]],
-    ymax: float,
     *,
-    width: int = 300,
-    height: int = 130,
-    y_ticks: list[tuple[float, str]] | None = None,
+    ymax: float,
+    ylabel: str,
+    xlabel: str = "phase",
+    width: int = 420,
+    height: int = 210,
 ) -> str:
-    """Render a tiny no-JS SVG line chart, one polyline per power, colored by
-    POWER_COLORS. `series` is {power: [value_at_phase_i for i in 0..N]}; all
-    series must have the same length N >= 2. `ymax` sets the y axis upper
-    bound. `y_ticks` is an optional list of (fractional_y, label) entries.
+    """Render a small no-JS SVG line+dot chart with axis labels. One polyline
+    per power (colored from POWER_COLORS) with a marker dot at each data
+    point. `ymax` is the y-axis upper bound; ticks are 0, ymax/2, ymax.
     """
     n = max((len(v) for v in series.values()), default=0)
     if n < 2:
         return ""
-    pad_l, pad_r, pad_t, pad_b = 24, 6, 14, 16
+    pad_l, pad_r, pad_t, pad_b = 46, 12, 20, 38
     plot_w = width - pad_l - pad_r
     plot_h = height - pad_t - pad_b
     xs = [pad_l + i * plot_w / (n - 1) for i in range(n)]
@@ -643,31 +648,73 @@ def _kpi_chart(
     parts: list[str] = [
         f"<svg viewBox='0 0 {width} {height}' class='kpi-svg' "
         f"xmlns='http://www.w3.org/2000/svg'>",
-        f"<text x='{width/2:.1f}' y='10' text-anchor='middle' class='kpi-title'>{title}</text>",
+        f"<text x='{width/2:.0f}' y='14' text-anchor='middle' class='kpi-title'>{title}</text>",
         # axes
         f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{height-pad_b}' class='kpi-axis'/>",
         f"<line x1='{pad_l}' y1='{height-pad_b}' x2='{width-pad_r}' "
         f"y2='{height-pad_b}' class='kpi-axis'/>",
     ]
-    ticks = y_ticks if y_ticks is not None else [(0, "0"), (0.5, f"{ymax/2:g}"), (1, f"{ymax:g}")]
-    for frac, label in ticks:
-        y = height - pad_b - frac * plot_h
+    # Y ticks: 0, mid, ymax (format mid/max as integers when sensible)
+    def _fmt(v: float) -> str:
+        return f"{v:g}" if v < 10 else f"{int(round(v))}"
+    for frac in (0.0, 0.5, 1.0):
+        v = ymax * frac
+        y = y_for(v)
         parts.append(
-            f"<line x1='{pad_l-2}' y1='{y:.1f}' x2='{pad_l}' y2='{y:.1f}' class='kpi-axis'/>"
+            f"<line x1='{pad_l-3}' y1='{y:.1f}' x2='{pad_l}' y2='{y:.1f}' class='kpi-axis'/>"
         )
         parts.append(
-            f"<text x='{pad_l-3}' y='{y+3:.1f}' text-anchor='end' class='kpi-tick'>{label}</text>"
+            f"<text x='{pad_l-5}' y='{y+3:.1f}' text-anchor='end' class='kpi-tick'>{_fmt(v)}</text>"
         )
+    # X tick labels at endpoints (1, n)
+    parts.append(
+        f"<text x='{pad_l:.1f}' y='{height-pad_b+11:.1f}' text-anchor='middle' "
+        f"class='kpi-tick'>1</text>"
+    )
+    parts.append(
+        f"<text x='{width-pad_r:.1f}' y='{height-pad_b+11:.1f}' text-anchor='middle' "
+        f"class='kpi-tick'>{n}</text>"
+    )
+    # X axis label (centered under the plot)
+    parts.append(
+        f"<text x='{(pad_l + width - pad_r)/2:.0f}' y='{height-6}' text-anchor='middle' "
+        f"class='kpi-axis-label'>{xlabel}</text>"
+    )
+    # Y axis label (rotated 90deg, anchored at the middle of the plot)
+    y_label_cx, y_label_cy = 12, (pad_t + height - pad_b) / 2
+    parts.append(
+        f"<text x='{y_label_cx}' y='{y_label_cy:.0f}' text-anchor='middle' "
+        f"class='kpi-axis-label' "
+        f"transform='rotate(-90 {y_label_cx},{y_label_cy:.0f})'>{ylabel}</text>"
+    )
+    # Lines + dots per power
     for power, pts in series.items():
         color = POWER_COLORS.get(power, "#777")
         coords = " ".join(
             f"{xs[i]:.1f},{y_for(pts[i]):.1f}" for i in range(len(pts))
         )
         parts.append(
-            f"<polyline points='{coords}' fill='none' stroke='{color}' stroke-width='1.4'/>"
+            f"<polyline points='{coords}' fill='none' stroke='{color}' stroke-width='1.3'/>"
         )
+        for i, v in enumerate(pts):
+            parts.append(
+                f"<circle cx='{xs[i]:.1f}' cy='{y_for(v):.1f}' r='2.2' "
+                f"fill='{color}' stroke='white' stroke-width='0.6'/>"
+            )
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def _kpi_legend(powers: list[str]) -> str:
+    rows: list[str] = []
+    for p in powers:
+        color = POWER_COLORS.get(p, "#777")
+        rows.append(
+            f"<div class='leg-row'>"
+            f"<span class='leg-swatch' style='background:{color}'></span>"
+            f"<span class='leg-label'>{p}</span></div>"
+        )
+    return "<div class='kpi-legend'>" + "".join(rows) + "</div>"
 
 
 def _kpi_charts_for_phase(
@@ -675,10 +722,9 @@ def _kpi_charts_for_phase(
     centers_by_phase: dict[str, dict[str, int]],
     up_to: str,
 ) -> str:
-    """Build the two stacked KPI charts (SC count and SoS share) that go on a
-    movement-phase slide, showing the running history up to and including
-    `up_to`. Returns an empty string if there aren't enough data points yet
-    (e.g. on the very first slide).
+    """Build the two KPI charts (SC count and SoS share) + a single shared
+    legend for a movement-phase slide, showing the running history up to and
+    including `up_to`. Returns empty string if there aren't enough points.
     """
     if up_to not in phase_order:
         return ""
@@ -696,19 +742,16 @@ def _kpi_charts_for_phase(
             v = c.get(p, 0)
             sc_series[p].append(v)
             sos_series[p].append((v * v) / total_sq)
-    sc_chart = _kpi_chart(
-        "Supply centers", sc_series, ymax=18,
-        y_ticks=[(0, "0"), (0.5, "9"), (1, "18")],
-    )
-    sos_chart = _kpi_chart(
-        "SoS share", sos_series, ymax=1.0,
-        y_ticks=[(0, "0"), (0.5, ".5"), (1, "1")],
-    )
-    return (
-        "<div class='kpi-charts'>"
-        f"{sc_chart}{sos_chart}"
-        "</div>"
-    )
+    # Dynamic y-axis bounds — just above the max observed value, with floors
+    # so the chart doesn't look cramped at the very start of a game.
+    sc_max_obs = max(max(pts) for pts in sc_series.values())
+    sc_ymax = max(sc_max_obs + 1, 5)
+    sos_max_obs = max(max(pts) for pts in sos_series.values())
+    sos_ymax = max(round(sos_max_obs * 1.15, 2), 0.25)
+    sc_chart = _kpi_chart("Supply centers", sc_series, ymax=sc_ymax, ylabel="SC")
+    sos_chart = _kpi_chart("SoS share", sos_series, ymax=sos_ymax, ylabel="share")
+    legend = _kpi_legend(powers)
+    return f"<div class='kpi-row'>{sc_chart}{sos_chart}{legend}</div>"
 
 
 # Coloring in the "What happened" narration:
@@ -978,18 +1021,12 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         if sl["orders"] is not None:
             recap_html.append("<a class='orders-link' href='#orders-modal'>▤ Orders this phase</a>")
         if narration_rows:
+            recap_html.append("<div class='narr'>" + "".join(narration_rows) + "</div>")
             short = sl.get("short", "")
-            charts_html = (
-                _kpi_charts_for_phase(phase_order, centers_by_phase, short)
-                if short.endswith("M") else ""
-            )
-            narration_block = "<div class='narr'>" + "".join(narration_rows) + "</div>"
-            if charts_html:
-                recap_html.append(
-                    f"<div class='recap-row'>{narration_block}{charts_html}</div>"
-                )
-            else:
-                recap_html.append(narration_block)
+            if short.endswith("M"):
+                charts_html = _kpi_charts_for_phase(phase_order, centers_by_phase, short)
+                if charts_html:
+                    recap_html.append(charts_html)
 
         # Raw orders live in a no-JS CSS :target popup, hidden until the link
         # above is clicked.
