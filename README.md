@@ -143,8 +143,7 @@ Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
 **Strategy log is always on.** Each agent writes a 1–2 sentence strategy note
 *before* negotiation and revises it *after*, and carries its own past notes
 forward into every later call. This adds ≈25–35% to the per-game cost but
-produces a much richer transcript (and is the basis of the axis-C memory-depth
-experiment). See **Agent strategy & memory** below.
+produces a much richer transcript. See **Agent strategy & memory** below.
 
 ### Options *not* in the CLI yet (Roadmap)
 
