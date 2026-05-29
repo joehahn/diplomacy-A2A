@@ -100,16 +100,19 @@ cp .env.example .env          # then paste your key into .env
 ## Running
 
 ```bash
-# default: one full Opus game, 5 years, 3 negotiation rounds, strategy log on
+# default: one full Sonnet game, 5 years, 3 negotiation rounds, strategy log on
 python -m diplomacy_a2a
 
 # cheap end-to-end verification (Haiku, 1 year, 1 round) — pennies
 python -m diplomacy_a2a --smoke
 
-# Sonnet showcase with prompt/response dump (first year)
-python -m diplomacy_a2a --model claude-sonnet-4-6 --log-prompts
+# prompt + response dump for the default Sonnet game (first year)
+python -m diplomacy_a2a --log-prompts
 
-# axis-A controlled experiment: 6 Opuses + 1 Haiku (rotate the position over seeds)
+# Opus showcase (more expensive, ~$15+ at 5 years × 3 rounds × strategy on)
+python -m diplomacy_a2a --model claude-opus-4-7
+
+# axis-A controlled experiment: 6 Sonnets + 1 Haiku (rotate the position over seeds)
 python -m diplomacy_a2a --downgrade TURKEY=claude-haiku-4-5-20251001
 
 # axis-C controlled experiment: one agent with much longer memory than the rest
@@ -124,7 +127,7 @@ Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
 
 | Flag | Default | What it does |
 |---|---|---|
-| `--model MODEL` | `claude-opus-4-7` | Anthropic model id used as the default for every power. Use `claude-sonnet-4-6` for the showcase canonical, `claude-haiku-4-5-20251001` for cheap experiments. |
+| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the workhorse — the published canonical was Sonnet, and a 5-year game runs ~$8. Use `claude-opus-4-7` for a stronger (~$15+) showcase or `claude-haiku-4-5-20251001` for cheap experiments. |
 | `--years N` | `5` | Game-years to play. Solo wins (18 SCs) end the game early regardless. |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
 | `--downgrade POWER=MODEL` *(repeatable)* | – | Give one power a different (typically cheaper) model than the default. Plumbing for the **axis-A** controlled experiment, e.g. `--downgrade TURKEY=claude-haiku-4-5-20251001` while everyone else stays on Opus. Costs are reported per-model. |
