@@ -644,9 +644,20 @@ def _kpi_chart(
     xs = [pad_l + i * plot_w / (n - 1) for i in range(n)]
     axis_y = height - pad_b
 
-    def y_for(v: float) -> float:
+    # Stable per-power jitter so overlapping series (e.g. multiple powers at
+    # 5 SCs) don't completely cover each other. Alphabetical order keeps the
+    # offset consistent across charts and across runs.
+    sorted_powers = sorted(series.keys())
+    n_pow = len(sorted_powers)
+    power_idx = {p: i for i, p in enumerate(sorted_powers)}
+
+    def y_for(v: float, power: str = "") -> float:
         v = max(0.0, min(v, ymax))
-        return axis_y - (v / ymax) * plot_h
+        base = axis_y - (v / ymax) * plot_h
+        if not power or n_pow < 2:
+            return base
+        jitter = (power_idx[power] - (n_pow - 1) / 2) * 0.9  # ~±3 px over 7 powers
+        return base + jitter
 
     parts: list[str] = [
         f"<svg viewBox='0 0 {width} {height}' class='kpi-svg' "
@@ -670,16 +681,19 @@ def _kpi_chart(
         parts.append(
             f"<text x='{pad_l-5}' y='{y+3:.1f}' text-anchor='end' class='kpi-tick'>{_fmt(v)}</text>"
         )
-    # X tick marks + per-phase labels rotated 90° (text reads top-to-bottom)
+    # X tick marks + per-phase labels rotated -90° (text reads bottom-to-top)
     for i, lbl in enumerate(x_labels):
         x = xs[i]
         parts.append(
             f"<line x1='{x:.1f}' y1='{axis_y}' x2='{x:.1f}' y2='{axis_y+2}' class='kpi-axis'/>"
         )
+        # Anchor at the right edge (text-anchor='end') so after rotate(-90) the
+        # last character of the label sits just below the tick and the rest
+        # extends downward, reading bottom-to-top when tilted left.
         tx, ty = x, axis_y + 5
         parts.append(
-            f"<text x='{tx:.1f}' y='{ty:.1f}' text-anchor='start' class='kpi-tick' "
-            f"transform='rotate(90 {tx:.1f},{ty:.1f})'>{lbl}</text>"
+            f"<text x='{tx:.1f}' y='{ty:.1f}' text-anchor='end' class='kpi-tick' "
+            f"transform='rotate(-90 {tx:.1f},{ty:.1f})'>{lbl}</text>"
         )
     # Y axis label (rotated, anchored at middle of plot area)
     y_label_cx, y_label_cy = 12, (pad_t + axis_y) / 2
@@ -688,18 +702,20 @@ def _kpi_chart(
         f"class='kpi-axis-label' "
         f"transform='rotate(-90 {y_label_cx},{y_label_cy:.0f})'>{ylabel}</text>"
     )
-    # Lines + dots per power
-    for power, pts in series.items():
+    # Lines + dots per power, each offset slightly by a stable per-power jitter
+    # so overlapping series don't perfectly cover each other.
+    for power in sorted_powers:
+        pts = series[power]
         color = POWER_COLORS.get(power, "#777")
         coords = " ".join(
-            f"{xs[i]:.1f},{y_for(pts[i]):.1f}" for i in range(len(pts))
+            f"{xs[i]:.1f},{y_for(pts[i], power):.1f}" for i in range(len(pts))
         )
         parts.append(
             f"<polyline points='{coords}' fill='none' stroke='{color}' stroke-width='1.3'/>"
         )
         for i, v in enumerate(pts):
             parts.append(
-                f"<circle cx='{xs[i]:.1f}' cy='{y_for(v):.1f}' r='2.2' "
+                f"<circle cx='{xs[i]:.1f}' cy='{y_for(v, power):.1f}' r='2.2' "
                 f"fill='{color}' stroke='white' stroke-width='0.6'/>"
             )
     parts.append("</svg>")
