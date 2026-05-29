@@ -36,15 +36,31 @@ in the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
 
 Building toward goal 3:
 
-- **Persona/trait experiment grid** — run a grid of personas × matchups × seeds
-  and score which character traits most reliably succeed, turning the demo into
-  a small "which personality wins?" study (a full grid is a few hundred dollars
-  of API spend; see **Cost**).
-- **Outcome scoring + analysis** — aggregate results across the grid (success
-  rates, alliance/betrayal patterns) so the personality comparison is data, not
-  anecdote.
+- **Controlled-variation persona experiments** — instead of a full N-persona grid,
+  hold 6 agents identical and vary *one* thing to get a clean A/B causal signal.
+  Four planned axes:
+  *(A)* model capability — one Sonnet among Haikus;
+  *(B)* personality trait — one aggressive / untruthful / backstabbing / crazy
+  agent in an otherwise neutral table;
+  *(C)* memory depth — one agent given more or less past-turn context than the rest;
+  *(D)* two-agent collusion — a pre-game shared agreement injected only into two
+  agents' dialogue history.
+  Sharper questions per dollar than a full grid (~$300 for v1 vs ~$600);
+  produces falsifiable, comparable claims like *"a single Sonnet among six Haikus
+  gains X more SCs on average"* and *"two colluding agents jointly out-perform
+  the table by Y."*
+- **Outcome scoring + analysis** — per-game scorer (`score.py`) emitting solo
+  rate, survival rate, average SC, **Sum-of-Squares share**, peak SC, year-to-N,
+  plus behavioral metrics (promise→action fidelity, alliance duration) — so the
+  controlled experiments above resolve to data, not anecdote.
+- **Player-KPI timeseries on the canonical-game dashboard** — phase-by-phase line
+  plots of each power's **SC count** and **SoS share** over the course of a single
+  game, embedded on the slideshow's index (or as a dedicated `dashboard.html`).
+  Makes trajectory legible at a glance — *"Russia peaked at 7 in F1903M then
+  collapsed"* — and complements the per-phase commentary.
 - **Cheap "smoke" mode** — a one-game Haiku entry point so anyone can verify the
-  whole pipeline end-to-end for pennies before committing to a full run.
+  whole pipeline end-to-end for pennies before committing to a full run. *(Done:
+  `python -m diplomacy_a2a --smoke`.)*
 - **Full order visibility (tabletop-faithful)** *(nice-to-have, not core)* —
   after each turn, show agents the complete set of submitted orders and how they
   resolved, the way players around a table see every order at the reveal. Today
