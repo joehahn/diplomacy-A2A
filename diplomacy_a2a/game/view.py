@@ -14,7 +14,7 @@ from diplomacy_a2a.game.state import POWERS, GameState
 from diplomacy_a2a.narration import narrate_phase
 
 
-def render_for_power(state: GameState, power: str) -> str:
+def render_for_power(state: GameState, power: str, *, memory: int = 1) -> str:
     if power not in POWERS:
         raise ValueError(f"Unknown power: {power!r}. Expected one of {POWERS}.")
 
@@ -22,12 +22,16 @@ def render_for_power(state: GameState, power: str) -> str:
     lines.append(f"## Current phase: {state.phase}  ({state.short_phase})")
     lines.append("")
 
-    # What happened last turn — plain-English recap of every power's orders
-    # and how they resolved (bounces, dislodgements, supports), so you can
-    # see who helped or attacked whom without decoding raw order syntax.
-    recap = state.recent_resolved()
+    # What happened last turn(s) — plain-English recap of every power's orders
+    # and how they resolved (bounces, dislodgements, supports), so you can see
+    # who helped or attacked whom without decoding raw order syntax. The agent's
+    # `memory` parameter controls how many movement turns back this extends.
+    recap = state.recent_resolved(n=memory)
     if recap:
-        lines.append("## What happened last turn")
+        if memory <= 1:
+            lines.append("## What happened last turn")
+        else:
+            lines.append(f"## What happened in the last {memory} turns")
         for short, orders, results in recap:
             lines.append(f"### {short}")
             for p, text in narrate_phase(orders, results, powers_order=list(POWERS)):

@@ -14,6 +14,10 @@ Persona-conditioned LLM agents negotiate, ally, and (often) betray each other
 across multiple turns of full-press play. The artifact that matters is the
 **negotiation transcript**, not whether any particular agent wins.
 
+→ **[See the canonical run](https://joehahn.github.io/diplomacy-A2A/results/20260528T214253Z/index.html)**
+on GitHub Pages — Sonnet × 7 powers × 2 years × 3 negotiation rounds, with
+turn-by-turn maps, narration, agent strategies, and LLM commentary.
+
 This is a portfolio demo for AI-consulting / forward-deployed-engineer work,
 in the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
 
@@ -40,43 +44,6 @@ in the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
    reliably achieves success?* The [persona system](diplomacy_a2a/personas/)
    is the lever; the transcripts (the "why") plus game outcomes (the "what")
    are the data.
-
-## Roadmap
-
-Building toward goal 3:
-
-- **Controlled-variation persona experiments** — instead of a full N-persona grid,
-  hold 6 agents identical and vary *one* thing to get a clean A/B causal signal.
-  Four planned axes:
-  *(A)* model capability — one Sonnet among Haikus;
-  *(B)* personality trait — one aggressive / untruthful / backstabbing / crazy
-  agent in an otherwise neutral table;
-  *(C)* memory depth — one agent given more or less past-turn context than the rest;
-  *(D)* two-agent collusion — a pre-game shared agreement injected only into two
-  agents' dialogue history.
-  Sharper questions per dollar than a full grid (≈$300 for v1 vs ≈$600);
-  produces falsifiable, comparable claims like *"a single Sonnet among six Haikus
-  gains X more SCs on average"* and *"two colluding agents jointly out-perform
-  the table by Y."*
-- **Outcome scoring + analysis** — per-game scorer (`score.py`) emitting solo
-  rate, survival rate, average SC, **Sum-of-Squares share**, peak SC, year-to-N,
-  plus behavioral metrics (promise→action fidelity, alliance duration) — so the
-  controlled experiments above resolve to data, not anecdote.
-- **Player-KPI timeseries on the canonical-game dashboard** — phase-by-phase line
-  plots of each power's **SC count** and **SoS share** over the course of a single
-  game, embedded on the slideshow's index (or as a dedicated `dashboard.html`).
-  Makes trajectory legible at a glance — *"Russia peaked at 7 in F1903M then
-  collapsed"* — and complements the per-phase commentary.
-- **Cheap "smoke" mode** — a one-game Haiku entry point so anyone can verify the
-  whole pipeline end-to-end for pennies before committing to a full run. *(Done:
-  `python -m diplomacy_a2a --smoke`.)*
-- **Full order visibility (tabletop-faithful)** *(nice-to-have, not core)* —
-  after each turn, show agents the complete set of submitted orders and how they
-  resolved, the way players around a table see every order at the reveal. Today
-  agents see only the resulting board, and illegal orders are dropped before
-  anyone sees them. Surfacing orders would also let agents *deliberately* submit
-  unusual or illegal orders as bluffs/signals — an order-level deception channel
-  to complement the message-level lying that personalities will already do.
 
 ## Status
 
@@ -117,7 +84,7 @@ python -m diplomacy_a2a --power-model TURKEY=claude-haiku-4-5-20251001
 python -m diplomacy_a2a --power-model TURKEY=claude-opus-4-7
 
 # axis-C controlled experiment: one agent with much longer memory than the rest
-python -m diplomacy_a2a --power-memory TURKEY=20
+python -m diplomacy_a2a --power-memory TURKEY=10
 
 python -m diplomacy_a2a --help     # full option list
 ```
@@ -132,8 +99,8 @@ Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
 | `--years N` | `5` | Game-years to play. Solo wins (18 SCs) end the game early regardless. |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
 | `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default — weaker (Haiku) or stronger (Opus). E.g. `--power-model TURKEY=claude-opus-4-7` while everyone else stays on Sonnet. Costs are reported per-model. |
-| `--memory N` | `6` | Default strategy-history depth for every agent — how many of their own past strategy notes they see in subsequent calls. `0` is a memoryless agent. |
-| `--power-memory POWER=N` *(repeatable)* | – | Override the strategy-history depth for one power. E.g. `--power-memory TURKEY=20` gives Turkey a much longer memory than the rest. |
+| `--memory N` | `3` | How many **movement turns** of memory each agent carries. Covers all three channels at once: the *"What happened in the last N turns"* narration recap, the agent's own strategy notes (2N of them, since each movement contributes initial + revised), and the dialogue history (older messages drop out of the prompt). `0` is a fully memoryless agent — only the current board, no recap. |
+| `--power-memory POWER=N` *(repeatable)* | – | Override the memory depth for one power. E.g. `--power-memory TURKEY=10` lets Turkey remember 10 turns back while everyone else uses the default. |
 | `--log-prompts` | off | Save every prompt each agent receives, paired with its response, to `prompts.jsonl` and `prompts.md`. See **Seeing the exact agent prompts and responses**. |
 | `--log-prompts-years N` | `1` | When `--log-prompts` is on, only log calls in the first N game-years. |
 | `--smoke` | off | Shortcut for cheap end-to-end verification: Haiku, 1 year, 1 round. Pennies. |
@@ -346,3 +313,40 @@ comparable across model releases.
 For technical details (model pricing, per-phase timing observations,
 quality notes, experiment results as they land, known issues): see
 [**REFERENCE.md**](REFERENCE.md).
+
+## Roadmap
+
+Building toward goal 3:
+
+- **Controlled-variation persona experiments** — instead of a full N-persona grid,
+  hold 6 agents identical and vary *one* thing to get a clean A/B causal signal.
+  Four planned axes:
+  *(A)* model capability — one Sonnet among Haikus;
+  *(B)* personality trait — one aggressive / untruthful / backstabbing / crazy
+  agent in an otherwise neutral table;
+  *(C)* memory depth — one agent given more or less past-turn context than the rest;
+  *(D)* two-agent collusion — a pre-game shared agreement injected only into two
+  agents' dialogue history.
+  Sharper questions per dollar than a full grid (≈$300 for v1 vs ≈$600);
+  produces falsifiable, comparable claims like *"a single Sonnet among six Haikus
+  gains X more SCs on average"* and *"two colluding agents jointly out-perform
+  the table by Y."*
+- **Outcome scoring + analysis** — per-game scorer (`score.py`) emitting solo
+  rate, survival rate, average SC, **Sum-of-Squares share**, peak SC, year-to-N,
+  plus behavioral metrics (promise→action fidelity, alliance duration) — so the
+  controlled experiments above resolve to data, not anecdote.
+- **Player-KPI timeseries on the canonical-game dashboard** — phase-by-phase line
+  plots of each power's **SC count** and **SoS share** over the course of a single
+  game, embedded on the slideshow's index (or as a dedicated `dashboard.html`).
+  Makes trajectory legible at a glance — *"Russia peaked at 7 in F1903M then
+  collapsed"* — and complements the per-phase commentary.
+- **Cheap "smoke" mode** — a one-game Haiku entry point so anyone can verify the
+  whole pipeline end-to-end for pennies before committing to a full run. *(Done:
+  `python -m diplomacy_a2a --smoke`.)*
+- **Full order visibility (tabletop-faithful)** *(nice-to-have, not core)* —
+  after each turn, show agents the complete set of submitted orders and how they
+  resolved, the way players around a table see every order at the reveal. Today
+  agents see only the resulting board, and illegal orders are dropped before
+  anyone sees them. Surfacing orders would also let agents *deliberately* submit
+  unusual or illegal orders as bluffs/signals — an order-level deception channel
+  to complement the message-level lying that personalities will already do.

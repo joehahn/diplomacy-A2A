@@ -43,14 +43,15 @@ def _parser() -> argparse.ArgumentParser:
                         "Example: --power-model TURKEY=claude-opus-4-7 while everyone "
                         "else stays on Sonnet. Plumbing for the axis-A controlled "
                         "experiment.")
-    p.add_argument("--memory", type=int, default=6, metavar="N",
-                   help="default strategy-history depth for every agent — how many of "
-                        "their own past strategy notes they see (default: 6). Use 0 for a "
-                        "memoryless agent.")
+    p.add_argument("--memory", type=int, default=3, metavar="N",
+                   help="default per-agent memory: each agent remembers the last N "
+                        "movement turns — covers the 'What happened' narration, the "
+                        "agent's own strategy notes, and its visible dialogue history "
+                        "(default: 3). Use 0 for a fully memoryless agent.")
     p.add_argument("--power-memory", action="append", default=[], metavar="POWER=N",
-                   help="override the strategy-history depth for one power (repeatable). "
-                        "Example: --power-memory TURKEY=20 gives Turkey a much longer "
-                        "memory than the rest. Plumbing for the axis-C experiment.")
+                   help="override the memory depth (in movement turns) for one power "
+                        "(repeatable). Example: --power-memory TURKEY=10 lets Turkey "
+                        "remember 10 turns back while everyone else uses the default.")
     p.add_argument("--smoke", action="store_true",
                    help=f"cheap-mode shortcut: use {SMOKE_MODEL}, 1 year, 1 round")
     p.add_argument("--quiet", action="store_true",

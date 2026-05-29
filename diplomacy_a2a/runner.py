@@ -100,8 +100,8 @@ def run_game(
     log_prompts_years: int = 1,  # how many opening years to log when log_prompts is on
     enable_strategy: bool = True,  # per-power 1-2 sentence strategy notes (hardwired on)
     power_clients: dict[str, LLMClient] | None = None,  # per-power model overrides (axis A)
-    memory: int = 6,  # default strategy-history depth for all agents
-    power_memory: dict[str, int] | None = None,  # per-power memory overrides (axis C)
+    memory: int = 3,  # default per-agent memory: last N movement turns recalled
+    power_memory: dict[str, int] | None = None,  # per-power memory overrides
 ) -> Path:
     """Run a full game, save artifacts under results_root/<run-id>/.
 
@@ -132,13 +132,13 @@ def run_game(
             power=p,
             persona=personas[p],
             client=power_clients.get(p, client),
-            strategy_memory=power_memory.get(p, memory),
+            memory=power_memory.get(p, memory),
         )
         for p in POWERS
     }
     # Per-power model id and memory depth for cost attribution + transcript bookkeeping.
     power_model = {p: getattr(agents[p].client, "model", model) for p in POWERS}
-    power_memory_resolved = {p: agents[p].strategy_memory for p in POWERS}
+    power_memory_resolved = {p: agents[p].memory for p in POWERS}
 
     prompts_writer = TranscriptWriter(run_dir / "prompts.jsonl").open() if log_prompts else None
     if prompts_writer is not None:

@@ -79,17 +79,22 @@ class Agent:
         persona: str,
         client: LLMClient,
         rules: str | None = None,
-        strategy_memory: int = 6,
+        memory: int = 3,
     ) -> None:
         self.power = power
         self.persona = persona
         self.client = client
         self.rules = rules if rules is not None else _load_default_rules()
-        # How many of this agent's own past strategy notes it sees in any
-        # subsequent call. Wired through to format_strategy_history(recent=N).
-        # Axis C of the controlled-variation experiments uses this to give one
-        # agent more or less memory than the rest.
-        self.strategy_memory = max(0, strategy_memory)
+        # How many past movement turns this agent remembers. Affects three
+        # memory channels uniformly:
+        #   * "What happened last turn" narration is extended back N movement
+        #     cycles (instead of just the most recent one).
+        #   * Own strategy notes are capped to the last 2N entries (each
+        #     movement contributes one initial + one revised note).
+        #   * Dialogue history is capped to messages from the last N movement
+        #     phases (older messages drop out of the prompt).
+        # `0` means a memoryless agent — only the current board, no recap.
+        self.memory = max(0, memory)
         self._system = self._build_system_prompt()
 
     def _build_system_prompt(self) -> str:
@@ -156,11 +161,11 @@ class Agent:
         max_tokens: int = 220,
         temperature: float = 0.6,
     ) -> StrategyResult:
-        view = render_for_power(state, self.power)
-        sh = format_strategy_history(strategy_history or [], recent=self.strategy_memory)
+        view = render_for_power(state, self.power, memory=self.memory)
+        sh = format_strategy_history(strategy_history or [], recent_movements=self.memory)
         body = f"{view}\n\n## Your strategy history (private to you)\n{sh}\n\n"
         if dialogue:
-            db = format_dialogue_for_agent(dialogue, self.power)
+            db = format_dialogue_for_agent(dialogue, self.power, recent_movements=self.memory)
             body += f"## Dialogue history (private to you)\n{db}\n\n"
         if kind == "initial":
             instruction = (
@@ -223,10 +228,12 @@ class Agent:
         max_tokens: int = 1024,
         temperature: float = 0.8,
     ) -> MessagesResult:
-        view = render_for_power(state, self.power)
-        dialogue_block = format_dialogue_for_agent(history or [], self.power)
+        view = render_for_power(state, self.power, memory=self.memory)
+        dialogue_block = format_dialogue_for_agent(
+            history or [], self.power, recent_movements=self.memory
+        )
         strategy_block = format_strategy_history(
-            strategy_history or [], recent=self.strategy_memory
+            strategy_history or [], recent_movements=self.memory
         )
         round_note = (
             f"This is negotiation round {round_index} of {total_rounds} before "
@@ -268,13 +275,15 @@ class Agent:
         max_tokens: int = 1024,
         temperature: float = 0.7,
     ) -> OrderResult:
-        view = render_for_power(state, self.power)
+        view = render_for_power(state, self.power, memory=self.memory)
         user_msg = view
         if strategy_history:
-            sh = format_strategy_history(strategy_history, recent=self.strategy_memory)
+            sh = format_strategy_history(strategy_history, recent_movements=self.memory)
             user_msg += f"\n\n## Your strategy history (private to you)\n{sh}"
         if dialogue:
-            dialogue_block = format_dialogue_for_agent(dialogue, self.power)
+            dialogue_block = format_dialogue_for_agent(
+                dialogue, self.power, recent_movements=self.memory
+            )
             user_msg += f"\n\n## Dialogue history (private to you)\n{dialogue_block}"
         user_msg += f"\n\nIt is your turn. Submit your orders for {state.phase}."
 
@@ -361,14 +370,18 @@ def validate_orders(state: GameState, power: str, orders: list[str]) -> tuple[li
 # ----------------------------------------------------------------------
 
 
-def format_strategy_history(history: list[StrategyNote], *, recent: int = 6) -> str:
+def format_strategy_history(
+    history: list[StrategyNote], *, recent_movements: int = 3
+) -> str:
     """Render a power's own strategy/goals notes (most recent at the bottom).
 
-    Capped to the last `recent` entries to bound token cost.
+    Capped to the last `recent_movements` movement turns' worth — since each
+    movement produces one initial + one revised note, the cap is `2 *
+    recent_movements` notes.
     """
     if not history:
         return "(No strategy notes yet — this is your first turn.)"
-    notes = history[-recent:]
+    notes = history[-(2 * recent_movements):] if recent_movements > 0 else []
     out: list[str] = []
     for n in notes:
         tag = "initial" if n.kind == "initial" else "revised"
@@ -376,13 +389,23 @@ def format_strategy_history(history: list[StrategyNote], *, recent: int = 6) -> 
     return "\n".join(out)
 
 
-def format_dialogue_for_agent(history: list[DialogueMessage], power: str) -> str:
+def format_dialogue_for_agent(
+    history: list[DialogueMessage], power: str, *, recent_movements: int | None = None
+) -> str:
     """Render dialogue history as the agent sees it.
 
     Filters to messages this power sent or received; groups by phase;
-    formats as `TO X: ...` / `FROM X: ...` lines.
+    formats as `TO X: ...` / `FROM X: ...` lines. When `recent_movements` is
+    set, only messages from the last N (movement-phase-tagged) phases are
+    included — older dialogue drops out of the prompt.
     """
     visible = [m for m in history if m.sender == power or m.recipient == power]
+    if recent_movements is not None and visible:
+        from collections import OrderedDict
+
+        seen_phases = list(OrderedDict.fromkeys(m.phase for m in visible))
+        keep = set(seen_phases[-recent_movements:]) if recent_movements > 0 else set()
+        visible = [m for m in visible if m.phase in keep]
     if not visible:
         return "(No prior dialogue.)"
     by_phase: dict[str, list[DialogueMessage]] = {}

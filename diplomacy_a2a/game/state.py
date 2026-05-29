@@ -79,21 +79,29 @@ class GameState:
         """Process the current phase (adjudicate orders, advance to next)."""
         self.game.process()
 
-    def recent_resolved(self) -> list[tuple[str, dict[str, list[str]], dict[str, list[str]]]]:
-        """Resolved phases since (and including) the most recent movement phase.
+    def recent_resolved(
+        self, n: int = 1
+    ) -> list[tuple[str, dict[str, list[str]], dict[str, list[str]]]]:
+        """Resolved phases covering the last `n` movement-turn cycles.
 
-        Returns, in chronological order, (short_phase, orders_by_power,
-        results_by_unit) for the last "turn cycle" — i.e. the latest
-        movement phase plus any retreat/adjustment phases after it. This is
-        the "what just happened" recap an agent needs; results carry the
-        adjudication outcomes (bounce, dislodged, …) that bare orders don't.
+        Walks history backward and includes phases until it has passed N
+        movement phases — so a cycle is "the movement plus its trailing
+        retreats and adjustments." Returned in chronological order, each
+        entry is (short_phase, orders_by_power, results_by_unit). Results
+        carry adjudication outcomes (bounce, dislodged, …) that bare orders
+        don't. `n == 0` returns an empty list (memoryless).
         """
+        if n <= 0:
+            return []
         history = self.game.get_phase_history()
         out: list[tuple[str, dict[str, list[str]], dict[str, list[str]]]] = []
+        movements_collected = 0
         for ph in reversed(history):
             orders = {p: list(o) for p, o in ph.orders.items() if o}
             results = {u: [str(t) for t in r] for u, r in ph.results.items()}
             out.append((ph.name, orders, results))
-            if ph.name.endswith("M"):  # stop once we've included a movement phase
-                break
+            if ph.name.endswith("M"):
+                movements_collected += 1
+                if movements_collected >= n:
+                    break
         return list(reversed(out))
