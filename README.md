@@ -213,10 +213,9 @@ agents (`--power-model`, `--power-memory`), and control output
 - **`diplomacy_a2a/game/`** — thin wrapper around
   [Meta's `diplomacy` library](https://github.com/diplomacy/diplomacy).
   No custom rules code.
-- **[`agent.py`](diplomacy_a2a/agent.py), [`negotiation.py`](diplomacy_a2a/negotiation.py),
-  [`runner.py`](diplomacy_a2a/runner.py)** — the orchestration: agents exchange
-  private messages each turn, then commit orders, then the library adjudicates.
-  See **Negotiation protocol** below.
+- **Agent orchestration** — agents exchange private messages each turn,
+  then commit orders, then Meta's `diplomacy` library adjudicates.
+  See also **Negotiation protocol** below.
 - **`results/`** — pre-rendered transcripts so visitors can see output
   without spending money. Each game renders a turn-by-turn HTML slideshow
   (maps, narration, agent strategies, dialogue) at
