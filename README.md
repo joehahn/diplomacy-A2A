@@ -204,9 +204,11 @@ agents (`--power-model`, `--power-memory`), and control output
 
 ## Architecture
 
-- **`diplomacy_a2a/llm/`** — `LLMClient` protocol (the seam) plus the single
-  v1 `AnthropicClient` implementation. Designed so a second provider
-  (OpenAI, LiteLLM, etc.) is a future ≈50-line addition, not a refactor.
+- **`diplomacy_a2a/llm/`** — All LLM calls go through one small interface
+  called `LLMClient`, with `AnthropicClient` as its only implementation
+  today. Adding another provider (OpenAI, Gemini, LiteLLM) means writing
+  one new file against the same interface, not rewriting the rest of the
+  project.
 - **`diplomacy_a2a/personas/`** — per-agent system prompts as markdown.
 - **`diplomacy_a2a/game/`** — thin wrapper around
   [Meta's `diplomacy` library](https://github.com/diplomacy/diplomacy)
