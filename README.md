@@ -202,23 +202,6 @@ agents (`--power-model`, `--power-memory`), and control output
   [REFERENCE.md](REFERENCE.md).
 - **Pre-game collusion** between two agents — **axis D** of the same.
 
-## Cost / time per game
-
-A `--smoke` run costs pennies. The canonical (Sonnet, 5 years, 3 rounds,
-strategy on, `--log-prompts` year 1, plus the LLM-commentary post-pass)
-came in at about **$13** end-to-end and about **80 min** wall-time.
-Opus at the same configuration is about **$15**, while Haiku is about
-**$5** but see also [REFERENCE.md](REFERENCE.md) for known issues.
-
-The `render` subcommand is free since it does not utilize the LLM, while
-`commentary` adds about $0.50 of Sonnet calls for an 18-phase game.
-`--with-commentary` rolls game + commentary + re-render into one command.
-
-A full controlled-variation experiment series (axis A–D, see goal 3 and
-[REFERENCE.md](REFERENCE.md)) is budgeted under **≈$300**. Per-million-token
-rates, per-phase timing, and per-run cost history are tracked in
-[REFERENCE.md](REFERENCE.md).
-
 ## Architecture
 
 - **`diplomacy_a2a/llm/`** — `LLMClient` protocol (the seam) plus the single
@@ -391,6 +374,18 @@ and the negotiation. Unlike the deterministic narration, this is *interpretation
 (human-facing only, never fed to agents), so it's a separate opt-in pass over a
 finished transcript (one LLM call per phase) rather than part of `run_game` — kept
 out of the game loop so a full experiment grid stays cheap.
+
+## Cost / time per game
+
+A `--smoke` run costs pennies. The canonical (Sonnet, 5 years, 3 rounds,
+strategy on, `--log-prompts` year 1, plus the LLM-commentary post-pass)
+came in at about **$13** and about **80 min** wall-time. Opus at the
+same configuration is about **$15**, while Haiku is about **$5** but
+see also [REFERENCE.md](REFERENCE.md) for known issues.
+
+The `render` subcommand is free since it does not utilize the LLM, while
+`commentary` adds about $0.50 of Sonnet calls for an 18-phase game.
+`--with-commentary` rolls game + commentary + re-render into one command.
 
 ## Notes for re-running
 
