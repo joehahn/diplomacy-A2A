@@ -132,28 +132,28 @@ from a finished transcript via **`render`** (no LLM, sub-second), and it
 adds LLM-written strategic commentary via **`commentary`**.
 
 ```bash
-# Execute a default game that is Sonnet-powered, lasting 5 years, with 3 negotiation rounds per movement
+# Execute default game (is Sonnet-powered, lasts 5 years, w/ 3 negotiation rounds per turn)
 python -m diplomacy_a2a run
 
-# the canonical published demo: game + year-1 prompt dump + LLM commentary
+# Execute the canonical game (5 years of gameplay + 1st-year dump of all agents' prompts & responses + LLM commentary)
 python -m diplomacy_a2a run --log-prompts --with-commentary
 
-# cheap end-to-end verification (Haiku, 1 year, 1 round)
+# End-to-end verification using Haiku for 1 year
 python -m diplomacy_a2a run --smoke
 
-# Opus showcase (stronger model)
+# use stronger LLM
 python -m diplomacy_a2a run --model claude-opus-4-7
 
-# per-power model override (axis-A experiment plumbing)
+# per-power model override (only Turkey gets Opus LLM)
 python -m diplomacy_a2a run --power-model TURKEY=claude-opus-4-7
 
-# per-power memory override
+# per-power memory-depth override (Turkey context preserves past 10 movements)
 python -m diplomacy_a2a run --power-memory TURKEY=10
 
-# Re-render a finished run after tweaking viewer code (no LLM)
+# Render a finished run after tweaking viewer code (no LLM)
 python -m diplomacy_a2a render results/20260529T225943Z/
 
-# Add or refresh LLM commentary on a finished run, then re-render
+# Add or refresh LLM commentary on a finished run, then render
 python -m diplomacy_a2a render results/20260529T225943Z/ --with-commentary
 
 # Generate commentary only (no render — useful in scripts)
