@@ -405,9 +405,14 @@ def run_game(
     # this block — useful when you want to call `render` separately, e.g. after
     # generating commentary.
     if render:
-        regenerate_maps(jsonl_path, run_dir)
-        render_markdown(jsonl_path, run_dir / "report.md")
-        render_html_viewer(jsonl_path, run_dir)
+        # Derived artifacts (maps, report, HTML slides, commentary if present)
+        # land under run_dir/dashboard/. transcript.jsonl + prompts.* stay at
+        # the run-dir top level as the source-of-truth artifacts.
+        dashboard_dir = run_dir / "dashboard"
+        dashboard_dir.mkdir(exist_ok=True)
+        regenerate_maps(jsonl_path, dashboard_dir)
+        render_markdown(jsonl_path, dashboard_dir / "report.md")
+        render_html_viewer(jsonl_path, dashboard_dir)
 
     if verbose:
         elapsed = time.time() - t0

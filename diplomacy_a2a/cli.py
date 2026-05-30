@@ -147,7 +147,11 @@ def _parse_kv_list(specs: list[str], flag: str, value_kind: str) -> list[tuple[s
 
 
 def _do_render(run_dir: Path) -> None:
-    """Re-derive maps / report.md / HTML slideshow from a finished transcript."""
+    """Re-derive maps / report.md / HTML slideshow from a finished transcript.
+
+    Derived artifacts land under `run_dir/dashboard/` so the source-of-truth
+    files (`transcript.jsonl`, `prompts.*`) stay separated at the top level.
+    """
     from diplomacy_a2a.transcripts import (
         regenerate_maps,
         render_html_viewer,
@@ -156,10 +160,12 @@ def _do_render(run_dir: Path) -> None:
     jsonl_path = run_dir / "transcript.jsonl"
     if not jsonl_path.exists():
         raise SystemExit(f"No transcript.jsonl in {run_dir}")
-    regenerate_maps(jsonl_path, run_dir)
-    render_markdown(jsonl_path, run_dir / "report.md")
-    render_html_viewer(jsonl_path, run_dir)
-    print(f"Rendered: {run_dir}")
+    dashboard_dir = run_dir / "dashboard"
+    dashboard_dir.mkdir(exist_ok=True)
+    regenerate_maps(jsonl_path, dashboard_dir)
+    render_markdown(jsonl_path, dashboard_dir / "report.md")
+    render_html_viewer(jsonl_path, dashboard_dir)
+    print(f"Rendered: {dashboard_dir}")
 
 
 def _do_commentary(run_dir: Path, model: str) -> None:
@@ -175,7 +181,7 @@ def _do_commentary(run_dir: Path, model: str) -> None:
         print(f"\nERROR: {e}\n", file=sys.stderr)
         raise SystemExit(1)
     print(f"Commentary: {len(commentary)} phases written to "
-          f"{run_dir / 'commentary.json'}")
+          f"{run_dir / 'dashboard' / 'commentary.json'}")
 
 
 def _run_subcommand(args: argparse.Namespace) -> None:
@@ -238,7 +244,7 @@ def _render_subcommand(args: argparse.Namespace) -> None:
     run_dir: Path = args.run_dir
     refresh = args.refresh_commentary
     if args.with_commentary or refresh:
-        commentary_json = run_dir / "commentary.json"
+        commentary_json = run_dir / "dashboard" / "commentary.json"
         if refresh or not commentary_json.exists():
             load_dotenv(".env")
             print(f"Generating LLM commentary ({args.commentary_model})…")

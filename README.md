@@ -43,7 +43,7 @@ well-prompted frontier LLM, and with all players represented by AI agents.
 
 ## Visual dive into a representative game
 
-You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)**,
+You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/dashboard/index.html)**,
 which uses Sonnet to power seven AI agents across 5 game-years (10 movement
 phases in total), with 3 rounds of inter-agent communication before each
 movement. That dashboard shows the turn-by-turn movements of every army and
@@ -238,8 +238,8 @@ rates, per-phase timing, and per-run cost history are tracked in
 - **`results/`** — pre-rendered transcripts so visitors can see output
   without spending money. Each game renders a turn-by-turn HTML slideshow
   (maps, narration, agent strategies, dialogue) at
-  `results/<run-id>/index.html`, hosted on GitHub Pages —
-  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)
+  `results/<run-id>/dashboard/index.html`, hosted on GitHub Pages —
+  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/dashboard/index.html)
   (5 years, 3 rounds of negotiation per turn, strategy log + LLM commentary
   + year-1 prompt dump). The canonical configuration is
   `python -m diplomacy_a2a run --log-prompts --with-commentary` — see

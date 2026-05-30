@@ -109,6 +109,10 @@ def generate_commentary(
         )
         commentary[short] = _parse_bullets(chat.text)
 
-    out_path = out_path or (jsonl_path.parent / "commentary.json")
+    # Default destination: run_dir/dashboard/commentary.json. The viewer
+    # reads from the same dashboard subfolder, so writing here makes the
+    # next render pick it up automatically.
+    out_path = out_path or (jsonl_path.parent / "dashboard" / "commentary.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(commentary, indent=2))
     return commentary

@@ -65,6 +65,9 @@ still a single `@pytest.mark.skip` stub; smoke is effectively covered by
 ## Artifacts & git
 
 - Curated `results/<run-id>/` transcripts **are committed** on purpose, so visitors
-  see output without spending money. `transcript.jsonl` is the source of truth;
-  `report.md` / `*.svg` / `index.html` are rendered from it.
+  see output without spending money. `transcript.jsonl` lives at the top level
+  as the source of truth; `dashboard/report.md` / `dashboard/*.svg` /
+  `dashboard/index.html` are derived from it (rendered under a `dashboard/`
+  subfolder so the derived artifacts are visually separated from the LLM
+  outputs).
 - `scratch/` and `*.log` are gitignored — put throwaway experiments there.

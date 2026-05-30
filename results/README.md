@@ -4,25 +4,39 @@ Rendered transcripts of game runs. The canonical run is **committed** to the
 repo so visitors can read the interesting output without spending money on
 API calls; throwaway runs live in `scratch/` (gitignored) instead.
 
-Each run lands as a directory:
+Each run lands as a directory with two levels of artifact, separated by
+provenance:
 
-- `transcript.jsonl` — structured event log (one event per line, the source of truth)
-- `report.md`        — human-readable markdown postmortem rendered from the JSONL
-- `initial.svg` — the opening board; `<short-phase>.svg` — that phase's orders as
-  arrows on the start-of-phase board; `<short-phase>.result.svg` — the board after
-  the phase resolved (e.g. `S1901M.svg` / `S1901M.result.svg`)
-- `index.html` + `start.html` + one `<short-phase>.html` per phase — slideshow
-  viewer. Each slide reads top-to-bottom: orders, then the orders map and the
-  resulting board, then the negotiation that leads into the *next* movement phase
-  (so you read the talk, then click ahead to see what it produced). The opening
-  `start.html` shows the initial board and the first round of negotiation.
-  **Easiest entry point**: open `index.html` and click through.
-- `prompts.jsonl` / `prompts.md` — only present when the run was launched with
-  `--log-prompts`; contains every agent's exact prompt and response for the
+**Top level — source of truth, produced by `run`**
+
+- `transcript.jsonl` — structured event log (one event per line). Every
+  other artifact in the directory is deterministically derived from this.
+- `prompts.jsonl` / `prompts.md` — only present when the run was launched
+  with `--log-prompts`; every agent's exact prompt and response for the
   first `--log-prompts-years` years (default 1).
-- `commentary.json` — strategic interpretation per phase, written by
-  `commentary.py` as a post-pass; the viewer reads it if present and silently
-  omits the block otherwise.
+
+**`dashboard/` — derived artifacts, produced by `render` and `commentary`**
+
+- `dashboard/report.md` — human-readable markdown postmortem rendered
+  from the transcript.
+- `dashboard/initial.svg` — the opening board; `dashboard/<short-phase>.svg`
+  — that phase's orders as arrows on the start-of-phase board;
+  `dashboard/<short-phase>.result.svg` — the board after the phase resolved
+  (e.g. `dashboard/S1901M.svg` / `dashboard/S1901M.result.svg`).
+- `dashboard/index.html` + `dashboard/start.html` + one
+  `dashboard/<short-phase>.html` per phase — slideshow viewer. Each slide
+  reads top-to-bottom: orders, then the orders map and the resulting board,
+  then the negotiation that leads into the *next* movement phase (so you
+  read the talk, then click ahead to see what it produced). The opening
+  `start.html` shows the initial board and the first round of negotiation.
+  **Easiest entry point**: open `dashboard/index.html` and click through.
+- `dashboard/commentary.json` — strategic interpretation per phase, written
+  by `commentary.py` as a post-pass; the viewer reads it if present and
+  silently omits the block otherwise.
+
+The split lets you regenerate everything derived with one command
+(`rm -rf results/<run-id>/dashboard/` then re-run `render`) without any
+risk to the irreplaceable LLM output at the top level.
 
 Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
@@ -80,6 +94,6 @@ alliance, but the commentary catches that the public message and the move
 didn't quite match — exactly the intent-vs-action artifact that the strategy
 log + `--log-prompts` are built to surface.
 
-[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)
+[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/dashboard/index.html)
 (GitHub Pages) to flip through the maps, narration, commentary, agent
 strategies, and dialogue.

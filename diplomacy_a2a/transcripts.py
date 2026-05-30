@@ -996,10 +996,12 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     settings_rows.append(("Negotiation rounds", str(run_started.get("negotiation_rounds", "?"))))
     has_strategy = any(e.get("type") == "agent_strategy" for e in events)
     settings_rows.append(("Strategy log", "on" if has_strategy else "off"))
-    prompts_jsonl = out_dir / "prompts.jsonl"
+    # prompts.{jsonl,md} live at the run-dir top level (out_dir.parent in the
+    # current layout where dashboard/ is a subfolder of the run dir).
+    prompts_jsonl = out_dir.parent / "prompts.jsonl"
     settings_rows.append((
         "Prompt logging",
-        f"on — see <a href='prompts.md'>prompts.md</a>" if prompts_jsonl.exists() else "off",
+        f"on — see <a href='../prompts.md'>prompts.md</a>" if prompts_jsonl.exists() else "off",
     ))
     if run_ended:
         settings_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
@@ -1037,10 +1039,12 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     index_body.append("<h2>Other artifacts</h2>")
     index_body.append("<ul>")
     index_body.append("  <li><a href='report.md'>report.md</a> — full postmortem with reasoning</li>")
-    index_body.append("  <li><a href='transcript.jsonl'>transcript.jsonl</a> — raw event log</li>")
-    if (out_dir / "prompts.md").exists():
+    # transcript.jsonl + prompts.* are at the run-dir top level (one level up
+    # from the dashboard/ directory the slideshow lives in).
+    index_body.append("  <li><a href='../transcript.jsonl'>transcript.jsonl</a> — raw event log</li>")
+    if (out_dir.parent / "prompts.md").exists():
         index_body.append(
-            "  <li><a href='prompts.md'>prompts.md</a> — every prompt each agent received "
+            "  <li><a href='../prompts.md'>prompts.md</a> — every prompt each agent received "
             "(readable rendering of <code>prompts.jsonl</code>)</li>"
         )
     index_body.append("</ul>")
