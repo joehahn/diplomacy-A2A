@@ -112,13 +112,6 @@ Information asymmetry is the structural feature these domains share:
 bidders never see opponents' reserves, M&A parties never see walk-away
 prices, traders never see opponents' positions.
 
-## Status
-
-Core game loop and CLI work end-to-end — see the committed canonical run
-under `results/20260529T225943Z/` for representative output. The
-controlled-variation experiments described in goal 3 are the current
-in-progress work.
-
 ## Setup
 
 Requires Python 3.10+ (developed on 3.12) and an Anthropic API key.
