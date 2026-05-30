@@ -3,26 +3,28 @@
 ![A Diplomacy board mid-game with pieces deployed across Europe](assets/diplomacy-board.jpg)
 
 <sub>*A Diplomacy board mid-game: pieces from all seven powers deployed across
-the European map. Placeholder image from
-[cardboardrepublic.com](https://www.cardboardrepublic.com/classics/risk-vs-diplomacy).
-This project simulates the same thing — seven powers plotting, allying, and
-betraying each other across that map — with LLM agents instead of humans.*</sub>
+the European map. Gameboard photo from
+[cardboardrepublic.com](https://www.cardboardrepublic.com/classics/risk-vs-diplomacy).*</sub>
 
 **Diplomacy** is a 7-player strategy game set in pre-WWI Europe, where each
 player controls one of the Great Powers (Austria, England, France, Germany,
-Italy, Russia, Turkey) competing for supply centers on the map. There are no
-dice — every order resolves deterministically. What makes the game distinctive
-is that between every turn, players negotiate privately in pairs, and those
-negotiations are unenforceable: any deal can be broken, betrayal is expected,
-and most games are decided more by what was promised (or lied about) in
-private than by tactical cleverness.
+Italy, Russia, Turkey) competing for supply centers on the map. This game
+uses no dice, so every order is resolved deterministically. What makes the
+game distinctive is that between every turn, players negotiate privately in
+pairs, and those negotiations are unenforceable: any deal can be broken,
+betrayal is expected, and most games are decided more by what was promised
+(or lied about) in private than by tactical cleverness.
 
 This project replaces those seven human players with **seven Claude-powered
 LLM agents**. The agents negotiate privately each turn, choose their orders,
-and the same rulebook adjudicates the result — producing a full transcript
-of who said what to whom, who honored deals, and who betrayed. The artifact
-that matters is the **negotiation transcript**, not whether any particular
-agent wins.
+and the same rulebook adjudicates the result. Each game produces a full
+transcript of who said what to whom, who honored deals, and who betrayed.
+The artifact that matters here is the **negotiation transcript**, and not
+which agent wins, because the transcript records the part of LLM agent
+behavior that a benchmark score cannot show: how each agent reasoned about
+who to trust, what to promise, and when to honor or break a deal. The gap
+between what an agent says in private and what it actually does on the
+board is visible at every turn.
 
 → **[See the canonical run](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)**
 on GitHub Pages — Sonnet × 7 powers × 5 years × 3 negotiation rounds, with
