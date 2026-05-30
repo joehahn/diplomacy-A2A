@@ -138,19 +138,19 @@ python -m diplomacy_a2a run
 # Execute the canonical game (5 years of gameplay + 1st-year dump of all agents' prompts & responses + LLM commentary)
 python -m diplomacy_a2a run --log-prompts --with-commentary
 
-# End-to-end verification using Haiku for 1 year
+# End-to-end verification using Haiku for 1 year and 1 negotiation round
 python -m diplomacy_a2a run --smoke
 
-# use stronger LLM
+# all agents use stronger LLM
 python -m diplomacy_a2a run --model claude-opus-4-7
 
 # per-power model override (only Turkey gets Opus LLM)
 python -m diplomacy_a2a run --power-model TURKEY=claude-opus-4-7
 
-# per-power memory-depth override (Turkey context preserves past 10 movements)
-python -m diplomacy_a2a run --power-memory TURKEY=10
+# per-power memory-depth override (Turkey context preserves past 5 movements)
+python -m diplomacy_a2a run --power-memory TURKEY=5
 
-# Render a finished run after tweaking viewer code (no LLM)
+# Render a finished run after tweaking viewer code, this does not use any LLM
 python -m diplomacy_a2a render results/20260529T225943Z/
 
 # Add or refresh LLM commentary on a finished run, then render
