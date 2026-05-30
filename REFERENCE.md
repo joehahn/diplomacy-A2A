@@ -185,6 +185,26 @@ Results will land here when complete.
 
 ---
 
+## Provider boundary: swapping Anthropic for another LLM
+
+All LLM calls in the codebase go through a single `LLMClient` protocol
+defined in [`diplomacy_a2a/llm/client.py`](diplomacy_a2a/llm/client.py).
+The only v1 implementation is `AnthropicClient`
+([`anthropic_client.py`](diplomacy_a2a/llm/anthropic_client.py)), which
+uses the official `anthropic` Python SDK plus prompt-caching headers.
+
+Adding a second provider (OpenAI, Gemini, a LiteLLM wrapper, etc.) is
+intended to be a new file behind the same protocol, not a refactor. The
+protocol exposes one method, `chat(system, messages, tools) -> response`,
+with strict types, so a second implementation drops in mechanically.
+Anthropic stayed the v1 choice because of prompt caching, which serves
+the rules + persona prefix at ≈10% of full input price after the first
+write and is critical to the per-run budget. The Sonnet 5-year canonical
+saves ≈22% from caching alone. A future provider that lacks comparable
+caching would cost roughly that much more per game on equivalent rates.
+
+---
+
 ## Reliability: how API failures are handled
 
 The runner classifies every Anthropic API failure into *fatal* (abort the

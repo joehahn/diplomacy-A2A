@@ -56,10 +56,9 @@ backstabbed whom.
 1. **Built with Claude Code, but reproducible with just an Anthropic key.**
    The project is *developed* using Claude Code, yet it *runs* on nothing more
    than the [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks)
-   (`anthropic`) and an API key — Claude Code is the development harness, not a
-   runtime dependency. Anyone can clone this, drop in their key, and rebuild or
-   re-run the simulation. The provider boundary is a single seam
-   ([`llm/client.py`](diplomacy_a2a/llm/client.py)).
+   and an API key — Claude Code is the development harness, not a runtime
+   dependency. Anyone can clone this, drop in their key, and rebuild or
+   re-run the simulation.
 
 2. **Highlight agent-to-agent interactions that move each other.** The point is
    not just that agents *send* messages, but that they *influence* one another —
