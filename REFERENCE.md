@@ -148,7 +148,7 @@ rules prefix.
 
 ## Controlled-variation experiments
 
-The Roadmap's plan is N-1-identical / 1-varied A/B comparisons across four
+Goal 3 in the README is N-1-identical / 1-varied A/B comparisons across four
 axes, replacing the original full persona grid. Each axis lands here as it
 runs, with method + per-power results table + verdict.
 

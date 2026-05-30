@@ -43,18 +43,23 @@ in the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
    transcript and the turn-by-turn slideshow are the deliverable (see
    **Negotiation protocol**), not whether any particular agent wins.
 
-3. **Personality → success (the ultimate aim).** Condition each agent with a
-   character trait — aggressive, conservative, backstabbing, untruthful,
-   cooperative, … — and run enough games to ask: *which personality most
-   reliably achieves success?* The [persona system](diplomacy_a2a/personas/)
-   is the lever; the transcripts (the "why") plus game outcomes (the "what")
-   are the data.
+3. **What makes a Diplomacy LLM agent successful?** *(Under active development.)*
+   Controlled A/B experiments where six agents are identical and one differs
+   along a single axis: model capability (one Sonnet among Haikus, or one Opus
+   among Sonnets), memory depth (one agent given more or less past-turn
+   context), personality trait (one aggressive / untruthful / backstabbing
+   agent at an otherwise neutral table), or pre-game collusion (two agents
+   share a private agreement injected into their dialogue history). Sharper
+   signal-per-dollar than a full persona grid; the aim is comparable
+   falsifiable findings like *"a Sonnet among six Haikus gains X more SCs on
+   average."* Experiment design lives in [REFERENCE.md](REFERENCE.md).
 
 ## Status
 
-Under construction. Core game loop works end-to-end via `run_game`
-([`runner.py`](diplomacy_a2a/runner.py)) — see committed runs under `results/`.
-The documented CLI subcommands are still aspirational (not yet wired up).
+Core game loop and CLI work end-to-end — see the committed canonical run
+under `results/20260529T225943Z/` for representative output. The
+controlled-variation experiments described in goal 3 are the current
+in-progress work.
 
 ## Setup
 
@@ -137,14 +142,15 @@ The transcript is the canonical artifact; every renderer derives from it.
 forward into every later call. This adds ≈25–35% to the per-game cost but
 produces a much richer transcript. See **Agent strategy & memory** below.
 
-### Options *not* in the CLI yet (Roadmap)
+### Options *not* in the CLI yet
 
 - **Per-agent personality traits** (aggressive, untruthful, backstabbing, crazy)
   — currently every power shares the same persona prompt from
   [`personas/registry.py`](diplomacy_a2a/personas/registry.py). The programmatic
   `run_game(personas={"TURKEY": "<prompt>"})` already accepts per-power
-  overrides; the CLI flag is **axis B** in the Roadmap.
-- **Pre-game collusion** between two agents — **axis D** in the Roadmap.
+  overrides; the CLI flag is **axis B** of the goal-3 experiments — design in
+  [REFERENCE.md](REFERENCE.md).
+- **Pre-game collusion** between two agents — **axis D** of the same.
 
 ### Cost / time per game
 
@@ -334,9 +340,10 @@ out of the game loop so a full experiment grid stays cheap.
 A `--smoke` run costs pennies; the canonical (Sonnet, 5 years, 3 rounds,
 strategy on, `--log-prompts` year 1, plus the LLM-commentary post-pass) came
 in at **$11.98 + $0.50 = ≈$12.50** end-to-end and ≈77 min wall-time. A full
-controlled-variation experiment series (axis A–D, see Roadmap) is budgeted
-under **≈$300**. Per-million-token rates, per-phase timing, and per-run cost
-history are tracked in [REFERENCE.md](REFERENCE.md).
+controlled-variation experiment series (axis A–D, see goal 3 and
+[REFERENCE.md](REFERENCE.md)) is budgeted under **≈$300**.
+Per-million-token rates, per-phase timing, and per-run cost history are
+tracked in [REFERENCE.md](REFERENCE.md).
 
 ## Notes for re-running
 
@@ -349,39 +356,3 @@ For technical details (model pricing, per-phase timing observations,
 quality notes, experiment results as they land, known issues): see
 [**REFERENCE.md**](REFERENCE.md).
 
-## Roadmap
-
-Building toward goal 3:
-
-- **Controlled-variation persona experiments** — instead of a full N-persona grid,
-  hold 6 agents identical and vary *one* thing to get a clean A/B causal signal.
-  Four planned axes:
-  *(A)* model capability — one Sonnet among Haikus;
-  *(B)* personality trait — one aggressive / untruthful / backstabbing / crazy
-  agent in an otherwise neutral table;
-  *(C)* memory depth — one agent given more or less past-turn context than the rest;
-  *(D)* two-agent collusion — a pre-game shared agreement injected only into two
-  agents' dialogue history.
-  Sharper questions per dollar than a full grid (≈$300 for v1 vs ≈$600);
-  produces falsifiable, comparable claims like *"a single Sonnet among six Haikus
-  gains X more SCs on average"* and *"two colluding agents jointly out-perform
-  the table by Y."*
-- **Outcome scoring + analysis** — per-game scorer (`score.py`) emitting solo
-  rate, survival rate, average SC, **Sum-of-Squares share**, peak SC, year-to-N,
-  plus behavioral metrics (promise→action fidelity, alliance duration) — so the
-  controlled experiments above resolve to data, not anecdote.
-- **Player-KPI timeseries on the canonical-game dashboard** — phase-by-phase line
-  plots of each power's **SC count** and **SoS share** over the course of a single
-  game, embedded on the slideshow's index (or as a dedicated `dashboard.html`).
-  Makes trajectory legible at a glance — *"Russia peaked at 7 in F1903M then
-  collapsed"* — and complements the per-phase commentary.
-- **Cheap "smoke" mode** — a one-game Haiku entry point so anyone can verify the
-  whole pipeline end-to-end for pennies before committing to a full run. *(Done:
-  `python -m diplomacy_a2a --smoke`.)*
-- **Full order visibility (tabletop-faithful)** *(nice-to-have, not core)* —
-  after each turn, show agents the complete set of submitted orders and how they
-  resolved, the way players around a table see every order at the reveal. Today
-  agents see only the resulting board, and illegal orders are dropped before
-  anyone sees them. Surfacing orders would also let agents *deliberately* submit
-  unusual or illegal orders as bluffs/signals — an order-level deception channel
-  to complement the message-level lying that personalities will already do.
