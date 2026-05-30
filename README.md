@@ -8,24 +8,26 @@ the European map. Gameboard photo from
 
 **Diplomacy** is a 7-player strategy game set in pre-WWI Europe, where each
 player controls one of the Great Powers (Austria, England, France, Germany,
-Italy, Russia, Turkey) competing for supply centers on the map. No dice
-are used in Diplomacy, which means that each nation's armies and navies
-advance or retreat deterministically from players' orders. What makes the
+Italy, Russia, Turkey) that are competing for supply centers that are
+distributed across the map. No dice are used in Diplomacy, which means that
+each nation's armies and navies advance or retreat deterministically from
+players' orders. What makes the
 game distinctive is that between every turn, players negotiate privately in
 pairs, and those negotiations are unenforceable: any deal can be broken,
 betrayal is expected, and most games are decided more by what was promised
 (or lied about) in private than by tactical cleverness.
 
 This project replaces those seven human players with **seven Claude-powered
-LLM agents**. The agents negotiate privately each turn, choose their orders,
-and the same rulebook adjudicates the result. Each game produces a full
-transcript of who said what to whom, who honored deals, and who betrayed.
-The artifact that matters here is the **negotiation transcript**, and not
-which agent wins, because the transcript records the part of LLM agent
-behavior that a benchmark score cannot show: how each agent reasoned about
-who to trust, what to promise, and when to honor or break a deal. The gap
-between what an agent says in private and what it actually does on the
-board is visible at every turn.
+AI agents**. The agents negotiate privately each turn, choose their military
+orders, and outcomes are adjudicated by fairly simple rules that amount to
+"the larger force prevails". Each game produces a full transcript of who
+said what to whom, who honored deals, and who betrayed. The artifact that
+matters here is the **negotiation transcript**, and not which agent wins,
+because the transcript records the part of AI agent behavior that a benchmark
+score cannot show: how each agent reasoned about who to trust, what to
+promise, and when to honor or break a deal. The gap between what an agent
+says in private and what it actually does on the board is visible at every
+turn.
 
 → **[See the canonical run](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)**
 on GitHub Pages — Sonnet × 7 powers × 5 years × 3 negotiation rounds, with
