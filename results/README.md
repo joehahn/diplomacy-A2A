@@ -43,10 +43,10 @@ adds the ≈$0.50 / ≈2 min strategic-interpretation pass.
 
 ## Canonical run
 
-### `20260529T225943Z/` — **bare `--log-prompts`, all defaults**
+### `20260529T225943Z/` — **`--log-prompts --with-commentary`, all other defaults**
 
 ```bash
-python -m diplomacy_a2a --log-prompts
+python -m diplomacy_a2a --log-prompts --with-commentary
 ```
 
 Sonnet 4.6, 5 game-years, 3 negotiation rounds per movement phase, agent
@@ -77,8 +77,8 @@ Opening highlight (S1901M, from the LLM commentary):
 
 Germany still finished tied-leader at 6 SCs, so the gambit didn't crack the
 alliance, but the commentary catches that the public message and the move
-didn't quite match — exactly the intent-vs-action artifact `--strategy`
-+ `--log-prompts` are built to surface.
+didn't quite match — exactly the intent-vs-action artifact that the strategy
+log + `--log-prompts` are built to surface.
 
 [**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)
 (GitHub Pages) to flip through the maps, narration, commentary, agent

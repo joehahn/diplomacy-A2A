@@ -42,18 +42,18 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 | 20260524T031616Z | Sonnet | no negotiation | 7 | – | – | $0.35 |
 | 20260524T034819Z | Sonnet | 1 round, 2 yr | 7 | – | – | $0.88 |
 | 20260527T184246Z | Sonnet | 3 rounds, 2 yr, `--log-prompts` | 8 | 1419s | **≈177** | $2.43 |
-| 20260528T214253Z *(deleted; previous canonical)* | Sonnet | 3 rounds, 2 yr, `--strategy`, `--log-prompts` | 7 | 1713s | **≈245** | $3.20 |
-| 20260528T213153Z (smoke) | Haiku | 1 round, 1 yr, `--strategy` | 3 | 214s | **≈71** | $0.85 *(Sonnet-inflated; actual ≈ $0.28)* |
+| 20260528T214253Z *(deleted; previous canonical)* | Sonnet | 3 rounds, 2 yr, strategy log, `--log-prompts` | 7 | 1713s | **≈245** | $3.20 |
+| 20260528T213153Z (smoke) | Haiku | 1 round, 1 yr, strategy log | 3 | 214s | **≈71** | $0.85 *(Sonnet-inflated; actual ≈ $0.28)* |
 | 20260527T132540Z (smoke) | Haiku | 1 round, 1 yr | 3 | 180s | **≈60** | $0.46 *(actual ≈ $0.15)* |
-| 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, `--strategy`, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
-| 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no `--strategy` | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
+| 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, strategy log, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
+| 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no strategy log | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
 | 20260529T225943Z **(canonical)** | Sonnet | 3 rounds, 5 yr, strategy on, `--log-prompts` | 18 | 4479s | **≈249** | **$11.98** + $0.50 commentary |
 
 **Headline:** Haiku is ≈3–4× faster than Sonnet *per phase on simple workloads*
-(1 round, no strategy). On the full canonical workload (3 rounds × `--strategy`)
-the per-phase advantage **collapses to roughly parity** because per-phase call
-count dominates — Haiku doesn't make fewer calls than Sonnet, and the strategy +
-3-round combo is call-heavy. Cost is still ≈1/3 across the board.
+(1 round, no strategy log). On the current canonical workload (3 rounds × strategy
+log, the default) the per-phase advantage **collapses to roughly parity** because
+per-phase call count dominates — Haiku doesn't make fewer calls than Sonnet, and
+the strategy + 3-round combo is call-heavy. Cost is still ≈1/3 across the board.
 
 ---
 
@@ -64,9 +64,9 @@ count dominates — Haiku doesn't make fewer calls than Sonnet, and the strategy
 Produces tight 1–2-sentence strategy notes (*"I'll court Austria with vague
 promises while positioning to stab if opportunity arises"*), clearly probes
 in early negotiation rounds, closes deals in round 3, and lets dialogue
-visibly steer orders. The current canonical (`20260529T225943Z`, the bare
-`python -m diplomacy_a2a --log-prompts`) played a fully populated 5-year
-game with no eliminations: Germany and Russia tied at 6 SCs, no power
+visibly steer orders. The current canonical (`20260529T225943Z`,
+`python -m diplomacy_a2a --log-prompts --with-commentary`) played a fully
+populated 5-year game with no eliminations: Germany and Russia tied at 6 SCs, no power
 below 3, and the LLM commentary flagged a France→Burgundy gambit at
 S1901M where the public message to Germany ("purely defensive") didn't
 match the move — the kind of intent-vs-action gap the project is built
@@ -78,18 +78,20 @@ deleted 2026-05-29) is preserved in the timing table above as a data point.
 - **Verbose strategy notes** — 4–6 sentences, often re-stating prior context
   in markdown ("**F1903M Strategy:**"). Reasonable substance, but flatter
   and less quotable than Sonnet's.
-- **Pulled toward mutual-defensive stalemates when `--strategy` is on.** In
-  the partial 5-year run (`20260529T151442Z`), every power's SC count stayed
-  at 3–5 from F1901M through F1903M — basically nothing happened for ≈2.5
-  game years. The strategy log seems to reinforce a "consolidate, don't
-  antagonize" stance across the table.
-- **Without `--strategy`, Haiku plays a noticeably more dynamic game** — the
+- **Pulled toward mutual-defensive stalemates with the strategy log on** (the
+  current default). In the partial 5-year run (`20260529T151442Z`), every
+  power's SC count stayed at 3–5 from F1901M through F1903M — basically
+  nothing happened for ≈2.5 game years. The strategy log seems to reinforce
+  a "consolidate, don't antagonize" stance across the Haiku table.
+- **Without the strategy log, Haiku plays a noticeably more dynamic game** — the
   plain-vanilla 5-year baseline `20260529T191351Z` ended at
   `RUS 6 / AUS 5 / ENG 5 / FRA 4 / TUR 4 / GER 3 / ITA 3`, with real growth
   and contraction (Germany and Italy actually shrank). Useful negative
   finding: the verbose self-strategizing was hurting more than it helped.
-  Likely the right default for axis A and other Haiku-baseline experiments
-  is **strategy off**.
+  Note: with `--strategy` now promoted to default behavior (hardwired),
+  reproducing the "off" condition requires invoking `run_game(enable_strategy=False)`
+  programmatically rather than via the CLI. If Haiku experiments need this
+  again, we'd add a `--no-strategy` flag back.
 - Likely viable for the controlled experiments **if** persona prompts
   (axis B) override the default cautious behavior; needs empirical
   confirmation, which is what axis A's first run is for.
@@ -152,14 +154,19 @@ runs, with method + per-power results table + verdict.
 
 ### Axis A — model capability (one stronger model in a homogeneous table)
 
-**Method:** 6 Haikus + 1 Sonnet (rotating which power is the upgraded one,
-in later rounds), paired with an all-Haiku baseline at identical settings.
-3 rounds of negotiation per movement phase, `--strategy` on, 3 game-years
-each (longer than the canonical's 2 because Haiku tends to take longer to
-break stalemate).
+**Method:** 6 Sonnets + 1 Opus (rotating which power is the upgraded one,
+across seeds), paired with an all-Sonnet baseline at identical settings.
+3 rounds of negotiation per movement phase, strategy log on (hardwired in
+the current default), 5 game-years each — same shape as the canonical
+configuration so the only thing varying is the upgraded power.
+
+Invocation:
+```bash
+python -m diplomacy_a2a --power-model TURKEY=claude-opus-4-7 --log-prompts
+```
 
 **Status:** *Plumbing landed in commit `7358cdd` (run_game `power_clients`
-+ `--upgrade POWER=MODEL` CLI flag + model-aware cost estimator). First
++ `--power-model POWER=MODEL` CLI flag + model-aware cost estimator). First
 runs pending.*
 
 Results will land here when complete.
