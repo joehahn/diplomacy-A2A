@@ -37,7 +37,7 @@ CICERO controlled one of the seven powers in anonymous games on
 webDiplomacy.net, while six humans controlled the others. But this effort
 drops the strategic-reasoning module in favor of letting Agent-to-Agent
 (A2A) communication manage all negotiations, with all decisions made by a
-well-prompted frontier LLM, and with all players managed by AI agents.
+well-prompted frontier LLM, and with all players represented by AI agents.
 
 ## A visual dive into a representative game
 
