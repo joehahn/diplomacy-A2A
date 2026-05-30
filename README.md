@@ -8,10 +8,21 @@ the European map. Placeholder image from
 This project simulates the same thing — seven powers plotting, allying, and
 betraying each other across that map — with LLM agents instead of humans.*</sub>
 
-A Claude-powered, agent-to-agent simulation of the board game **Diplomacy**.
-Persona-conditioned LLM agents negotiate, ally, and (often) betray each other
-across multiple turns of full-press play. The artifact that matters is the
-**negotiation transcript**, not whether any particular agent wins.
+**Diplomacy** is a 7-player strategy game set in pre-WWI Europe, where each
+player controls one of the Great Powers (Austria, England, France, Germany,
+Italy, Russia, Turkey) competing for supply centers on the map. There are no
+dice — every order resolves deterministically. What makes the game distinctive
+is that between every turn, players negotiate privately in pairs, and those
+negotiations are unenforceable: any deal can be broken, betrayal is expected,
+and most games are decided more by what was promised (or lied about) in
+private than by tactical cleverness.
+
+This project replaces those seven human players with **seven Claude-powered
+LLM agents**. The agents negotiate privately each turn, choose their orders,
+and the same rulebook adjudicates the result — producing a full transcript
+of who said what to whom, who honored deals, and who betrayed. The artifact
+that matters is the **negotiation transcript**, not whether any particular
+agent wins.
 
 → **[See the canonical run](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)**
 on GitHub Pages — Sonnet × 7 powers × 5 years × 3 negotiation rounds, with
