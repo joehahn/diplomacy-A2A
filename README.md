@@ -14,17 +14,14 @@ Persona-conditioned LLM agents negotiate, ally, and (often) betray each other
 across multiple turns of full-press play. The artifact that matters is the
 **negotiation transcript**, not whether any particular agent wins.
 
-The **canonical run** is defined as:
+→ **[See the canonical run](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)**
+on GitHub Pages — Sonnet × 7 powers × 5 years × 3 negotiation rounds, with
+turn-by-turn maps, deterministic narration, LLM commentary, self-authored
+agent strategies, and the full year-1 prompt+response dump.
 
-```bash
-python -m diplomacy_a2a --log-prompts
-```
-
-— Sonnet × 7 powers × 5 game-years × 3 negotiation rounds, with self-authored
-strategy notes, deterministic per-turn narration, and per-agent prompt+response
-dumps for the first game-year. When rendered, it lives at
-`results/<run-id>/index.html` and is committed so visitors can read the
-output without spending money.
+The configuration is the bare `python -m diplomacy_a2a --log-prompts` (all
+other settings default). The rendered run is committed under `results/` so
+visitors can read the output without spending money.
 
 This is a portfolio demo for AI-consulting / forward-deployed-engineer work,
 in the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
@@ -155,9 +152,12 @@ per-run timing are in [REFERENCE.md](REFERENCE.md).
 - **`results/`** — pre-rendered transcripts so visitors can see output
   without spending money. Each game renders a turn-by-turn HTML slideshow
   (maps, narration, agent strategies, dialogue) at
-  `results/<run-id>/index.html`, hosted on GitHub Pages. The canonical
-  configuration is the bare `python -m diplomacy_a2a --log-prompts`
-  command — see [results/README.md](results/README.md).
+  `results/<run-id>/index.html`, hosted on GitHub Pages —
+  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)
+  (5 years, 3 rounds of negotiation per turn, strategy log + LLM commentary
+  + year-1 prompt dump). The canonical configuration is the bare
+  `python -m diplomacy_a2a --log-prompts` command — see
+  [results/README.md](results/README.md).
 
 ## What each agent sees
 
@@ -280,11 +280,13 @@ click any prompt to expand). By default it only captures **the first game-year**
 which is where the opening negotiation/coordination is most legible and keeps the
 artifact focused (`--log-prompts-years N` extends that).
 
-The canonical run's dumps **are committed** when it lands at
-`results/<run-id>/prompts.md` so you can read precisely what the agents said
-without spending anything (GitHub renders the collapsibles inline). The flag
-is off by default and otherwise gitignored, so a full experiment grid isn't
-bloated with redundant dumps. To produce one yourself:
+The canonical run's dumps **are committed** so you can read precisely what
+the agents said without spending anything:
+[**`prompts.md`**](results/20260529T225943Z/prompts.md) (≈853 KB; GitHub
+renders the collapsibles inline) or the raw
+[`prompts.jsonl`](results/20260529T225943Z/prompts.jsonl) (≈778 KB). The
+flag is off by default and otherwise gitignored, so a full experiment grid
+isn't bloated with redundant dumps. To produce one yourself:
 
 ```bash
 python -m diplomacy_a2a --log-prompts
@@ -305,11 +307,11 @@ out of the game loop so a full experiment grid stays cheap.
 ## Cost
 
 A `--smoke` run costs pennies; the canonical (Sonnet, 5 years, 3 rounds,
-strategy on, `--log-prompts` year 1) is budgeted at **≈$8** end-to-end —
-extrapolated from an earlier 2-year Sonnet canonical that came in at $3.20.
-A full controlled-variation experiment series (axis A–D, see Roadmap) is
-budgeted under **≈$300**. Per-million-token rates, per-phase timing, and
-per-run cost history are tracked in [REFERENCE.md](REFERENCE.md).
+strategy on, `--log-prompts` year 1, plus the LLM-commentary post-pass) came
+in at **$11.98 + $0.50 = ≈$12.50** end-to-end and ≈77 min wall-time. A full
+controlled-variation experiment series (axis A–D, see Roadmap) is budgeted
+under **≈$300**. Per-million-token rates, per-phase timing, and per-run cost
+history are tracked in [REFERENCE.md](REFERENCE.md).
 
 ## Notes for re-running
 

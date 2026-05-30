@@ -47,6 +47,7 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 | 20260527T132540Z (smoke) | Haiku | 1 round, 1 yr | 3 | 180s | **≈60** | $0.46 *(actual ≈ $0.15)* |
 | 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, `--strategy`, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
 | 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no `--strategy` | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
+| 20260529T225943Z **(canonical)** | Sonnet | 3 rounds, 5 yr, strategy on, `--log-prompts` | 18 | 4479s | **≈249** | **$11.98** + $0.50 commentary |
 
 **Headline:** Haiku is ≈3–4× faster than Sonnet *per phase on simple workloads*
 (1 round, no strategy). On the full canonical workload (3 rounds × `--strategy`)
@@ -63,11 +64,14 @@ count dominates — Haiku doesn't make fewer calls than Sonnet, and the strategy
 Produces tight 1–2-sentence strategy notes (*"I'll court Austria with vague
 promises while positioning to stab if opportunity arises"*), clearly probes
 in early negotiation rounds, closes deals in round 3, and lets dialogue
-visibly steer orders. The previous 2-year canonical (`20260528T214253Z`,
-deleted 2026-05-29) showed multiple betrayals + coordinated handoffs. The
-new canonical configuration is the bare `python -m diplomacy_a2a
---log-prompts` (Sonnet, 5 years, 3 rounds, strategy on, prompt-dump for
-year 1) — pending its first render.
+visibly steer orders. The current canonical (`20260529T225943Z`, the bare
+`python -m diplomacy_a2a --log-prompts`) played a fully populated 5-year
+game with no eliminations: Germany and Russia tied at 6 SCs, no power
+below 3, and the LLM commentary flagged a France→Burgundy gambit at
+S1901M where the public message to Germany ("purely defensive") didn't
+match the move — the kind of intent-vs-action gap the project is built
+to surface. The previous 2-year Sonnet canonical (`20260528T214253Z`,
+deleted 2026-05-29) is preserved in the timing table above as a data point.
 
 ### Haiku (cheaper, fallback for experiments)
 

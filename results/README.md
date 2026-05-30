@@ -1,8 +1,8 @@
 # results/
 
-Rendered transcripts of game runs land here. The canonical run is **committed**
-to the repo so visitors can read the interesting output without spending money
-on API calls; throwaway runs live in `scratch/` (gitignored) instead.
+Rendered transcripts of game runs. The canonical run is **committed** to the
+repo so visitors can read the interesting output without spending money on
+API calls; throwaway runs live in `scratch/` (gitignored) instead.
 
 Each run lands as a directory:
 
@@ -20,28 +20,51 @@ Each run lands as a directory:
 - `prompts.jsonl` / `prompts.md` — only present when the run was launched with
   `--log-prompts`; contains every agent's exact prompt and response for the
   first `--log-prompts-years` years (default 1).
+- `commentary.json` — strategic interpretation per phase, written by
+  `commentary.py` as a post-pass; the viewer reads it if present and silently
+  omits the block otherwise.
 
 Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
 ## Canonical run
 
-The canonical configuration is:
+### `20260529T225943Z/` — **bare `--log-prompts`, all defaults**
 
 ```bash
 python -m diplomacy_a2a --log-prompts
 ```
 
-Everything else takes its default value — Sonnet 4.6, 5 game-years, 3
-negotiation rounds per movement phase, agent memory = 3 movement turns,
-self-authored strategy notes on. `--log-prompts` saves the exact prompt +
-response pair for every agent call during the **first** game-year (the
-`--log-prompts-years` default), so the opening play is auditable down to the
-token without the later phases bloating the dump.
+Sonnet 4.6, 5 game-years, 3 negotiation rounds per movement phase, agent
+memory = 3 movement turns, self-authored strategy notes on, prompt+response
+dump for the first game-year, plus the LLM-commentary post-pass. 18 phases,
+**≈$12 / ≈77 min** end-to-end. The full agent-prompt + response dump
+(`prompts.jsonl` ≈778 KB / `prompts.md` ≈853 KB) is committed — see the
+project README's *Seeing the exact agent prompts*.
 
-Expected cost / wall-time at current Sonnet rates: ≈$8 / ≈80 minutes for the
-full 5-year game. The rendered slideshow + `prompts.md` are committed when a
-new canonical lands.
+Final standings (no eliminations, no solo win — played to the 5-year cap):
 
-*(The previous Sonnet 2-year canonical at `20260528T214253Z/` was deleted on
-2026-05-29 in favor of the new 5-year configuration. A replacement render is
-pending.)*
+| Power | SC count | Centers |
+|---|---:|---|
+| Germany | 6 | BER, KIE, MUN, DEN, HOL, BEL |
+| Russia  | 6 | MOS, SEV, STP, WAR, RUM, SWE |
+| Austria | 5 | BUD, VIE, GRE, SER, BUL |
+| France  | 5 | BRE, MAR, PAR, POR, SPA |
+| Italy   | 5 | NAP, ROM, VEN, TUN, TRI |
+| England | 4 | EDI, LON, LVP, NWY |
+| Turkey  | 3 | ANK, CON, SMY |
+
+Opening highlight (S1901M, from the LLM commentary):
+
+> *"France moved A PAR → BUR despite telling Germany it was 'purely defensive'
+> — Germany accepted this framing, but France now sits one step from Munich
+> with a free hand in the west, a position Germany should be watching
+> carefully."*
+
+Germany still finished tied-leader at 6 SCs, so the gambit didn't crack the
+alliance, but the commentary catches that the public message and the move
+didn't quite match — exactly the intent-vs-action artifact `--strategy`
++ `--log-prompts` are built to surface.
+
+[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)
+(GitHub Pages) to flip through the maps, narration, commentary, agent
+strategies, and dialogue.
