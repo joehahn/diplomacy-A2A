@@ -53,7 +53,7 @@ LLM-generated summary of the gameplay that describes which nations used
 A2A negotiations to advance their goals, which agents fumbled translating
 negotiations into success, and who backstabbed whom.
 
-## Goals & deliverables
+## Project goals & deliverables
 
 1. **Built with Claude Code, but reproducible with just an Anthropic key.**
    The project is *developed* using Claude Code, yet it *runs* on nothing more
@@ -76,7 +76,7 @@ negotiations into success, and who backstabbed whom.
    among Sonnets), memory depth (one agent given more or less past-turn
    context), personality trait (one aggressive / untruthful / backstabbing
    agent at an otherwise neutral table), pre-game collusion (two agents
-   share a private agreement injected into their dialogue history), or
+   share a private agreement to coordinate prior to game start), or
    information asymmetry (one agent has parts of its prompt hidden, such as
    the current supply-center ownership tracker, forcing it to infer
    standings from unit positions and dialogue alone).
@@ -110,11 +110,7 @@ findings:
 
 Information asymmetry is the structural feature these domains share:
 bidders never see opponents' reserves, M&A parties never see walk-away
-prices, traders never see opponents' positions. Axis E in Goal 3 above
-is the experiment in this testbed that most directly probes that property.
-
-The specific business analogy this project frames its findings against
-will be selected in a future iteration.
+prices, traders never see opponents' positions.
 
 ## Status
 
