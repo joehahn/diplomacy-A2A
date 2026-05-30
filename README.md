@@ -156,7 +156,7 @@ python -m diplomacy_a2a render results/20260529T225943Z/
 # Add or refresh LLM commentary on a finished run, then render
 python -m diplomacy_a2a render results/20260529T225943Z/ --with-commentary
 
-# Generate commentary only (no render — useful in scripts)
+# Generate commentary only, no render (useful in scripts)
 python -m diplomacy_a2a commentary results/20260529T225943Z/
 
 python -m diplomacy_a2a --help                # subcommand list
