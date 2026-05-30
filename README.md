@@ -64,8 +64,9 @@ backstabbed whom.
    not just that agents *send* messages, but that they *influence* one another —
    proposing, reacting across rounds, honoring or betraying deals — and that
    those interactions visibly drive how the game evolves. The negotiation
-   transcript and the turn-by-turn slideshow are the deliverable (see
-   **Negotiation protocol**), not whether any particular agent wins.
+   transcript and the turn-by-turn slideshow are the deliverables that
+   expose how effective those agents are at influencing each other, not
+   whether any particular agent wins.
 
 3. **What makes a Diplomacy LLM agent successful?** *(Under active development.)*
    Controlled A/B experiments where six agents are identical and one differs
