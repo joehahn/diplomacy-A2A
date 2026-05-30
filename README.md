@@ -177,24 +177,20 @@ agents (`--power-model`, `--power-memory`), and control output
 
 | Flag | Default | What it does |
 |---|---|---|
-| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the workhorse and the canonical model; `claude-opus-4-7` is the stronger showcase; `claude-haiku-4-5-20251001` is the cheaper option for experiments. See **Cost / time per game** below for figures. |
-| `--years N` | `5` | Game-years to play. Solo wins (18 SCs) end the game early regardless. |
+| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the canonical game's workhorse; `claude-opus-4-7` is the stronger and more expensive AI while `claude-haiku-4-5-20251001` is less. |
+| `--years N` | `5` | Game-years to play unless one nation captures 18 supply centers (SCs). |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
-| `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default. E.g. `--power-model TURKEY=claude-opus-4-7` while everyone else stays on Sonnet. |
+| `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default, so `--power-model TURKEY=claude-opus-4-7` means that Turkey's agent is Opus powered while all others use Sonnet. |
 | `--memory N` | `3` | How many **movement turns** of memory each agent carries. Covers all three channels at once: the *"What happened in the last N turns"* narration recap, the agent's own strategy notes (2N of them, since each movement contributes initial + revised), and the dialogue history (older messages drop out of the prompt). `0` is a fully memoryless agent — only the current board, no recap. |
-| `--power-memory POWER=N` *(repeatable)* | – | Override the memory depth for one power. E.g. `--power-memory TURKEY=10` lets Turkey remember 10 turns back while everyone else uses the default. |
-| `--log-prompts` | off | Save every prompt each agent receives, paired with its response, to `prompts.jsonl` and `prompts.md`. See **Seeing the exact agent prompts and responses**. |
+| `--power-memory POWER=N` *(repeatable)* | – | Override the memory depth for one power. E.g. `--power-memory TURKEY=5` lets Turkey remember 5 turns back while everyone else uses the default. |
+| `--log-prompts` | off | Save every prompt each agent receives, paired with its response, to `prompts.jsonl` and `prompts.md`. |
 | `--log-prompts-years N` | `1` | When `--log-prompts` is on, only log calls in the first N game-years. |
-| `--with-commentary` | off | After the game finishes, also generate LLM strategic commentary (`commentary.py`) and re-render so the slides include it. This is the "give me the polished published dashboard" flag. |
+| `--with-commentary` | off | After the game finishes, also generate LLM strategic commentary and re-render so the slides include it. This is the "create the polished published dashboard" flag. |
 | `--commentary-model MODEL` | same as `--model` | When `--with-commentary` is on, the model used for the commentary post-pass. |
-| `--no-render` | off | Skip the dashboard render at end of game (transcript still written). Use this when you plan to run `render` separately, e.g. iterating on viewer code. |
+| `--no-render` | off | Skip the dashboard render at end of game. Use this when you plan to run `render` separately, e.g. iterating on viewer code. |
 | `--smoke` | off | Shortcut for cheap end-to-end verification: Haiku, 1 year, 1 round. |
 | `--results-dir PATH` | `results` | Root directory for artifacts. |
 | `--quiet` | off | Suppress the verbose phase-by-phase trace. |
-
-**Strategy log is always on.** Each agent writes a 1–2 sentence strategy note
-*before* negotiation and revises it *after*, and carries its own past notes
-forward into every later call. See **Agent strategy & memory** below.
 
 ### Options *not* in the CLI yet
 
