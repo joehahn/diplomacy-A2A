@@ -127,11 +127,12 @@ cp .env.example .env          # then paste your key into .env
 
 ## Executing games
 
-The CLI has three subcommands split along cost / LLM-use lines: **`run`**
-executes a game (LLM, ≈$8-12), **`render`** rebuilds the dashboard from a
-finished transcript (no LLM, sub-second), and **`commentary`** adds
-LLM-written strategic commentary (≈$0.50). Invoking with no subcommand
-defaults to `run`, so older one-line invocations keep working.
+The CLI has three subcommands split by LLM use: **`run`** executes a
+game (LLM), **`render`** rebuilds the dashboard from a finished transcript
+(no LLM, sub-second), and **`commentary`** adds LLM-written strategic
+commentary. Invoking with no subcommand defaults to `run`, so older
+one-line invocations keep working. See **Cost / time per game** below
+for the dollar figures.
 
 ```bash
 # default: one full Sonnet game, 5 years, 3 negotiation rounds, strategy log on
@@ -140,10 +141,10 @@ python -m diplomacy_a2a                      # equivalent to `... run`
 # the canonical published demo: game + year-1 prompt dump + LLM commentary
 python -m diplomacy_a2a --log-prompts --with-commentary
 
-# cheap end-to-end verification (Haiku, 1 year, 1 round) — pennies
+# cheap end-to-end verification (Haiku, 1 year, 1 round)
 python -m diplomacy_a2a --smoke
 
-# Opus showcase (more expensive, ≈$15+ at 5 years × 3 rounds × strategy on)
+# Opus showcase (stronger model)
 python -m diplomacy_a2a --model claude-opus-4-7
 
 # per-power model override (axis-A experiment plumbing)
@@ -152,7 +153,7 @@ python -m diplomacy_a2a --power-model TURKEY=claude-opus-4-7
 # per-power memory override
 python -m diplomacy_a2a --power-memory TURKEY=10
 
-# Re-render a finished run after tweaking viewer code (no LLM, free)
+# Re-render a finished run after tweaking viewer code (no LLM)
 python -m diplomacy_a2a render results/20260529T225943Z/
 
 # Add or refresh LLM commentary on a finished run, then re-render
@@ -173,25 +174,24 @@ The transcript is the canonical artifact; every renderer derives from it.
 
 | Flag | Default | What it does |
 |---|---|---|
-| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the workhorse — the canonical is Sonnet, and a 5-year game runs ≈$8. Use `claude-opus-4-7` for a stronger (≈$15+) showcase or `claude-haiku-4-5-20251001` for cheap experiments. |
+| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the workhorse and the canonical model; `claude-opus-4-7` is the stronger showcase; `claude-haiku-4-5-20251001` is the cheaper option for experiments. See **Cost / time per game** below for figures. |
 | `--years N` | `5` | Game-years to play. Solo wins (18 SCs) end the game early regardless. |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
-| `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default — weaker (Haiku) or stronger (Opus). E.g. `--power-model TURKEY=claude-opus-4-7` while everyone else stays on Sonnet. Costs are reported per-model. |
+| `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default. E.g. `--power-model TURKEY=claude-opus-4-7` while everyone else stays on Sonnet. |
 | `--memory N` | `3` | How many **movement turns** of memory each agent carries. Covers all three channels at once: the *"What happened in the last N turns"* narration recap, the agent's own strategy notes (2N of them, since each movement contributes initial + revised), and the dialogue history (older messages drop out of the prompt). `0` is a fully memoryless agent — only the current board, no recap. |
 | `--power-memory POWER=N` *(repeatable)* | – | Override the memory depth for one power. E.g. `--power-memory TURKEY=10` lets Turkey remember 10 turns back while everyone else uses the default. |
 | `--log-prompts` | off | Save every prompt each agent receives, paired with its response, to `prompts.jsonl` and `prompts.md`. See **Seeing the exact agent prompts and responses**. |
 | `--log-prompts-years N` | `1` | When `--log-prompts` is on, only log calls in the first N game-years. |
-| `--with-commentary` | off | After the game finishes, also generate LLM strategic commentary (`commentary.py`) and re-render so the slides include it. Adds ≈$0.50 of Sonnet calls. This is the "give me the polished published dashboard" flag. |
+| `--with-commentary` | off | After the game finishes, also generate LLM strategic commentary (`commentary.py`) and re-render so the slides include it. This is the "give me the polished published dashboard" flag. |
 | `--commentary-model MODEL` | same as `--model` | When `--with-commentary` is on, the model used for the commentary post-pass. |
 | `--no-render` | off | Skip the dashboard render at end of game (transcript still written). Use this when you plan to run `render` separately, e.g. iterating on viewer code. |
-| `--smoke` | off | Shortcut for cheap end-to-end verification: Haiku, 1 year, 1 round. Pennies. |
+| `--smoke` | off | Shortcut for cheap end-to-end verification: Haiku, 1 year, 1 round. |
 | `--results-dir PATH` | `results` | Root directory for artifacts. |
 | `--quiet` | off | Suppress the verbose phase-by-phase trace. |
 
 **Strategy log is always on.** Each agent writes a 1–2 sentence strategy note
 *before* negotiation and revises it *after*, and carries its own past notes
-forward into every later call. This adds ≈25–35% to the per-game cost but
-produces a much richer transcript. See **Agent strategy & memory** below.
+forward into every later call. See **Agent strategy & memory** below.
 
 ### Options *not* in the CLI yet
 
@@ -203,15 +203,26 @@ produces a much richer transcript. See **Agent strategy & memory** below.
   [REFERENCE.md](REFERENCE.md).
 - **Pre-game collusion** between two agents — **axis D** of the same.
 
-### Cost / time per game
+## Cost / time per game
 
-A `--smoke` run costs pennies. The canonical Sonnet run (5 years, 3 rounds,
-strategy on, `--log-prompts` for year 1) is budgeted at ≈$8 and ≈80 min,
-extrapolating from the older 2-year canonical (≈$3.20 / 28 min). Haiku is
-≈⅓ the cost (prompt caching not yet firing on Haiku 4.5 — see
-[REFERENCE.md](REFERENCE.md) known issues). A controlled-variation experiment
-series (axis A–D) is budgeted under ≈$300 total. Per-model rates and full
-per-run timing are in [REFERENCE.md](REFERENCE.md).
+A `--smoke` run costs pennies. The canonical (Sonnet, 5 years, 3 rounds,
+strategy on, `--log-prompts` year 1, plus the LLM-commentary post-pass)
+came in at **$11.98 + $0.50 = ≈$12.50** end-to-end and **≈77 min** wall-time.
+Opus at the same configuration is ≈$15+. Haiku is roughly ⅓ the cost
+(prompt caching not yet firing on Haiku 4.5; see [REFERENCE.md](REFERENCE.md)
+known issues).
+
+The always-on strategy log adds ≈25–35% to per-game cost vs the same
+configuration without it; the trade-off is much richer transcripts
+(see **Agent strategy & memory**). The `render` subcommand is free
+(no LLM); `commentary` alone adds ≈$0.50 of Sonnet calls for an 18-phase
+game. `--with-commentary` rolls game + commentary + re-render into one
+command.
+
+A full controlled-variation experiment series (axis A–D, see goal 3 and
+[REFERENCE.md](REFERENCE.md)) is budgeted under **≈$300**. Per-million-token
+rates, per-phase timing, and per-run cost history are tracked in
+[REFERENCE.md](REFERENCE.md).
 
 ## Architecture
 
@@ -385,16 +396,6 @@ and the negotiation. Unlike the deterministic narration, this is *interpretation
 (human-facing only, never fed to agents), so it's a separate opt-in pass over a
 finished transcript (one LLM call per phase) rather than part of `run_game` — kept
 out of the game loop so a full experiment grid stays cheap.
-
-## Cost
-
-A `--smoke` run costs pennies; the canonical (Sonnet, 5 years, 3 rounds,
-strategy on, `--log-prompts` year 1, plus the LLM-commentary post-pass) came
-in at **$11.98 + $0.50 = ≈$12.50** end-to-end and ≈77 min wall-time. A full
-controlled-variation experiment series (axis A–D, see goal 3 and
-[REFERENCE.md](REFERENCE.md)) is budgeted under **≈$300**.
-Per-million-token rates, per-phase timing, and per-run cost history are
-tracked in [REFERENCE.md](REFERENCE.md).
 
 ## Notes for re-running
 
