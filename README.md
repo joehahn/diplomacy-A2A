@@ -136,22 +136,22 @@ transcript (`run`), it renders the gameplay dashboard from a game transcript
 # Execute default game (is Sonnet-powered, lasts 5 years, w/ 3 negotiation rounds per turn)
 python -m diplomacy_a2a run
 
-# Execute the canonical game (5 years of gameplay + 1st-year dump of all agents' prompts & responses + LLM commentary)
+# Execute canonical game (5 yrs of gameplay + 1st-year dump of all agents' prompts & responses + LLM commentary)
 python -m diplomacy_a2a run --log-prompts --with-commentary
 
-# End-to-end verification using Haiku for 1 year and 1 negotiation round
+# End-to-end verification using lower-cost Haiku for 1 year and 1 negotiation round
 python -m diplomacy_a2a run --smoke
 
 # all agents use stronger LLM
 python -m diplomacy_a2a run --model claude-opus-4-7
 
-# per-power model override (only Turkey gets Opus LLM)
+# per-power model override (only Turkey uses Opus LLM)
 python -m diplomacy_a2a run --power-model TURKEY=claude-opus-4-7
 
 # per-power memory-depth override (Turkey context preserves past 5 movements)
 python -m diplomacy_a2a run --power-memory TURKEY=5
 
-# Render a finished run after tweaking viewer code, this does not use any LLM
+# Render a finished game, this step does not use any LLM
 python -m diplomacy_a2a render results/20260529T225943Z/
 
 # Add or refresh LLM commentary on a finished run, then render
