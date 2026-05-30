@@ -29,17 +29,16 @@ promise, and when to honor or break a deal. The gap between what an agent
 says in private and what it actually does on the board is visible at every
 turn.
 
-→ **[See the canonical run](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)**
-on GitHub Pages — Sonnet × 7 powers × 5 years × 3 negotiation rounds, with
-turn-by-turn maps, deterministic narration, LLM commentary, self-authored
-agent strategies, and the full year-1 prompt+response dump.
+→ **[Explore our canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)**,
+which uses Sonnet to power seven AI agents across 5 game-years (10 movement
+phases in total), with 3 rounds of inter-agent communication before each
+movement. The dashboard shows the turn-by-turn movements of every army and
+navy unit, full transcripts of the agent-to-agent (A2A) communications that
+precede each turn, each agent's self-authored strategy notes, and an
+LLM-generated summary of the gameplay (which nations used A2A negotiations
+to advance their goals, which agents fumbled, and who backstabbed whom).
 
-The configuration is `python -m diplomacy_a2a --log-prompts --with-commentary`
-(all other settings default). The rendered run is committed under `results/`
-so visitors can read the output without spending money.
-
-This is a portfolio demo for AI-consulting / forward-deployed-engineer work,
-in the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
+In the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
 
 ## Goals & deliverables
 
