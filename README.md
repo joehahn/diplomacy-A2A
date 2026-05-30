@@ -206,17 +206,13 @@ agents (`--power-model`, `--power-memory`), and control output
 
 A `--smoke` run costs pennies. The canonical (Sonnet, 5 years, 3 rounds,
 strategy on, `--log-prompts` year 1, plus the LLM-commentary post-pass)
-came in at **$11.98 + $0.50 = ≈$12.50** end-to-end and **≈77 min** wall-time.
-Opus at the same configuration is ≈$15+. Haiku is roughly ⅓ the cost
-(prompt caching not yet firing on Haiku 4.5; see [REFERENCE.md](REFERENCE.md)
-known issues).
+came in at about **$13** end-to-end and about **80 min** wall-time.
+Opus at the same configuration is about **$15**, while Haiku is about
+**$5** but see also [REFERENCE.md](REFERENCE.md) for known issues.
 
-The always-on strategy log adds ≈25–35% to per-game cost vs the same
-configuration without it; the trade-off is much richer transcripts
-(see **Agent strategy & memory**). The `render` subcommand is free
-(no LLM); `commentary` alone adds ≈$0.50 of Sonnet calls for an 18-phase
-game. `--with-commentary` rolls game + commentary + re-render into one
-command.
+The `render` subcommand is free since it does not utilize the LLM, while
+`commentary` adds about $0.50 of Sonnet calls for an 18-phase game.
+`--with-commentary` rolls game + commentary + re-render into one command.
 
 A full controlled-variation experiment series (axis A–D, see goal 3 and
 [REFERENCE.md](REFERENCE.md)) is budgeted under **≈$300**. Per-million-token
