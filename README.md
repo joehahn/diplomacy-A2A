@@ -71,30 +71,47 @@ cp .env.example .env          # then paste your key into .env
 
 ## Running
 
+The CLI has three subcommands split along cost / LLM-use lines: **`run`**
+executes a game (LLM, ≈$8-12), **`render`** rebuilds the dashboard from a
+finished transcript (no LLM, sub-second), and **`commentary`** adds
+LLM-written strategic commentary (≈$0.50). Invoking with no subcommand
+defaults to `run`, so older one-line invocations keep working.
+
 ```bash
 # default: one full Sonnet game, 5 years, 3 negotiation rounds, strategy log on
-python -m diplomacy_a2a
+python -m diplomacy_a2a                      # equivalent to `... run`
+
+# the canonical published demo: game + year-1 prompt dump + LLM commentary
+python -m diplomacy_a2a --log-prompts --with-commentary
 
 # cheap end-to-end verification (Haiku, 1 year, 1 round) — pennies
 python -m diplomacy_a2a --smoke
 
-# prompt + response dump for the default Sonnet game (first year)
-python -m diplomacy_a2a --log-prompts
-
 # Opus showcase (more expensive, ≈$15+ at 5 years × 3 rounds × strategy on)
 python -m diplomacy_a2a --model claude-opus-4-7
 
-# axis-A controlled experiment: 6 Sonnets + 1 Haiku (or 1 Opus) — varied position over seeds
-python -m diplomacy_a2a --power-model TURKEY=claude-haiku-4-5-20251001
+# per-power model override (axis-A experiment plumbing)
 python -m diplomacy_a2a --power-model TURKEY=claude-opus-4-7
 
-# axis-C controlled experiment: one agent with much longer memory than the rest
+# per-power memory override
 python -m diplomacy_a2a --power-memory TURKEY=10
 
-python -m diplomacy_a2a --help     # full option list
+# Re-render a finished run after tweaking viewer code (no LLM, free)
+python -m diplomacy_a2a render results/20260529T225943Z/
+
+# Add or refresh LLM commentary on a finished run, then re-render
+python -m diplomacy_a2a render results/20260529T225943Z/ --with-commentary
+
+# Generate commentary only (no render — useful in scripts)
+python -m diplomacy_a2a commentary results/20260529T225943Z/
+
+python -m diplomacy_a2a --help                # subcommand list
+python -m diplomacy_a2a run --help            # game-execution options
+python -m diplomacy_a2a render --help         # render + commentary options
 ```
 
 Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
+The transcript is the canonical artifact; every renderer derives from it.
 
 ### Options
 
@@ -108,6 +125,9 @@ Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
 | `--power-memory POWER=N` *(repeatable)* | – | Override the memory depth for one power. E.g. `--power-memory TURKEY=10` lets Turkey remember 10 turns back while everyone else uses the default. |
 | `--log-prompts` | off | Save every prompt each agent receives, paired with its response, to `prompts.jsonl` and `prompts.md`. See **Seeing the exact agent prompts and responses**. |
 | `--log-prompts-years N` | `1` | When `--log-prompts` is on, only log calls in the first N game-years. |
+| `--with-commentary` | off | After the game finishes, also generate LLM strategic commentary (`commentary.py`) and re-render so the slides include it. Adds ≈$0.50 of Sonnet calls. This is the "give me the polished published dashboard" flag. |
+| `--commentary-model MODEL` | same as `--model` | When `--with-commentary` is on, the model used for the commentary post-pass. |
+| `--no-render` | off | Skip the dashboard render at end of game (transcript still written). Use this when you plan to run `render` separately, e.g. iterating on viewer code. |
 | `--smoke` | off | Shortcut for cheap end-to-end verification: Haiku, 1 year, 1 round. Pennies. |
 | `--results-dir PATH` | `results` | Root directory for artifacts. |
 | `--quiet` | off | Suppress the verbose phase-by-phase trace. |
@@ -289,12 +309,14 @@ flag is off by default and otherwise gitignored, so a full experiment grid
 isn't bloated with redundant dumps. To produce one yourself:
 
 ```bash
-python -m diplomacy_a2a --log-prompts
+python -m diplomacy_a2a --log-prompts                       # game + dashboard
+python -m diplomacy_a2a --log-prompts --with-commentary     # + LLM commentary
 ```
 
 That's the bare canonical: 5-year, 3-round, Sonnet, strategy on, log year 1
-(≈$8 / ≈80 min). `--log-prompts` itself adds no API cost — it only saves
-prompts that are sent anyway.
+(≈$8 / ≈80 min; `+$0.50` for the commentary post-pass with `--with-commentary`).
+`--log-prompts` itself adds no API cost — it only saves prompts that are sent
+anyway.
 
 Separately, **optional LLM commentary** ([`commentary.py`](diplomacy_a2a/commentary.py))
 can add a narrator's strategic read to each slide — who's threatening whom, who's

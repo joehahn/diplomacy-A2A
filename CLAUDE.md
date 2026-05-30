@@ -26,14 +26,29 @@ record of it — not by game outcomes. This is a portfolio demo, so output legib
 
 ## Current reality vs. the README (as of this writing)
 
-The CLI in `cli.py` / `__main__.py` is wired up: `python -m diplomacy_a2a [opts]`
-runs one game via `run_game`. Flags: `--model`, `--years`, `--rounds`,
-`--log-prompts` (+ `--log-prompts-years`, default 1), `--smoke`, `--results-dir`,
-`--quiet`. The README's "Running" section reflects this.
+The CLI in `cli.py` / `__main__.py` has three subcommands:
 
-The function `run_game(...)` in `runner.py` is still the programmatic entry —
-the CLI is a thin argparse wrapper around it. `tests/test_smoke.py` is still a
-single `@pytest.mark.skip` stub; the smoke is effectively covered by
+  - `run [opts]` — execute a game (LLM, real cost). All previous top-level
+    flags (`--model`, `--years`, `--rounds`, `--log-prompts`,
+    `--log-prompts-years`, `--power-model`, `--power-memory`, `--memory`,
+    `--smoke`, `--results-dir`, `--quiet`) live here, plus two new flags:
+    `--no-render` (skip the auto-render at end of game) and
+    `--with-commentary` (also run the LLM commentary post-pass and re-render).
+  - `render <run-dir> [--with-commentary] [--refresh-commentary]` —
+    re-derive maps / report.md / HTML slideshow from a finished transcript.
+    No LLM. Sub-second. Use this when iterating on viewer code.
+  - `commentary <run-dir> [--model M]` — generate `commentary.json` only
+    (no render). Useful when scripting or testing a different commentator
+    model.
+
+Back-compat: `python -m diplomacy_a2a [opts]` with no subcommand is parsed
+as `run [opts]` so older invocations keep working.
+
+The function `run_game(...)` in `runner.py` is still the programmatic entry
+for the game step; it now takes a `render: bool = True` parameter so that
+end-of-game rendering can be skipped when callers (the `--with-commentary`
+flow) want to render once after commentary lands. `tests/test_smoke.py` is
+still a single `@pytest.mark.skip` stub; smoke is effectively covered by
 `python -m diplomacy_a2a --smoke` (Haiku, 1yr, 1 round, pennies).
 
 ## Running & cost

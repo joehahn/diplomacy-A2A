@@ -102,6 +102,7 @@ def run_game(
     power_clients: dict[str, LLMClient] | None = None,  # per-power model overrides (axis A)
     memory: int = 3,  # default per-agent memory: last N movement turns recalled
     power_memory: dict[str, int] | None = None,  # per-power memory overrides
+    render: bool = True,  # also derive maps/report/HTML from the transcript at end
 ) -> Path:
     """Run a full game, save artifacts under results_root/<run-id>/.
 
@@ -399,10 +400,14 @@ def run_game(
 
     # Maps are regenerated from the completed transcript by replaying the
     # recorded orders through the library — the same deterministic path used
-    # to re-render committed runs, so live and re-rendered output stay identical.
-    regenerate_maps(jsonl_path, run_dir)
-    render_markdown(jsonl_path, run_dir / "report.md")
-    render_html_viewer(jsonl_path, run_dir)
+    # to re-render committed runs (`python -m diplomacy_a2a render <run-dir>`),
+    # so live and re-rendered output stay identical. Set `render=False` to skip
+    # this block — useful when you want to call `render` separately, e.g. after
+    # generating commentary.
+    if render:
+        regenerate_maps(jsonl_path, run_dir)
+        render_markdown(jsonl_path, run_dir / "report.md")
+        render_html_viewer(jsonl_path, run_dir)
 
     if verbose:
         elapsed = time.time() - t0

@@ -26,6 +26,21 @@ Each run lands as a directory:
 
 Naming convention for run directories: `YYYYMMDDTHHMMSSZ` (UTC).
 
+## Re-rendering a committed run
+
+The transcript is the source of truth and every other artifact derives from it.
+So when the viewer changes (CSS tweaks, narration phrasing, KPI chart updates),
+no need to re-run the game — re-render in sub-second:
+
+```bash
+python -m diplomacy_a2a render results/<run-id>/                       # no LLM, free
+python -m diplomacy_a2a render results/<run-id>/ --with-commentary     # also refresh commentary if missing
+python -m diplomacy_a2a render results/<run-id>/ --refresh-commentary  # force regenerate commentary
+```
+
+`render` is the LLM-free path; `commentary` (or `render --with-commentary`)
+adds the ≈$0.50 / ≈2 min strategic-interpretation pass.
+
 ## Canonical run
 
 ### `20260529T225943Z/` — **bare `--log-prompts`, all defaults**
