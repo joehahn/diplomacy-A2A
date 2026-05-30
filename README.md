@@ -209,7 +209,10 @@ agents (`--power-model`, `--power-memory`), and control output
   today. Adding another provider (OpenAI, Gemini, LiteLLM) means writing
   one new file against the same interface, not rewriting the rest of the
   project.
-- **`diplomacy_a2a/personas/`** — per-agent system prompts as markdown.
+- **`diplomacy_a2a/personas/`** — default agent personas (a short
+  disposition string per power; one component of the full system prompt,
+  which the runtime assembles from the rules digest, the persona, and
+  the power assignment).
 - **`diplomacy_a2a/game/`** — thin wrapper around
   [Meta's `diplomacy` library](https://github.com/diplomacy/diplomacy)
   (MIT, DATC-compliant). No custom rules code.
