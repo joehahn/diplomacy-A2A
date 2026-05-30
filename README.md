@@ -16,20 +16,20 @@ all seven players negotiate simultaneously, write their orders in secret,
 and the orders are then adjudicated as a single batch with no turn order.
 What makes the game distinctive is that those negotiations are
 unenforceable: any deal can be broken, betrayal is expected, and most
-games are decided more by what was promised (or lied about) in private
-than by tactical cleverness.
+games are decided more by what was promised or lied about in private
+than pure tactical cleverness.
 
 This project replaces those seven human players with **seven Claude-powered
 AI agents**. The agents negotiate privately each turn, choose their military
-orders, and outcomes are adjudicated by fairly simple rules that amount to
+orders, and outcomes are adjudicated by simple rules that amount to
 "the larger force prevails". Each game produces a full transcript of who
 said what to whom, who honored deals, and who betrayed. The artifact that
 matters here is the **negotiation transcript**, and not which agent wins,
 because the transcript records the part of AI agent behavior that a benchmark
 score cannot show: how each agent reasoned about who to trust, what to
 promise, and when to honor or break a deal. The gap between what an agent
-says in private and what it actually does on the board is visible at every
-turn.
+says in private and what it actually does on the board is visible to this
+project's user at every turn.
 
 This project is a successor to
 [CICERO](https://www.science.org/doi/10.1126/science.ade9097), the 2022
