@@ -39,14 +39,15 @@ AI playing alongside humans.
 
 ## A visual dive into a representative game
 
-→ **[Explore our canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)**,
+**[Explore our canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)**,
 which uses Sonnet to power seven AI agents across 5 game-years (10 movement
 phases in total), with 3 rounds of inter-agent communication before each
 movement. The dashboard shows the turn-by-turn movements of every army and
 navy unit, full transcripts of the agent-to-agent (A2A) communications that
 precede each turn, each agent's self-authored strategy notes, and an
-LLM-generated summary of the gameplay (which nations used A2A negotiations
-to advance their goals, which agents fumbled, and who backstabbed whom).
+LLM-generated summary of the gameplay describing which nations used A2A
+negotiations to advance their goals, which agents fumbled, and who
+backstabbed whom.
 
 ## Goals & deliverables
 
