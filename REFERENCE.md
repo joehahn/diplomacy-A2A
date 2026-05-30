@@ -65,7 +65,7 @@ Produces tight 1–2-sentence strategy notes (*"I'll court Austria with vague
 promises while positioning to stab if opportunity arises"*), clearly probes
 in early negotiation rounds, closes deals in round 3, and lets dialogue
 visibly steer orders. The current canonical (`20260529T225943Z`,
-`python -m diplomacy_a2a --log-prompts --with-commentary`) played a fully
+`python -m diplomacy_a2a run --log-prompts --with-commentary`) played a fully
 populated 5-year game with no eliminations: Germany and Russia tied at 6 SCs, no power
 below 3, and the LLM commentary flagged a France→Burgundy gambit at
 S1901M where the public message to Germany ("purely defensive") didn't
@@ -162,7 +162,7 @@ configuration so the only thing varying is the upgraded power.
 
 Invocation:
 ```bash
-python -m diplomacy_a2a --power-model TURKEY=claude-opus-4-7 --log-prompts
+python -m diplomacy_a2a run --power-model TURKEY=claude-opus-4-7 --log-prompts
 ```
 
 **Status:** *Plumbing landed in commit `7358cdd` (run_game `power_clients`

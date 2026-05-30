@@ -49,7 +49,7 @@ for the game step; it now takes a `render: bool = True` parameter so that
 end-of-game rendering can be skipped when callers (the `--with-commentary`
 flow) want to render once after commentary lands. `tests/test_smoke.py` is
 still a single `@pytest.mark.skip` stub; smoke is effectively covered by
-`python -m diplomacy_a2a --smoke` (Haiku, 1yr, 1 round, pennies).
+`python -m diplomacy_a2a run --smoke` (Haiku, 1yr, 1 round, pennies).
 
 ## Running & cost
 

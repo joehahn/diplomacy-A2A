@@ -133,22 +133,22 @@ adds LLM-written strategic commentary via **`commentary`**.
 
 ```bash
 # default: one full Sonnet game, 5 years, 3 negotiation rounds, strategy log on
-python -m diplomacy_a2a                      # equivalent to `... run`
+python -m diplomacy_a2a run
 
 # the canonical published demo: game + year-1 prompt dump + LLM commentary
-python -m diplomacy_a2a --log-prompts --with-commentary
+python -m diplomacy_a2a run --log-prompts --with-commentary
 
 # cheap end-to-end verification (Haiku, 1 year, 1 round)
-python -m diplomacy_a2a --smoke
+python -m diplomacy_a2a run --smoke
 
 # Opus showcase (stronger model)
-python -m diplomacy_a2a --model claude-opus-4-7
+python -m diplomacy_a2a run --model claude-opus-4-7
 
 # per-power model override (axis-A experiment plumbing)
-python -m diplomacy_a2a --power-model TURKEY=claude-opus-4-7
+python -m diplomacy_a2a run --power-model TURKEY=claude-opus-4-7
 
 # per-power memory override
-python -m diplomacy_a2a --power-memory TURKEY=10
+python -m diplomacy_a2a run --power-memory TURKEY=10
 
 # Re-render a finished run after tweaking viewer code (no LLM)
 python -m diplomacy_a2a render results/20260529T225943Z/
@@ -241,7 +241,7 @@ rates, per-phase timing, and per-run cost history are tracked in
   [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/index.html)
   (5 years, 3 rounds of negotiation per turn, strategy log + LLM commentary
   + year-1 prompt dump). The canonical configuration is
-  `python -m diplomacy_a2a --log-prompts --with-commentary` — see
+  `python -m diplomacy_a2a run --log-prompts --with-commentary` — see
   [results/README.md](results/README.md).
 
 ## What each agent sees
@@ -377,8 +377,8 @@ flag is off by default and otherwise gitignored, so a full experiment grid
 isn't bloated with redundant dumps. To produce one yourself:
 
 ```bash
-python -m diplomacy_a2a --log-prompts                       # game + dashboard
-python -m diplomacy_a2a --log-prompts --with-commentary     # + LLM commentary
+python -m diplomacy_a2a run --log-prompts                       # game + dashboard
+python -m diplomacy_a2a run --log-prompts --with-commentary     # + LLM commentary
 ```
 
 That's the bare canonical: 5-year, 3-round, Sonnet, strategy on, log year 1

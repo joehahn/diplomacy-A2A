@@ -46,7 +46,7 @@ adds the ≈$0.50 / ≈2 min strategic-interpretation pass.
 ### `20260529T225943Z/` — **`--log-prompts --with-commentary`, all other defaults**
 
 ```bash
-python -m diplomacy_a2a --log-prompts --with-commentary
+python -m diplomacy_a2a run --log-prompts --with-commentary
 ```
 
 Sonnet 4.6, 5 game-years, 3 negotiation rounds per movement phase, agent
