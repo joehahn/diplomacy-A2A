@@ -29,7 +29,13 @@ promise, and when to honor or break a deal. The gap between what an agent
 says in private and what it actually does on the board is visible at every
 turn.
 
-In the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097).
+In the lineage of [CICERO](https://www.science.org/doi/10.1126/science.ade9097),
+the 2022 Meta AI system that paired a fine-tuned language model with a
+separate strategic-reasoning module to reach human-level play on online
+Diplomacy. This project drops the strategic-reasoning module: all
+negotiation, planning, and order selection comes from prompting a modern
+frontier LLM, and every player at the table is an AI agent rather than one
+AI playing alongside humans.
 
 ## A visual dive into a representative game
 
