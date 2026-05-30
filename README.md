@@ -170,6 +170,11 @@ The transcript is the canonical artifact; every renderer derives from it.
 
 ### Options
 
+The flags below let you swap the LLM (`--model`), tune game length and
+negotiation depth (`--years`, `--rounds`), strengthen or weaken individual
+agents (`--power-model`, `--power-memory`), and control output
+(`--log-prompts`, `--with-commentary`).
+
 | Flag | Default | What it does |
 |---|---|---|
 | `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the workhorse and the canonical model; `claude-opus-4-7` is the stronger showcase; `claude-haiku-4-5-20251001` is the cheaper option for experiments. See **Cost / time per game** below for figures. |
