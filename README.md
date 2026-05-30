@@ -209,13 +209,10 @@ agents (`--power-model`, `--power-memory`), and control output
   today. Adding another provider (OpenAI, Gemini, LiteLLM) means writing
   one new file against the same interface, not rewriting the rest of the
   project.
-- **`diplomacy_a2a/personas/`** — default agent personas (a short
-  disposition string per power; one component of the full system prompt,
-  which the runtime assembles from the rules digest, the persona, and
-  the power assignment).
+- **`diplomacy_a2a/personas/`** — default agent personas.
 - **`diplomacy_a2a/game/`** — thin wrapper around
-  [Meta's `diplomacy` library](https://github.com/diplomacy/diplomacy)
-  (MIT, DATC-compliant). No custom rules code.
+  [Meta's `diplomacy` library](https://github.com/diplomacy/diplomacy).
+  No custom rules code.
 - **[`agent.py`](diplomacy_a2a/agent.py), [`negotiation.py`](diplomacy_a2a/negotiation.py),
   [`runner.py`](diplomacy_a2a/runner.py)** — the orchestration: agents exchange
   private messages each turn, then commit orders, then the library adjudicates.
