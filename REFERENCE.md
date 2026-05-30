@@ -205,6 +205,19 @@ caching would cost roughly that much more per game on equivalent rates.
 
 ---
 
+## Output layout: top level vs `dashboard/`
+
+Each run directory has two levels: source-of-truth artifacts
+(`transcript.jsonl`, `prompts.jsonl`, `prompts.md`) at the top, and everything
+derived (maps, `report.md`, HTML slideshow, `commentary.json`) under
+`dashboard/`. The split exists so `rm -rf <run>/dashboard/` followed by
+`render` is a safe, sub-second way to regenerate everything derived without
+risking the irreplaceable LLM outputs at the top level. The HTML viewer's
+internal links to top-level files use `../` prefixes; see `render_html_viewer`
+in `transcripts.py` for the implementation.
+
+---
+
 ## Reliability: how API failures are handled
 
 The runner classifies every Anthropic API failure into *fatal* (abort the
