@@ -1,17 +1,28 @@
 """Structured transcript writer + postmortem renderers.
 
-A game run produces these artifacts under `results/<run-id>/`:
+A game run produces artifacts in two levels under `results/<run-id>/`:
+
+Top level (source of truth, written by runner.py):
 - `transcript.jsonl` — one event per line (machine-readable, the source of truth)
-- `report.md`       — human-readable postmortem rendered from the JSONL
+- `prompts.jsonl` / `prompts.md` — only if `--log-prompts` is set
+
+`dashboard/` subfolder (rendered from the transcript by the functions here):
+- `report.md` — human-readable postmortem rendered from the JSONL
 - `initial.svg`, `<short-phase>.svg` (orders + arrows), `<short-phase>.result.svg`
    (board after the phase resolved) — map images replayed from the JSONL
 - `index.html` + `start.html` + `<short-phase>.html` — slideshow-style viewer
    with prev/next navigation (pure HTML, no JS, opens via `open <file>`)
+- `commentary.json` (if `commentary.py` was run) — viewer reads it if present
 
 The JSONL is the canonical record. The maps, markdown, and HTML viewer
 are all regenerable from it — maps by replaying the recorded orders
 through the adjudicator (deterministic, no API calls) — so we can
 re-render postmortems with improved templates without re-running games.
+
+The renderer functions (`regenerate_maps`, `render_markdown`,
+`render_html_viewer`) take an `out_dir` argument that is the dashboard
+subfolder; the HTML viewer's links to `transcript.jsonl` and `prompts.md`
+use `../` to reach the top-level files.
 """
 from __future__ import annotations
 

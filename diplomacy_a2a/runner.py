@@ -5,11 +5,17 @@ movement phase, agent calls for orders, validation, library
 adjudication, map rendering, transcript logging, and final markdown +
 HTML postmortem rendering.
 
-Produces under `results/<run-id>/`:
-- `transcript.jsonl` — structured event log (source of truth)
+Produces under `results/<run-id>/`, in two levels separated by provenance:
+
+Top level (source of truth, produced live during the game):
+- `transcript.jsonl` — structured event log
+- `prompts.jsonl` / `prompts.md` — only if `--log-prompts` is set
+
+`dashboard/` subfolder (derived at the end of the run via the same
+renderers the `render` subcommand uses on committed transcripts):
+- `report.md`        — markdown postmortem with dialogue and reasoning
 - `initial.svg` + `<short-phase>.svg` (orders) + `<short-phase>.result.svg`
   (post-resolution) — maps replayed from the transcript
-- `report.md`        — markdown postmortem with dialogue and reasoning
 - `index.html` + `start.html` + `<short-phase>.html` — slideshow viewer
 
 run-id is a UTC timestamp like `20260523T231245Z`.
