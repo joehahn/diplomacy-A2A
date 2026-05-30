@@ -10,12 +10,14 @@ the European map. Gameboard photo from
 player controls one of the Great Powers (Austria, England, France, Germany,
 Italy, Russia, Turkey) that are competing for supply centers that are
 distributed across the map. No dice are used in Diplomacy, which means that
-each nation's armies and navies advance or retreat deterministically from
-players' orders. What makes the
-game distinctive is that between every turn, players negotiate privately in
-pairs, and those negotiations are unenforceable: any deal can be broken,
-betrayal is expected, and most games are decided more by what was promised
-(or lied about) in private than by tactical cleverness.
+each nation's armies and navies advance or retreat deterministically per
+players' orders. Every turn unfolds in parallel rather than in sequence:
+all seven players negotiate simultaneously, write their orders in secret,
+and the orders are then adjudicated as a single batch with no turn order.
+What makes the game distinctive is that those negotiations are
+unenforceable: any deal can be broken, betrayal is expected, and most
+games are decided more by what was promised (or lied about) in private
+than by tactical cleverness.
 
 This project replaces those seven human players with **seven Claude-powered
 AI agents**. The agents negotiate privately each turn, choose their military
