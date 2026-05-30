@@ -127,9 +127,9 @@ cp .env.example .env          # then paste your key into .env
 
 ## Game execution
 
-The CLI does three things: it runs games (LLM), it rebuilds the dashboard
-from a finished transcript via **`render`** (no LLM, sub-second), and it
-adds LLM-written strategic commentary via **`commentary`**.
+The CLI does three things: it runs a game and stores game history as a
+transcript, it renders the gameplay dashboard from a game transcript, and
+it adds LLM-composed strategic commentary to that dashboard.
 
 ```bash
 # Execute default game (is Sonnet-powered, lasts 5 years, w/ 3 negotiation rounds per turn)
