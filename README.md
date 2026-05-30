@@ -73,8 +73,11 @@ backstabbed whom.
    along a single axis: model capability (one Sonnet among Haikus, or one Opus
    among Sonnets), memory depth (one agent given more or less past-turn
    context), personality trait (one aggressive / untruthful / backstabbing
-   agent at an otherwise neutral table), or pre-game collusion (two agents
-   share a private agreement injected into their dialogue history).
+   agent at an otherwise neutral table), pre-game collusion (two agents
+   share a private agreement injected into their dialogue history), or
+   information asymmetry (one agent has parts of its prompt hidden, such as
+   the current supply-center ownership tracker, forcing it to infer
+   standings from unit positions and dialogue alone).
 
 ## Real-world A2A analogies (placeholder)
 
@@ -102,6 +105,11 @@ findings:
 - **Cybersecurity red-team / blue-team agents**: opposing automated
   adversaries that must model each other's strategy and adapt in real
   time, on the same network or the same model.
+
+Information asymmetry is the structural feature these domains share:
+bidders never see opponents' reserves, M&A parties never see walk-away
+prices, traders never see opponents' positions. Axis E in Goal 3 above
+is the experiment in this testbed that most directly probes that property.
 
 The specific business analogy this project frames its findings against
 will be selected in a future iteration.
