@@ -125,14 +125,11 @@ pip install -r requirements.txt
 cp .env.example .env          # then paste your key into .env
 ```
 
-## Executing games
+## Game execution
 
-The CLI has three subcommands split by LLM use: **`run`** executes a
-game (LLM), **`render`** rebuilds the dashboard from a finished transcript
-(no LLM, sub-second), and **`commentary`** adds LLM-written strategic
-commentary. Invoking with no subcommand defaults to `run`, so older
-one-line invocations keep working. See **Cost / time per game** below
-for the dollar figures.
+The CLI does three things: it runs games (LLM), it rebuilds the dashboard
+from a finished transcript via **`render`** (no LLM, sub-second), and it
+adds LLM-written strategic commentary via **`commentary`**.
 
 ```bash
 # default: one full Sonnet game, 5 years, 3 negotiation rounds, strategy log on
