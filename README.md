@@ -29,15 +29,15 @@ promise, and when to honor or break a deal. The gap between what an agent
 says in private and what it actually does on the board is visible at every
 turn.
 
-This project is in the lineage of
+This project is a successor to
 [CICERO](https://www.science.org/doi/10.1126/science.ade9097), the 2022
 Meta AI system that paired a fine-tuned language model with a separate
 strategic-reasoning module to achieve human-level play on online Diplomacy.
 CICERO controlled one of the seven powers in anonymous games on
-webDiplomacy.net, while six humans controlled the others. But we drop the
-strategic-reasoning module: all negotiation, planning, and order selection
-comes from prompting a modern frontier LLM, and every player at our table
-is an AI agent.
+webDiplomacy.net, while six humans controlled the others. But this effort
+drops the strategic-reasoning module in favor of letting Agent-to-Agent
+(A2A) communication manage all negotiations, with all decisions made by a
+well-prompted frontier LLM, and with all players managed by AI agents.
 
 ## A visual dive into a representative game
 
