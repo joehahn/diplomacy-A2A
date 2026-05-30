@@ -68,7 +68,7 @@ backstabbed whom.
    expose how effective those agents are at influencing each other, not
    whether any particular agent wins.
 
-3. **What makes a Diplomacy LLM agent successful?** *(Under active development.)*
+3. **What helps an AI agent succeed when it is competing against other agents in an A2A universe?** *(Under active development.)*
    Controlled A/B experiments where six agents are identical and one differs
    along a single axis: model capability (one Sonnet among Haikus, or one Opus
    among Sonnets), memory depth (one agent given more or less past-turn
