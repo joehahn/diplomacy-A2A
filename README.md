@@ -8,8 +8,9 @@ the European map. Gameboard photo from
 
 **Diplomacy** is a 7-player strategy game set in pre-WWI Europe, where each
 player controls one of the Great Powers (Austria, England, France, Germany,
-Italy, Russia, Turkey) competing for supply centers on the map. This game
-uses no dice, so every order is resolved deterministically. What makes the
+Italy, Russia, Turkey) competing for supply centers on the map. No dice
+are used in Diplomacy, which means that each nation's armies and navies
+advance or retreat deterministically from players' orders. What makes the
 game distinctive is that between every turn, players negotiate privately in
 pairs, and those negotiations are unenforceable: any deal can be broken,
 betrayal is expected, and most games are decided more by what was promised
