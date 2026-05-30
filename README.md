@@ -132,7 +132,7 @@ from a finished transcript via **`render`** (no LLM, sub-second), and it
 adds LLM-written strategic commentary via **`commentary`**.
 
 ```bash
-# default: one full Sonnet game, 5 years, 3 negotiation rounds, strategy log on
+# Execute a default game that is Sonnet-powered, lasting 5 years, with 3 negotiation rounds per movement
 python -m diplomacy_a2a run
 
 # the canonical published demo: game + year-1 prompt dump + LLM commentary
