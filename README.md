@@ -68,13 +68,43 @@ backstabbed whom.
    expose how effective those agents are at influencing each other, not
    whether any particular agent wins.
 
-3. **Quantify what helps an AI agent succeed when it is competing against other agents in an A2A universe?** *(Under active development.)*
+3. **Quantify what helps an AI agent succeed when it is competing against other agents in an A2A universe.** *(Under active development.)*
    Controlled A/B experiments where six agents are identical and one differs
    along a single axis: model capability (one Sonnet among Haikus, or one Opus
    among Sonnets), memory depth (one agent given more or less past-turn
    context), personality trait (one aggressive / untruthful / backstabbing
    agent at an otherwise neutral table), or pre-game collusion (two agents
    share a private agreement injected into their dialogue history).
+
+## Real-world A2A analogies (placeholder)
+
+Diplomacy is the testbed for these experiments, but the same structure
+(many private parties, no central enforcement, every promise breakable)
+shows up in real-world domains where AI agents are increasingly deployed
+competitively. Candidate analogies under consideration for framing the
+findings:
+
+- **Programmatic advertising auctions** (real-time bidding): hundreds
+  of thousands of bidder agents competing in sub-100 ms windows for the
+  same ad impression; strategy is adversarial and payoffs are zero-sum
+  within an auction.
+- **M&A and procurement negotiations**: multi-round, multi-party,
+  information-asymmetric, with side deals and coalitions that shift
+  between rounds. Exclusivity periods get violated, NDAs get leaked,
+  last-minute counter-bids appear.
+- **High-frequency trading and market-making**: trading agents
+  competing for execution priority and information edge against a
+  shared, partially-visible order book.
+- **Multi-party trade and climate negotiations**: the direct
+  geopolitical analog of the testbed. Alliances shift between rounds,
+  public statements often diverge from private positions, and
+  enforcement is weak to nonexistent.
+- **Cybersecurity red-team / blue-team agents**: opposing automated
+  adversaries that must model each other's strategy and adapt in real
+  time, on the same network or the same model.
+
+The specific business analogy this project frames its findings against
+will be selected in a future iteration.
 
 ## Status
 
