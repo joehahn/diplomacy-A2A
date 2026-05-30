@@ -68,16 +68,13 @@ backstabbed whom.
    expose how effective those agents are at influencing each other, not
    whether any particular agent wins.
 
-3. **What helps an AI agent succeed when it is competing against other agents in an A2A universe?** *(Under active development.)*
+3. **Quantify what helps an AI agent succeed when it is competing against other agents in an A2A universe?** *(Under active development.)*
    Controlled A/B experiments where six agents are identical and one differs
    along a single axis: model capability (one Sonnet among Haikus, or one Opus
    among Sonnets), memory depth (one agent given more or less past-turn
    context), personality trait (one aggressive / untruthful / backstabbing
    agent at an otherwise neutral table), or pre-game collusion (two agents
-   share a private agreement injected into their dialogue history). Sharper
-   signal-per-dollar than a full persona grid; the aim is comparable
-   falsifiable findings like *"a Sonnet among six Haikus gains X more SCs on
-   average."* Experiment design lives in [REFERENCE.md](REFERENCE.md).
+   share a private agreement injected into their dialogue history).
 
 ## Status
 
