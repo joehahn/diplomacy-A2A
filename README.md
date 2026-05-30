@@ -114,7 +114,7 @@ prices, traders never see opponents' positions.
 
 ## Setup
 
-Requires Python 3.10+ (developed on 3.12) and an Anthropic API key.
+This project requires Python 3.10+ (developed on 3.12) and an Anthropic API key.
 
 ```bash
 git clone <this repo>
@@ -125,7 +125,7 @@ pip install -r requirements.txt
 cp .env.example .env          # then paste your key into .env
 ```
 
-## Running
+## Executing games
 
 The CLI has three subcommands split along cost / LLM-use lines: **`run`**
 executes a game (LLM, ≈$8-12), **`render`** rebuilds the dashboard from a
