@@ -245,12 +245,13 @@ or any private messages it wasn't party to — only its own correspondence.
 
 **Agents do not have eyes**, and geography is not explicitly spelled out.
 Agents' prompts do not include an adjacency table or any coordinate data.
-Tactical correctness comes by prompting with a list of legal-moves (i.e. an
-illegal move simply isn't offered), and strategic geographic reasoning
-("Galicia borders us both") relies on the model's built-in knowledge of the
-standard Diplomacy map via the canonical province codes (`GAL`, `BOH`, …).
-Positions are conveyed as **text**, using those codes — the rendered SVG maps
-(with province labels) are for human readers, not the agents. If geography
+Tactical correctness comes by prompting agents with a list of legal-moves
+(i.e. an illegal move simply isn't offered), and strategic geographic
+reasoning ("Galicia borders us both") relies on the model's built-in
+knowledge of the standard Diplomacy map and the canonical province codes
+(`GAL`, `BOH`, …). Positions are conveyed as **text** using those codes,
+while the gameplay maps rendered by this project are for human viewers,
+and not the agents. If geography
 hallucinations ever surface in transcripts, a compact adjacency table can be
 added to the prompt as a cheap experiment.
 
