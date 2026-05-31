@@ -271,9 +271,10 @@ rounds (set via `--rounds N`):
 - After the final round, each agent submits orders with the full dialogue in
   context, so deals and betrayals flow through to actual moves.
 
-Agents are told this protocol explicitly — the round count, which round they're
-in, the simultaneity, and that the final round is for closing — which produces a
-deliberate *probe → negotiate → close* arc rather than repeated openers.
+Agents are told this protocol explicitly: the round count, which round they're
+in, the simultaneity, and that the final round is for closing. Which naturally
+produces a deliberate *probe → negotiate → close* arc rather than repeated
+openers.
 
 ## Agent strategy & memory
 
