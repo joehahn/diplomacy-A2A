@@ -379,24 +379,13 @@ pre-game collusion, information asymmetry), the success-vs-spend chart
 described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
-## Cost / time per game
+Current data:
+- **Cost / time for the canonical configuration** (5 years, 3 rounds,
+  strategy on, `--log-prompts` year 1, with commentary): Haiku ≈$5 /
+  ≈75 min, Sonnet ≈$13 / ≈80 min (measured), Opus ≈$15+ / ≈80 min
+  (extrapolated). See [REFERENCE.md](REFERENCE.md) for per-phase rates,
+  the Haiku caching anomaly, and per-subcommand cost detail.
 
-A `--smoke` run costs pennies. The canonical (Sonnet, 5 years, 3 rounds,
-strategy on, `--log-prompts` year 1, plus the LLM-commentary post-pass)
-came in at about **$13** and about **80 min** wall-time. Opus at the
-same configuration is about **$15**, while Haiku is about **$5** but
-see also [REFERENCE.md](REFERENCE.md) for known issues.
-
-The `render` subcommand is free since it does not utilize the LLM, while
-`commentary` adds about $0.50 of Sonnet calls for an 18-phase game.
-`--with-commentary` rolls game + commentary + re-render into one command.
-
-## Notes for re-running
-
-LLM outputs are not byte-for-byte deterministic even at temperature 0,
-so a rerun will produce *similar* dynamics, not identical transcripts.
-Model IDs are pinned in `diplomacy_a2a/config.py` so reruns are
-comparable across model releases.
 
 For technical details (model pricing, per-phase timing observations,
 quality notes, experiment results as they land, known issues): see

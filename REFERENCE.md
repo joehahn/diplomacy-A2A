@@ -224,6 +224,20 @@ in `transcripts.py` for the implementation.
 
 ---
 
+## Re-running
+
+LLM outputs are not byte-for-byte deterministic even at temperature 0,
+so a rerun will produce *similar* dynamics, not identical transcripts.
+Model IDs are pinned in `diplomacy_a2a/config.py` so reruns are
+comparable across model releases.
+
+The `render` subcommand is free (no LLM); `commentary` adds about $0.50
+of Sonnet calls for an 18-phase game; `--with-commentary` rolls game +
+commentary + re-render into one command. A `--smoke` run (Haiku, 1 year,
+1 round) costs pennies.
+
+---
+
 ## Reliability: how API failures are handled
 
 The runner classifies every Anthropic API failure into *fatal* (abort the
