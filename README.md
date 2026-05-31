@@ -299,7 +299,7 @@ they are visible in the dashboard.
 
 ## Dashboard
 
-Every run produces an HTML dashboard at
+By default, every run produces an HTML dashboard at
 `results/<run-id>/dashboard/index.html`, navigable phase-by-phase (one
 slide per phase). Each slide contains:
 
