@@ -240,14 +240,16 @@ each turn:
 An agent does **not** see other powers' submitted orders, their legal-move lists,
 or any private messages it wasn't party to — only its own correspondence.
 
-**Agents do not have eyes**, and geography is not explicitly spelled out.
+Note that **agents do not have eyes**, and geography is not explicitly
+spelled out.
 Agents' prompts do not include an adjacency table or any coordinate data.
 Tactical correctness comes by prompting agents with a list of legal-moves
 (i.e. an illegal move simply isn't offered). That same list also implicitly
 reveals adjacency: a province not in the list is not reachable in one turn
-from the unit it would belong to. Strategic geographic reasoning ("Galicia
-borders us both") relies on the model's built-in knowledge of the standard
-Diplomacy map and the canonical province codes (`GAL`, `BOH`, …). Positions are conveyed as **text** using those codes,
+from the unit it would belong to, so strategic geographic reasoning beyond
+that (e.g. "Galicia borders us both") relies on the model's built-in
+knowledge of the standard Diplomacy map and the canonical province codes
+(`GAL`, `BOH`, …). Positions are conveyed as **text** using those codes,
 while the gameplay maps rendered by this project are for human viewers,
 and not the agents.
 
