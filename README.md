@@ -279,8 +279,8 @@ openers.
 ## Agent strategy & memory
 
 Beyond the dialogue history and the deterministic narration recap, each
-agent also carries a self-authored **strategy log**: a private record of
-what *it* thought it was doing each turn. On every movement phase each
+agent also carries a self-authored **strategy log**, which is a private
+record of what *it* thought it was doing each turn. On every movement phase each
 agent writes a 1–2 sentence note, *twice*:
 
 - **Before negotiation** — *initial strategy*: goals for the turn
