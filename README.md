@@ -11,11 +11,9 @@ player controls one of the Great Powers (Austria, England, France, Germany,
 Italy, Russia, Turkey) that are competing for supply centers that are
 distributed across the map. No dice are used in Diplomacy, which means that
 each nation's armies and navies advance or retreat deterministically per
-players' orders. Each phase unfolds in parallel rather than in sequence: all seven players
+players' orders. Every turn unfolds in parallel rather than in sequence: all seven players
 negotiate simultaneously, write their orders in secret, and the orders are
-then adjudicated as a single batch with no turn order. (A game year has up
-to five phases: Spring Movement, optional Spring Retreats, Fall Movement,
-optional Fall Retreats, and Winter Adjustments.)
+then adjudicated as a single batch with no turn order.
 What makes the game distinctive is that those negotiations are
 unenforceable: any deal can be broken, betrayal is expected, and most
 games are decided more by what was promised or lied about in private
@@ -46,9 +44,11 @@ well-prompted frontier LLM, and with all players represented by AI agents.
 ## Visual dive into a representative game
 
 You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/dashboard/index.html)**,
-which uses Sonnet to power seven AI agents across 5 game-years (10 movement
-phases in total), with 3 rounds of inter-agent communication before each
-movement. That dashboard shows the turn-by-turn movements of every army and
+which uses Sonnet to power seven AI agents across 5 game-years. A game year
+has up to five phases (Spring Movement, optional Spring Retreats, Fall
+Movement, optional Fall Retreats, and Winter Adjustments), so the canonical
+contains 10 movement phases over those 5 years, with 3 rounds of
+inter-agent communication before each movement. That dashboard shows the turn-by-turn movements of every army and
 navy unit, full transcripts of the agent-to-agent (A2A) communications that
 precede each turn, each agent's self-authored strategy notes, and an
 LLM-generated summary of the gameplay that describes which nations used
