@@ -280,8 +280,8 @@ openers.
 
 Beyond the dialogue history and the deterministic narration recap, each
 agent also carries a self-authored **strategy log**: a private record of
-what *it* thought it was doing each turn. On every movement phase the
-runner asks each power to write a 1–2 sentence note twice:
+what *it* thought it was doing each turn. On every movement phase each
+agent writes a 1–2 sentence note twice:
 
 - **Before negotiation** — *initial strategy*: goals for the turn (named
   powers, named provinces, intended deals), informed by the board and the
