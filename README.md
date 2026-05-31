@@ -68,7 +68,7 @@ negotiations into success, and who backstabbed whom.
    not just that agents *send* messages, but that they *influence* one another —
    proposing, reacting across rounds, honoring or betraying deals — and that
    those interactions visibly drive how the game evolves. The negotiation
-   transcript and the turn-by-turn slideshow are the deliverables that
+   transcript and the turn-by-turn dashboard are the deliverables that
    expose how effective those agents are at influencing each other, not
    whether any particular agent wins.
 
@@ -169,7 +169,7 @@ python -m diplomacy_a2a run --help            # game-execution options
 python -m diplomacy_a2a render --help         # render + commentary options
 ```
 
-Artifacts (transcript, maps, slideshow, report) land under `results/<run-id>/`.
+Artifacts (transcript, maps, dashboard, report) land under `results/<run-id>/`.
 The transcript is the canonical artifact; every renderer derives from it.
 
 ### Options
@@ -281,22 +281,44 @@ openers.
 Beyond the dialogue history and the deterministic narration recap, each
 agent also carries a self-authored **strategy log**: a private record of
 what *it* thought it was doing each turn. On every movement phase each
-agent writes a 1–2 sentence note twice:
+agent writes a 1–2 sentence note, *twice*:
 
-- **Before negotiation** — *initial strategy*: goals for the turn (named
-  powers, named provinces, intended deals), informed by the board and the
+- **Before negotiation** — *initial strategy*: goals for the turn
+  (e.g., *"I'll court Austria with vague promises while positioning to
+  stab if opportunity arises"*), that are informed by the board and the
   agent's own strategy history from prior turns.
 - **After the final round, before orders** — *revised strategy*: an
   updated stance reflecting what the negotiation actually produced.
 
-Every subsequent call (later negotiation rounds, order submission, future
-turns) is given **that agent's own strategy history** (capped to the last
-`2 × --memory` entries), so agents carry an explicit memory of their
-stated plans. Notes are **private to each agent**, mirroring how Diplomacy
-works at a table. They are shown in the slideshow as a per-power
-collapsible block on each movement-phase slide and captured in `prompts.md`,
-so detecting a betrayal becomes a clean comparison of stated goal versus
-actual move.
+Each agent is then given its strategy log history during subsequent
+negotiations and moves, capped to the last `2 × --memory` entries, so
+agents carry an explicit memory of their stated plans. Notes are
+**private to each agent**, mirroring how Diplomacy works at a table, and
+they are visible in the dashboard.
+
+## Dashboard
+
+Every committed run produces an HTML dashboard at
+`results/<run-id>/dashboard/index.html`, navigable phase-by-phase (one
+slide per phase). Each slide contains:
+
+- **Orders map** (SVG): what each unit was ordered to do that phase,
+  shown as arrows on the start-of-phase board.
+- **Result map** (SVG): the board after adjudication.
+- **Plain-English narration** of what each power did and how it resolved
+  (see Turn narration & observability below).
+- **LLM commentary** (when `--with-commentary` was used): a Sonnet-written
+  strategic interpretation of the phase.
+- **Strategy notes**: per-power collapsible blocks with each agent's
+  initial and revised plans for the phase.
+- **Negotiation transcripts**: a link to a child page with the full
+  agent-to-agent dialogue that preceded this phase's orders.
+- **KPI charts**: SC count and Sum-of-Squares share for each power across
+  all phases of the game.
+
+The index page also has a settings table (model, years, rounds, phases
+played, wall time, cost, final standings) and links to the run's
+top-level artifacts (`transcript.jsonl`, `prompts.md`).
 
 ## Turn narration & observability
 
@@ -306,7 +328,7 @@ results — e.g. *"AUSTRIA: A BUD → SER; F ALB supports A SER → GRE; ITALY: 
 TRI (bounced)"*. No LLM, so it's faithful and reproducible
 ([`diplomacy_a2a/narration.py`](diplomacy_a2a/narration.py)). It serves two consumers:
 
-- **Humans** — shown beside the maps on each slideshow/report phase, so the action
+- **Humans** — shown beside the maps on each dashboard slide and in the report, so the action
   reads at a glance instead of as raw order syntax.
 - **Agents** — fed into each agent's view as a "what happened last turn" recap,
   so they reason about who supported or attacked whom from readable facts (and see
