@@ -11,9 +11,11 @@ player controls one of the Great Powers (Austria, England, France, Germany,
 Italy, Russia, Turkey) that are competing for supply centers that are
 distributed across the map. No dice are used in Diplomacy, which means that
 each nation's armies and navies advance or retreat deterministically per
-players' orders. Every turn unfolds in parallel rather than in sequence:
-all seven players negotiate simultaneously, write their orders in secret,
-and the orders are then adjudicated as a single batch with no turn order.
+players' orders. Each phase unfolds in parallel rather than in sequence: all seven players
+negotiate simultaneously, write their orders in secret, and the orders are
+then adjudicated as a single batch with no turn order. (A game year has up
+to five phases: Spring Movement, optional Spring Retreats, Fall Movement,
+optional Fall Retreats, and Winter Adjustments.)
 What makes the game distinctive is that those negotiations are
 unenforceable: any deal can be broken, betrayal is expected, and most
 games are decided more by what was promised or lied about in private
@@ -133,7 +135,7 @@ transcript (`run`), it renders the gameplay dashboard from a game transcript
 (`commentary`).
 
 ```bash
-# Execute default game (is Sonnet-powered, lasts 5 years, w/ 3 negotiation rounds per turn)
+# Execute default game (is Sonnet-powered, lasts 5 years, w/ 3 negotiation rounds per movement phase)
 python -m diplomacy_a2a run
 
 # Execute canonical game (5 yrs of gameplay + 1st-year dump of all agents' prompts & responses + LLM commentary)
