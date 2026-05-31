@@ -258,24 +258,22 @@ and not the agents.
 ## Negotiation protocol
 
 Before each **movement** phase, agents negotiate over a configurable number of
-rounds (`negotiation_rounds`, set when calling `run_game`):
+rounds (set via `--rounds N`):
 
 - **Within a round, messaging is simultaneous** — every power composes its
   outgoing messages from the same shared history, so a recipient doesn't see
   what you sent until the *next* round.
-- **Across rounds it is sequential** — round 2+ sees the prior rounds' incoming
-  messages, so agents can react, counter, and confirm before committing.
-- **Each agent chooses its own recipients** (any subset of the other powers)
-  and **may stay silent** in any round.
+- **Negotiations across rounds is sequential** — round 2+ sees the prior
+  rounds' incoming messages, so agents can react, counter, and confirm before
+  committing.
+- **Each agent chooses its own recipients** and **may stay silent** in any
+  round.
 - After the final round, each agent submits orders with the full dialogue in
-  context, so deals (and betrayals) flow through to actual moves.
+  context, so deals and betrayals flow through to actual moves.
 
 Agents are told this protocol explicitly — the round count, which round they're
 in, the simultaneity, and that the final round is for closing — which produces a
-deliberate *probe → negotiate → close* arc rather than repeated openers. The
-mechanics live in [`diplomacy_a2a/agent.py`](diplomacy_a2a/agent.py) (`negotiate`, the system
-prompt, dialogue formatting) and [`diplomacy_a2a/negotiation.py`](diplomacy_a2a/negotiation.py)
-(`run_negotiation_round`); [`diplomacy_a2a/runner.py`](diplomacy_a2a/runner.py) drives the rounds.
+deliberate *probe → negotiate → close* arc rather than repeated openers.
 
 ## Agent strategy & memory
 
