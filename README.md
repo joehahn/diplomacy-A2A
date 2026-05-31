@@ -299,27 +299,21 @@ they are visible in the dashboard.
 
 ## Dashboard
 
-Every committed run produces an HTML dashboard at
+Every run produces an HTML dashboard at
 `results/<run-id>/dashboard/index.html`, navigable phase-by-phase (one
 slide per phase). Each slide contains:
 
-- **Orders map** (SVG): what each unit was ordered to do that phase,
-  shown as arrows on the start-of-phase board.
-- **Result map** (SVG): the board after adjudication.
-- **Plain-English narration** of what each power did and how it resolved
-  (deterministic, no LLM, generated from orders + adjudication results).
+- **Orders and results maps**: what each unit was ordered to do that
+  phase and the board after adjudication.
+- **Plain-English narration** of what each power did and how it resolved.
 - **LLM commentary** (when `--with-commentary` was used): a Sonnet-written
   strategic interpretation of the phase.
-- **Strategy notes**: per-power collapsible blocks with each agent's
-  initial and revised plans for the phase.
-- **Negotiation transcripts**: a link to a child page with the full
-  agent-to-agent dialogue that preceded this phase's orders.
-- **KPI charts**: SC count and Sum-of-Squares share for each power across
-  all phases of the game.
-
-The index page also has a settings table (model, years, rounds, phases
-played, wall time, cost, final standings) and links to the run's
-top-level artifacts (`transcript.jsonl`, `prompts.md`).
+- **Strategy notes**: each agent's initial and revised plans for the phase.
+- **Negotiation transcripts**: a link to all agent-to-agent dialogue that
+  preceded this phase's orders.
+- **KPI charts**: each player's supply center (SC) counts as well as
+  their Sum-of-Squares (SoS) score, where SoS = SC² / (sum of SC² across
+  all surviving powers).
 
 ## Summary of Main Findings *(placeholder)*
 
