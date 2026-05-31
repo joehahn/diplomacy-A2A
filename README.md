@@ -200,7 +200,6 @@ agents (`--power-model`, `--power-memory`), and control output
   `run_game(personas={"TURKEY": "<prompt>"})` already accepts per-power
   overrides; the CLI flag is **axis B** of the goal-3 experiments — design in
   [REFERENCE.md](REFERENCE.md).
-- **Pre-game collusion** between two agents — **axis D** of the same.
 
 ## Architecture
 
@@ -216,15 +215,11 @@ agents (`--power-model`, `--power-memory`), and control output
 - **Agent orchestration** — agents exchange private messages each turn,
   then commit orders, then Meta's `diplomacy` library adjudicates.
   See also **Negotiation protocol** below.
-- **`results/`** — pre-rendered transcripts so visitors can see output
-  without spending money. Each game renders a turn-by-turn HTML slideshow
-  (maps, narration, agent strategies, dialogue) at
-  `results/<run-id>/dashboard/index.html`, hosted on GitHub Pages —
-  [**view the canonical run**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/dashboard/index.html)
-  (5 years, 3 rounds of negotiation per turn, strategy log + LLM commentary
-  + year-1 prompt dump). The canonical configuration is
-  `python -m diplomacy_a2a run --log-prompts --with-commentary` — see
-  [results/README.md](results/README.md).
+- **`results/`** — each game logs gameplay to
+  `results/<run-id>/transcript.jsonl`; `python -m diplomacy_a2a render
+  results/<run-id>/ --with-commentary` then builds a dashboard for
+  browsing the turn-by-turn movements, the agents' inter-turn
+  negotiations, and the LLM-generated commentary on the play.
 
 ## What each agent sees
 
