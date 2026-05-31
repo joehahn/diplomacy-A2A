@@ -228,18 +228,13 @@ agents (`--power-model`, `--power-memory`), and control output
 ## What each agent knows
 
 Diplomacy is a game of **open information**, and the simulation preserves that.
-Each agent's per-turn view (built by
-[`diplomacy_a2a/game/view.py`](diplomacy_a2a/game/view.py)) provides
-visibility across the **full board** every turn:
+Each agent's per-turn view provides visibility across the **full board**
+each turn:
 
 - **Every power's unit positions** — not just its own; there is no fog of war.
-- **Every supply center**, including the currently unowned (neutral) ones,
-  with counts (so it knows the standings and which centers are still
-  grabbable).
-- **Its own legal moves** for the upcoming phase as computed by the
-  library `diplomacy.Game.get_all_possible_orders`, which lets the
-  agent see which moves into adjacent provinces are allowed and, by
-  implication, which provinces are more distant.
+- **Every supply center**, their owners, as well as the unowned neutral
+  ones that are still grabbable.
+- **Its own legal moves** for the upcoming phase.
 - A plain-English **"what happened last turn"** recap (see Turn narration).
 
 An agent does **not** see other powers' submitted orders, their legal-move lists,
@@ -248,10 +243,11 @@ or any private messages it wasn't party to — only its own correspondence.
 **Agents do not have eyes**, and geography is not explicitly spelled out.
 Agents' prompts do not include an adjacency table or any coordinate data.
 Tactical correctness comes by prompting agents with a list of legal-moves
-(i.e. an illegal move simply isn't offered), and strategic geographic
-reasoning ("Galicia borders us both") relies on the model's built-in
-knowledge of the standard Diplomacy map and the canonical province codes
-(`GAL`, `BOH`, …). Positions are conveyed as **text** using those codes,
+(i.e. an illegal move simply isn't offered). That same list also implicitly
+reveals adjacency: a province not in the list is not reachable in one turn
+from the unit it would belong to. Strategic geographic reasoning ("Galicia
+borders us both") relies on the model's built-in knowledge of the standard
+Diplomacy map and the canonical province codes (`GAL`, `BOH`, …). Positions are conveyed as **text** using those codes,
 while the gameplay maps rendered by this project are for human viewers,
 and not the agents.
 
