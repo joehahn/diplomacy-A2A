@@ -231,20 +231,19 @@ Each agent's per-turn view (built by
 visibility across the **full board** every turn:
 
 - **Every power's unit positions** — not just its own; there is no fog of war.
-- **Every supply center, including the currently unowned (neutral) ones**,
+- **Every supply center**, including the currently unowned (neutral) ones,
   with counts (so it knows the standings and which centers are still
   grabbable).
 - **Its own legal moves** for the upcoming phase as computed by the
-  library (`diplomacy.Game.get_all_possible_orders`) and filtered to
-  the units it controls, which lets the agent see which moves into
-  adjacent provinces are allowed and, by implication, which provinces
-  are more distant.
+  library `diplomacy.Game.get_all_possible_orders`, which lets the
+  agent see which moves into adjacent provinces are allowed and, by
+  implication, which provinces are more distant.
 - A plain-English **"what happened last turn"** recap (see Turn narration).
 
 An agent does **not** see other powers' submitted orders, their legal-move lists,
 or any private messages it wasn't party to — only its own correspondence.
 
-**Geography is not spelled out.** There is deliberately no adjacency table or
+Agents do not have eyes. **Geography is not spelled out.** There is deliberately no adjacency table or
 coordinates in the prompt. Tactical correctness comes from the legal-moves list
 (an illegal move simply isn't offered), and strategic geographic reasoning
 ("Galicia borders us both") relies on the model's built-in knowledge of the
