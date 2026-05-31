@@ -221,7 +221,7 @@ agents (`--power-model`, `--power-memory`), and control output
   browsing the turn-by-turn movements, the agents' inter-turn
   negotiations, and the LLM-generated commentary on the play.
 
-## What each agent sees
+## What each agent knows
 
 Diplomacy is a game of **open information**, and the simulation preserves that.
 Each agent's per-turn view (built by
@@ -232,10 +232,11 @@ visibility across the **full board** every turn:
 - **Every supply center, including the currently unowned (neutral) ones**,
   with counts (so it knows the standings and which centers are still
   grabbable).
-- **Its own legal moves** for the phase, computed by the library
-  (`get_all_possible_orders`) and filtered to the units it controls,
-  which lets the agent see which moves into adjacent provinces are
-  allowed and, by implication, which provinces are more distant.
+- **Its own legal moves** for the upcoming phase as computed by the
+  library (`diplomacy.Game.get_all_possible_orders`) and filtered to
+  the units it controls, which lets the agent see which moves into
+  adjacent provinces are allowed and, by implication, which provinces
+  are more distant.
 - A plain-English **"what happened last turn"** recap (see Turn narration).
 
 An agent does **not** see other powers' submitted orders, their legal-move lists,
