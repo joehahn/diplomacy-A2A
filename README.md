@@ -305,15 +305,15 @@ slide per phase). Each slide contains:
 
 - **Orders and results maps**: what each unit was ordered to do that
   phase and the board after adjudication.
-- **Plain-English narration** of what each power did and how it resolved.
-- **LLM commentary** (when `--with-commentary` was used): a Sonnet-written
-  strategic interpretation of the phase.
+- **Plain-English narration** of what each power endeavored to do and
+  how that turn was resolved.
+- **LLM commentary**: an LLM-written strategic interpretation of the
+  phase when `--with-commentary` is used.
 - **Strategy notes**: each agent's initial and revised plans for the phase.
 - **Negotiation transcripts**: a link to all agent-to-agent dialogue that
-  preceded this phase's orders.
+  preceded that phase's orders.
 - **KPI charts**: each player's supply center (SC) counts as well as
-  their Sum-of-Squares (SoS) score, where SoS = SC² / (sum of SC² across
-  all surviving powers).
+  their Sum-of-Squares (SoS) score, where SoS = SC² / (ΣSC)².
 
 ## Summary of Main Findings *(placeholder)*
 
