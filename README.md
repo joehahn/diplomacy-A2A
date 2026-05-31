@@ -225,8 +225,8 @@ agents (`--power-model`, `--power-memory`), and control output
 
 Diplomacy is a game of **open information**, and the simulation preserves that.
 Each agent's per-turn view (built by
-[`diplomacy_a2a/game/view.py`](diplomacy_a2a/game/view.py)) contains the
-**full board** every turn:
+[`diplomacy_a2a/game/view.py`](diplomacy_a2a/game/view.py)) provides
+visibility across the **full board** every turn:
 
 - **Every power's unit positions** — not just its own; there is no fog of war.
 - **Every supply center and who owns it**, with counts (so it knows the standings).
