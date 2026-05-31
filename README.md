@@ -253,9 +253,7 @@ reasoning ("Galicia borders us both") relies on the model's built-in
 knowledge of the standard Diplomacy map and the canonical province codes
 (`GAL`, `BOH`, …). Positions are conveyed as **text** using those codes,
 while the gameplay maps rendered by this project are for human viewers,
-and not the agents. If geography
-hallucinations ever surface in transcripts, a compact adjacency table can be
-added to the prompt as a cheap experiment.
+and not the agents.
 
 ## Negotiation protocol
 

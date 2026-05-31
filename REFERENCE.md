@@ -358,3 +358,11 @@ model couldn't have memorized the hidden info from training data.
 Implementation: a script that asks each model the same fixed question
 set and scores accuracy. Cost is small (a few dollars across all three
 models).
+
+### Adjacency table fallback
+
+Agents currently rely on the model's training-data knowledge of the
+standard Diplomacy map plus the canonical province codes (`GAL`, `BOH`,
+…) for spatial reasoning. If geography hallucinations ever surface in
+transcripts, a compact adjacency table can be added to the prompt as a
+cheap experiment.
