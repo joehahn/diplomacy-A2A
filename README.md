@@ -45,8 +45,8 @@ well-prompted frontier LLM, and with all players represented by AI agents.
 
 You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/dashboard/index.html)**,
 which uses Sonnet to power seven AI agents across 5 game-years. A game year
-has up to five phases (Spring Movement & Retreats, Fall Movement &
-Retreats, Winter Adjustments), so the canonical
+has five phases (Spring Movement & Retreats, Fall Movement & Retreats,
+Winter Adjustments), so the canonical
 contains 10 movement phases over those 5 years, with 3 rounds of
 inter-agent communication before each movement. That dashboard shows the turn-by-turn movements of every army and
 navy unit, full transcripts of the agent-to-agent (A2A) communications that
