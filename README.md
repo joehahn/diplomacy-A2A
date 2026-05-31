@@ -81,7 +81,9 @@ negotiations into success, and who backstabbed whom.
    share a private agreement to coordinate prior to game start), or
    information asymmetry (one agent has parts of its prompt hidden, such as
    the current supply-center ownership tracker, forcing it to infer
-   standings from unit positions and dialogue alone).
+   standings from unit positions and dialogue alone). A planned deliverable
+   from these experiments is a chart of agent success versus LLM spend,
+   making the cost-benefit shape of each axis explicit.
 
 ## Real-world A2A analogies (placeholder)
 
