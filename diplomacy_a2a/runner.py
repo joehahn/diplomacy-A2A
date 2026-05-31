@@ -96,7 +96,7 @@ def run_game(
     *,
     client: LLMClient,
     model: str,
-    years: int = 5,
+    years: int = 10,
     personas: dict[str, str] | None = None,
     results_root: Path = Path("results"),
     negotiation_rounds: int = 3,  # rounds per MOVEMENT phase (0 = skip)

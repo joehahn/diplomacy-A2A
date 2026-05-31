@@ -41,8 +41,8 @@ def _add_run_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--model", default=DEFAULT_MODEL,
                    help=f"Anthropic model id used as the default for all powers "
                         f"(default: {DEFAULT_MODEL})")
-    p.add_argument("--years", type=int, default=5,
-                   help="how many game-years to play (default: 5)")
+    p.add_argument("--years", type=int, default=10,
+                   help="how many game-years to play (default: 10)")
     p.add_argument("--rounds", type=int, default=3, dest="negotiation_rounds",
                    help="negotiation rounds before each movement phase (default: 3)")
     p.add_argument("--results-dir", default="results", type=Path,

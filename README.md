@@ -44,11 +44,12 @@ well-prompted frontier LLM, and with all players represented by AI agents.
 ## Visual dive into a representative game
 
 You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/dashboard/index.html)**,
-which uses Sonnet to power seven AI agents across 5 game-years. A game year
-has five phases (Spring Movement & Retreats, Fall Movement & Retreats,
-Winter Adjustments), so the canonical
-contains 10 movement phases over those 5 years, with 3 rounds of
-inter-agent communication before each movement. That dashboard shows the turn-by-turn movements of every army and
+which uses Sonnet to power seven AI agents across 10 game-years (the
+currently-linked example is from a 5-year run under the previous default;
+a refreshed 10-year canonical is pending). A game year has five phases
+(Spring Movement & Retreats, Fall Movement & Retreats, Winter Adjustments),
+so the canonical contains 20 movement phases over those 10 years, with 3
+rounds of inter-agent communication before each movement. That dashboard shows the turn-by-turn movements of every army and
 navy unit, full transcripts of the agent-to-agent (A2A) communications that
 precede each turn, each agent's self-authored strategy notes, and an
 LLM-generated summary of the gameplay that describes which nations used
@@ -137,10 +138,10 @@ transcript (`run`), it renders the gameplay dashboard from a game transcript
 (`commentary`).
 
 ```bash
-# Execute default game (is Sonnet-powered, lasts 5 years, w/ 3 negotiation rounds per movement phase)
+# Execute default game (is Sonnet-powered, lasts 10 years, w/ 3 negotiation rounds per movement phase)
 python -m diplomacy_a2a run
 
-# Execute canonical game (5 yrs of gameplay + 1st-year dump of all agents' prompts & responses + LLM commentary)
+# Execute canonical game (10 yrs of gameplay + 1st-year dump of all agents' prompts & responses + LLM commentary)
 python -m diplomacy_a2a run --log-prompts --with-commentary
 
 # End-to-end verification using lower-cost Haiku for 1 year and 1 negotiation round
@@ -182,7 +183,7 @@ agents (`--power-model`, `--power-memory`), and control output
 | Flag | Default | What it does |
 |---|---|---|
 | `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the canonical game's workhorse; `claude-opus-4-7` is the stronger and more expensive AI while `claude-haiku-4-5-20251001` is less. |
-| `--years N` | `5` | Game-years to play unless one nation captures 18 supply centers (SCs). |
+| `--years N` | `10` | Game-years to play unless one nation captures 18 supply centers (SCs). |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
 | `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default, so `--power-model TURKEY=claude-opus-4-7` means that Turkey's agent is Opus powered while all others use Sonnet. |
 | `--memory N` | `3` | How many **movement turns** of memory each agent carries. Covers all three channels at once: the *"What happened in the last N turns"* narration recap, the agent's own strategy notes (2N of them, since each movement contributes initial + revised), and the dialogue history (older messages drop out of the prompt). `0` is a fully memoryless agent — only the current board, no recap. |
@@ -324,9 +325,9 @@ pre-game collusion, information asymmetry), the success-vs-spend chart
 described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
-Cost to execute the canonical game is about $5 when using Haiku LLM,
-$13 when using Sonnet, and $15 for Opus, with all games completing in
-about 1.3 hours.
+Cost to execute the canonical game is about $10 when using Haiku LLM,
+$25 when using Sonnet, and $30 for Opus, with all games completing in
+about 2.7 hours.
 
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).

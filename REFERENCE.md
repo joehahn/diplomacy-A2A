@@ -163,7 +163,7 @@ runs, with method + per-power results table + verdict.
 **Method:** 6 Sonnets + 1 Opus (rotating which power is the upgraded one,
 across seeds), paired with an all-Sonnet baseline at identical settings.
 3 rounds of negotiation per movement phase, strategy log on (hardwired in
-the current default), 5 game-years each — same shape as the canonical
+the current default), 10 game-years each — same shape as the canonical
 configuration so the only thing varying is the upgraded power.
 
 Invocation:
