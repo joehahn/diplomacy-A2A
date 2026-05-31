@@ -308,3 +308,28 @@ Behavioral metrics (planned, axis B–D dependent):
   submitted orders.
 - **Alliance duration**: consecutive phases of mutual support orders
   between a pair of powers.
+
+---
+
+## Roadmap
+
+### Agent debugging portal
+
+A user-or-developer-facing capability to ask any agent in a finished
+run a post-hoc question. The agent's prompt context at the chosen phase
+(system prefix, view, dialogue, strategy notes) is reconstructed from
+the transcript, and the question is appended as a final user message.
+Two question modes are envisioned:
+
+- **Strategic / interpretive**: "What was your biggest mistake this
+  game?", "Why did you honor your Scandinavian deal with England all
+  five years?", "Who would you trust most going into S1906?"
+- **Debugging / state-verification**: "Turkey, who do you think
+  currently owns Denmark?", "Which powers do you believe are still
+  allied with you?", "What is your current SC count?" The state mode
+  is useful for verifying that an agent's internal model of the board
+  matches reality, especially when axis E (information asymmetry) is
+  in play.
+
+Implementation: a new `interview.py` module plus an `ask` subcommand,
+roughly 80 lines total. Cost is about $0.01-0.03 per question on Sonnet.
