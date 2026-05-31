@@ -67,8 +67,7 @@ Sonnet 4.6, 5 game-years, 3 negotiation rounds per movement phase, agent
 memory = 3 movement turns, self-authored strategy notes on, prompt+response
 dump for the first game-year, plus the LLM-commentary post-pass. 18 phases,
 **≈$12 / ≈77 min** end-to-end. The full agent-prompt + response dump
-(`prompts.jsonl` ≈778 KB / `prompts.md` ≈853 KB) is committed — see the
-project README's *Seeing the exact agent prompts*.
+(`prompts.jsonl` ≈778 KB / `prompts.md` ≈853 KB) is committed.
 
 Final standings (no eliminations, no solo win — played to the 5-year cap):
 

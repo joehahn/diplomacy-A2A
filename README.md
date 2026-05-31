@@ -235,7 +235,8 @@ each turn:
 - **Every supply center**, their owners, as well as the unowned neutral
   ones that are still grabbable.
 - **Its own legal moves** for the upcoming phase.
-- A plain-English **"what happened last turn"** recap (see Turn narration).
+- A plain-English **"what happened last turn"** recap (deterministic,
+  generated from the orders + adjudication results, no LLM).
 
 An agent does **not** see other powers' submitted orders, their legal-move lists,
 or any private messages it wasn't party to — only its own correspondence.
@@ -306,7 +307,7 @@ slide per phase). Each slide contains:
   shown as arrows on the start-of-phase board.
 - **Result map** (SVG): the board after adjudication.
 - **Plain-English narration** of what each power did and how it resolved
-  (see Turn narration & observability below).
+  (deterministic, no LLM, generated from orders + adjudication results).
 - **LLM commentary** (when `--with-commentary` was used): a Sonnet-written
   strategic interpretation of the phase.
 - **Strategy notes**: per-power collapsible blocks with each agent's
@@ -319,56 +320,6 @@ slide per phase). Each slide contains:
 The index page also has a settings table (model, years, rounds, phases
 played, wall time, cost, final standings) and links to the run's
 top-level artifacts (`transcript.jsonl`, `prompts.md`).
-
-## Turn narration & observability
-
-After each phase, a **deterministic plain-English narration** of what every
-power did and how it resolved is generated straight from the orders + adjudication
-results — e.g. *"AUSTRIA: A BUD → SER; F ALB supports A SER → GRE; ITALY: A VEN →
-TRI (bounced)"*. No LLM, so it's faithful and reproducible
-([`diplomacy_a2a/narration.py`](diplomacy_a2a/narration.py)). It serves two consumers:
-
-- **Humans** — shown beside the maps on each dashboard slide and in the report, so the action
-  reads at a glance instead of as raw order syntax.
-- **Agents** — fed into each agent's view as a "what happened last turn" recap,
-  so they reason about who supported or attacked whom from readable facts (and see
-  *outcomes* like bounces/dislodgements that bare orders don't convey).
-
-### Seeing the exact agent prompts and responses
-
-For transparency/debugging, `--log-prompts` writes the exact **prompt** each
-agent receives plus the **response** it produced to `results/<run-id>/prompts.jsonl`,
-and renders a navigable, GitHub-friendly **`prompts.md`** alongside it
-(collapsible per-call sections grouped by phase / round / power — skim the index,
-click any prompt to expand). By default it only captures **the first game-year**,
-which is where the opening negotiation/coordination is most legible and keeps the
-artifact focused (`--log-prompts-years N` extends that).
-
-The canonical run's dumps **are committed** so you can read precisely what
-the agents said without spending anything:
-[**`prompts.md`**](results/20260529T225943Z/prompts.md) (≈853 KB; GitHub
-renders the collapsibles inline) or the raw
-[`prompts.jsonl`](results/20260529T225943Z/prompts.jsonl) (≈778 KB). The
-flag is off by default and otherwise gitignored, so a full experiment grid
-isn't bloated with redundant dumps. To produce one yourself:
-
-```bash
-python -m diplomacy_a2a run --log-prompts                       # game + dashboard
-python -m diplomacy_a2a run --log-prompts --with-commentary     # + LLM commentary
-```
-
-That's the bare canonical: 5-year, 3-round, Sonnet, strategy on, log year 1
-(≈$8 / ≈80 min; `+$0.50` for the commentary post-pass with `--with-commentary`).
-`--log-prompts` itself adds no API cost — it only saves prompts that are sent
-anyway.
-
-Separately, **optional LLM commentary** ([`diplomacy_a2a/commentary.py`](diplomacy_a2a/commentary.py))
-can add a narrator's strategic read to each slide — who's threatening whom, who's
-cooperating, who appears to have betrayed a promise — shown between the result map
-and the negotiation. Unlike the deterministic narration, this is *interpretation*
-(human-facing only, never fed to agents), so it's a separate opt-in pass over a
-finished transcript (one LLM call per phase) rather than part of `run_game` — kept
-out of the game loop so a full experiment grid stays cheap.
 
 ## Summary of Main Findings *(placeholder)*
 
@@ -387,7 +338,5 @@ Current data:
   the Haiku caching anomaly, and per-subcommand cost detail.
 
 
-For technical details (model pricing, per-phase timing observations,
-quality notes, experiment results as they land, known issues): see
-[**REFERENCE.md**](REFERENCE.md).
+For additional project details see [**REFERENCE.md**](REFERENCE.md).
 
