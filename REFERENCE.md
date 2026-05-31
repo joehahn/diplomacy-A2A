@@ -333,3 +333,28 @@ Two question modes are envisioned:
 
 Implementation: a new `interview.py` module plus an `ask` subcommand,
 roughly 80 lines total. Cost is about $0.01-0.03 per question on Sonnet.
+
+### LLM baseline knowledge probe
+
+Before running multi-agent experiments, directly query each candidate
+model (Haiku 4.5, Sonnet 4.6, Opus 4.7) about what it already knows
+about Diplomacy, on three categories of question:
+
+- **Rules and game structure**: phase order, win condition, adjudication
+  mechanics, build/disband rules.
+- **Strategies and tactics**: well-known openings (Lepanto, Western
+  Triple), supports and convoys, the "stab" concept.
+- **Province layout and adjacency**: which provinces border which, sea
+  vs land coast, supply-center locations.
+
+Knowing the baseline matters because controlled experiments need to
+disentangle model differences from base-knowledge differences. If Opus
+knows the map perfectly and Haiku only partially, an axis-A result risks
+conflating "better strategic reasoning" with "more accurate memorized
+map". Similarly, axis E (information asymmetry, hiding the SC tracker)
+only meaningfully tests an agent's inference ability if we know the
+model couldn't have memorized the hidden info from training data.
+
+Implementation: a script that asks each model the same fixed question
+set and scores accuracy. Cost is small (a few dollars across all three
+models).
