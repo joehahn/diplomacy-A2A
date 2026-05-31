@@ -379,6 +379,15 @@ and the negotiation. Unlike the deterministic narration, this is *interpretation
 finished transcript (one LLM call per phase) rather than part of `run_game` — kept
 out of the game loop so a full experiment grid stays cheap.
 
+## Summary of Main Findings *(placeholder)*
+
+This section will summarize empirical results from the goal-3
+controlled-variation experiments as they complete. Expected content:
+per-axis takeaways (model capability, personality trait, memory depth,
+pre-game collusion, information asymmetry), the success-vs-spend chart
+described in goal 3, and any falsifiable claims that emerge about which
+agent designs perform better in A2A competition.
+
 ## Cost / time per game
 
 A `--smoke` run costs pennies. The canonical (Sonnet, 5 years, 3 rounds,
