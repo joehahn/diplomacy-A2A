@@ -126,23 +126,28 @@ neutrals remain), (b) works unchanged on variant maps, and (c) costs ≈20
 extra tokens per prompt.
 
 **Where SC-value framing comes from.** The cached system prefix contains
-`rules.md`, whose `## Goal` section opens with:
+`rules.md`, whose `## Goal` section names both the win condition and an
+explicit growth directive:
 
 > Be the first power to **control 18 supply centers** (out of 34 on the
 > board). A solo victory ends the game. Anything less is a loss or a draw.
+>
+> Supply centers are the only resource that matters in Diplomacy: more
+> centers means a larger army (Winter Adjustments builds one unit per
+> excess center) and more political weight at the table. Failing to
+> acquire centers leaves you weaker each year while rivals grow, so
+> growth must be a priority, not an afterthought.
 
-…and the `## Strategy / context for negotiation` section reinforces it:
+The `## Strategy / context for negotiation` section reinforces this:
 
 > The supply-center count after Fall (especially Fall 1901, Fall 1902)
 > signals who is winning and reshapes alliances.
 
-So yes — agents are explicitly told that SCs are the win condition, that 18
-is the solo threshold, that 34 exist, and that the Fall SC count is the
-politically-charged number. They are not given a separate "you should
-strive to acquire SCs" directive beyond that, because the win condition
-already implies it and the personas (axis B, eventually) are where any
-extra acquisitiveness or restraint should be encoded — not in the shared
-rules prefix.
+Agents are explicitly told that SCs are the win condition, that 18 is the
+solo threshold, that 34 exist, that the Fall SC count is the politically
+charged number, and that aggressive growth is required. Per-power persona
+variations (axis B, eventually) can encode further acquisitiveness or
+restraint on top of this baseline.
 
 ---
 

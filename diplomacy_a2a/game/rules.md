@@ -11,6 +11,12 @@ be rejected.
 Be the first power to **control 18 supply centers** (out of 34 on the
 board). A solo victory ends the game. Anything less is a loss or a draw.
 
+Supply centers are the only resource that matters in Diplomacy: more
+centers means a larger army (Winter Adjustments builds one unit per
+excess center) and more political weight at the table. Failing to acquire
+centers leaves you weaker each year while rivals grow, so growth must be
+a priority, not an afterthought.
+
 ## Powers
 
 Seven Great Powers, each starting with 3 supply centers (Russia starts
@@ -32,6 +38,15 @@ Brest, `MAO` = Mid-Atlantic Ocean). A few provinces have multiple coasts:
 notation is `STP/SC` (St. Petersburg, South Coast), `STP/NC`, `SPA/SC`,
 `SPA/NC`, `BUL/EC`, `BUL/SC`. Fleets in these provinces must specify the
 coast.
+
+## Geography and adjacency
+
+No explicit adjacency table is provided in this prompt. Infer which
+provinces border which from the legal-moves list each phase, from any
+one-hop moves other powers mention in negotiation messages, and from
+your prior knowledge of the standard Diplomacy map. If a move you intend
+isn't in your legal-moves list, the provinces aren't adjacent for your
+unit type.
 
 ## Phases (turn structure)
 
