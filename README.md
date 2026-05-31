@@ -224,8 +224,9 @@ agents (`--power-model`, `--power-memory`), and control output
 ## What each agent sees
 
 Diplomacy is a game of **open information**, and the simulation preserves that.
-Each agent's prompt is built by [`game/view.py`](diplomacy_a2a/game/view.py) and
-contains the **full board** every turn:
+Each agent's per-turn view (built by
+[`diplomacy_a2a/game/view.py`](diplomacy_a2a/game/view.py)) contains the
+**full board** every turn:
 
 - **Every power's unit positions** — not just its own; there is no fog of war.
 - **Every supply center and who owns it**, with counts (so it knows the standings).
@@ -265,9 +266,9 @@ rounds (`negotiation_rounds`, set when calling `run_game`):
 Agents are told this protocol explicitly — the round count, which round they're
 in, the simultaneity, and that the final round is for closing — which produces a
 deliberate *probe → negotiate → close* arc rather than repeated openers. The
-mechanics live in [`agent.py`](diplomacy_a2a/agent.py) (`negotiate`, the system
-prompt, dialogue formatting) and [`negotiation.py`](diplomacy_a2a/negotiation.py)
-(`run_negotiation_round`); [`runner.py`](diplomacy_a2a/runner.py) drives the rounds.
+mechanics live in [`diplomacy_a2a/agent.py`](diplomacy_a2a/agent.py) (`negotiate`, the system
+prompt, dialogue formatting) and [`diplomacy_a2a/negotiation.py`](diplomacy_a2a/negotiation.py)
+(`run_negotiation_round`); [`diplomacy_a2a/runner.py`](diplomacy_a2a/runner.py) drives the rounds.
 
 ## Agent strategy & memory
 
@@ -318,8 +319,8 @@ chooses to send, mirroring how Diplomacy works at a table). Cost: about
 **+25–35% per game** — two extra short LLM calls per power per movement phase
 plus a small token bump for carrying history. Always on; the previously-required
 `--strategy` flag has been promoted to default behavior. Mechanics live in
-[`agent.py`](diplomacy_a2a/agent.py) (`state_strategy` / `revise_strategy`) and
-[`runner.py`](diplomacy_a2a/runner.py).
+[`diplomacy_a2a/agent.py`](diplomacy_a2a/agent.py) (`state_strategy` / `revise_strategy`) and
+[`diplomacy_a2a/runner.py`](diplomacy_a2a/runner.py).
 
 ## Turn narration & observability
 
@@ -327,7 +328,7 @@ After each phase, a **deterministic plain-English narration** of what every
 power did and how it resolved is generated straight from the orders + adjudication
 results — e.g. *"AUSTRIA: A BUD → SER; F ALB supports A SER → GRE; ITALY: A VEN →
 TRI (bounced)"*. No LLM, so it's faithful and reproducible
-([`narration.py`](diplomacy_a2a/narration.py)). It serves two consumers:
+([`diplomacy_a2a/narration.py`](diplomacy_a2a/narration.py)). It serves two consumers:
 
 - **Humans** — shown beside the maps on each slideshow/report phase, so the action
   reads at a glance instead of as raw order syntax.
@@ -363,7 +364,7 @@ That's the bare canonical: 5-year, 3-round, Sonnet, strategy on, log year 1
 `--log-prompts` itself adds no API cost — it only saves prompts that are sent
 anyway.
 
-Separately, **optional LLM commentary** ([`commentary.py`](diplomacy_a2a/commentary.py))
+Separately, **optional LLM commentary** ([`diplomacy_a2a/commentary.py`](diplomacy_a2a/commentary.py))
 can add a narrator's strategic read to each slide — who's threatening whom, who's
 cooperating, who appears to have betrayed a promise — shown between the result map
 and the negotiation. Unlike the deterministic narration, this is *interpretation*
