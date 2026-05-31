@@ -43,13 +43,12 @@ well-prompted frontier LLM, and with all players represented by AI agents.
 
 ## Visual dive into a representative game
 
-You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/dashboard/index.html)**,
-which uses Sonnet to power seven AI agents across 10 game-years (the
-currently-linked example is from a 5-year run under the previous default;
-a refreshed 10-year canonical is pending). A game year has five phases
-(Spring Movement & Retreats, Fall Movement & Retreats, Winter Adjustments),
-so the canonical contains 20 movement phases over those 10 years, with 3
-rounds of inter-agent communication before each movement. That dashboard shows the turn-by-turn movements of every army and
+You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260531T202425Z/dashboard/index.html)**,
+which uses Sonnet to power seven AI agents across 10 game-years. A game
+year has five phases (Spring Movement & Retreats, Fall Movement &
+Retreats, Winter Adjustments), so the canonical contains 20 movement
+phases over those 10 years, with 3 rounds of inter-agent communication
+before each movement. That dashboard shows the turn-by-turn movements of every army and
 navy unit, full transcripts of the agent-to-agent (A2A) communications that
 precede each turn, each agent's self-authored strategy notes, and an
 LLM-generated summary of the gameplay that describes which nations used
@@ -157,13 +156,13 @@ python -m diplomacy_a2a run --power-model TURKEY=claude-opus-4-7
 python -m diplomacy_a2a run --power-memory TURKEY=5
 
 # Render a finished game, this step does not use any LLM
-python -m diplomacy_a2a render results/20260529T225943Z/
+python -m diplomacy_a2a render results/20260531T202425Z/
 
 # Add or refresh LLM commentary on a finished run, then render
-python -m diplomacy_a2a render results/20260529T225943Z/ --with-commentary
+python -m diplomacy_a2a render results/20260531T202425Z/ --with-commentary
 
 # Generate commentary only, no render (useful in scripts)
-python -m diplomacy_a2a commentary results/20260529T225943Z/
+python -m diplomacy_a2a commentary results/20260531T202425Z/
 
 python -m diplomacy_a2a --help                # subcommand list
 python -m diplomacy_a2a run --help            # game-execution options

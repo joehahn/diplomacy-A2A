@@ -57,42 +57,42 @@ adds the ≈$0.50 / ≈2 min strategic-interpretation pass.
 
 ## Canonical run
 
-### `20260529T225943Z/` — **`--log-prompts --with-commentary`, all other defaults**
+### `20260531T202425Z/` — current canonical (10-year)
 
 ```bash
 python -m diplomacy_a2a run --log-prompts --with-commentary
 ```
 
-Sonnet 4.6, 5 game-years, 3 negotiation rounds per movement phase, agent
+Sonnet 4.6, 10 game-years, 3 negotiation rounds per movement phase, agent
 memory = 3 movement turns, self-authored strategy notes on, prompt+response
-dump for the first game-year, plus the LLM-commentary post-pass. 18 phases,
-**≈$12 / ≈77 min** end-to-end. The full agent-prompt + response dump
-(`prompts.jsonl` ≈778 KB / `prompts.md` ≈853 KB) is committed.
+dump for the first game-year, uniform baseline persona across all 7 powers,
+plus the LLM-commentary post-pass. 36 phases, **≈$25 / ≈2.6 hr**.
 
-Final standings (no eliminations, no solo win — played to the 5-year cap):
+Final standings at W1910A (no solo win, played to the 10-year cap;
+Austria effectively eliminated at 1 SC):
 
 | Power | SC count | Centers |
 |---|---:|---|
-| Germany | 6 | BER, KIE, MUN, DEN, HOL, BEL |
-| Russia  | 6 | MOS, SEV, STP, WAR, RUM, SWE |
-| Austria | 5 | BUD, VIE, GRE, SER, BUL |
-| France  | 5 | BRE, MAR, PAR, POR, SPA |
-| Italy   | 5 | NAP, ROM, VEN, TUN, TRI |
-| England | 4 | EDI, LON, LVP, NWY |
-| Turkey  | 3 | ANK, CON, SMY |
+| England | 8 | EDI, LON, LVP, NWY, DEN, HOL, KIE, SWE |
+| France  | 8 | BRE, MAR, PAR, POR, SPA, TUN, VEN, BEL |
+| Italy   | 5 | NAP, ROM, TRI, GRE, VIE |
+| Russia  | 5 | MOS, SEV, STP, WAR, RUM |
+| Turkey  | 5 | ANK, CON, SMY, BUL, SER |
+| Germany | 2 | BER, MUN |
+| Austria | 1 | BUD |
 
-Opening highlight (S1901M, from the LLM commentary):
+Italy occupies Vienna (Austria's traditional capital) and Trieste, so
+the historically Austrian home is split: Austria retains only Budapest.
 
-> *"France moved A PAR → BUR despite telling Germany it was 'purely defensive'
-> — Germany accepted this framing, but France now sits one step from Munich
-> with a free hand in the west, a position Germany should be watching
-> carefully."*
-
-Germany still finished tied-leader at 6 SCs, so the gambit didn't crack the
-alliance, but the commentary catches that the public message and the move
-didn't quite match — exactly the intent-vs-action artifact that the strategy
-log + `--log-prompts` are built to surface.
-
-[**View this run's turn-by-turn slideshow**](https://joehahn.github.io/diplomacy-A2A/results/20260529T225943Z/dashboard/index.html)
+[**View this run's turn-by-turn dashboard**](https://joehahn.github.io/diplomacy-A2A/results/20260531T202425Z/dashboard/index.html)
 (GitHub Pages) to flip through the maps, narration, commentary, agent
 strategies, and dialogue.
+
+### `20260529T225943Z/` — previous canonical (5-year), kept for comparison
+
+The earlier 5-year canonical is preserved as the comparison anchor for the
+"Old vs new canonical: behavioral comparison at year 5" subsection in
+[REFERENCE.md](../REFERENCE.md). That run used per-power placeholder
+personas and the pre-SC-importance rules.md. Final standings at F1905M
+were Germany 6 / Russia 6 / Austria 5 / France 5 / Italy 5 / England 4
+/ Turkey 3 — no eliminations, no dominant power.

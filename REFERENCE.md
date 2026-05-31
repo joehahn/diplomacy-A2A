@@ -47,7 +47,8 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 | 20260527T132540Z (smoke) | Haiku | 1 round, 1 yr | 3 | 180s | **≈60** | $0.46 *(actual ≈ $0.15)* |
 | 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, strategy log, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
 | 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no strategy log | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
-| 20260529T225943Z **(canonical)** | Sonnet | 3 rounds, 5 yr, strategy on, `--log-prompts` | 18 | 4479s | **≈249** | **$11.98** + $0.50 commentary |
+| 20260529T225943Z *(previous canonical, 5-yr)* | Sonnet | 3 rounds, 5 yr, strategy on, `--log-prompts`, per-power placeholder personas | 18 | 4479s | **≈249** | **$11.98** + $0.50 commentary |
+| 20260531T202425Z **(canonical, 10-yr)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, uniform baseline persona, post-SC-importance rules | 36 | 9434s | **≈262** | **$24.69** + commentary |
 
 **Headline:** Haiku is ≈3–4× faster than Sonnet *per phase on simple workloads*
 (1 round, no strategy log). On the current canonical workload (3 rounds × strategy
@@ -61,17 +62,21 @@ the strategy + 3-round combo is call-heavy. Cost is still ≈1/3 across the boar
 
 ### Sonnet (canonical model)
 
-Produces tight 1–2-sentence strategy notes (*"I'll court Austria with vague
-promises while positioning to stab if opportunity arises"*), clearly probes
-in early negotiation rounds, closes deals in round 3, and lets dialogue
-visibly steer orders. The current canonical (`20260529T225943Z`,
-`python -m diplomacy_a2a run --log-prompts --with-commentary`) played a fully
-populated 5-year game with no eliminations: Germany and Russia tied at 6 SCs, no power
-below 3, and the LLM commentary flagged a France→Burgundy gambit at
-S1901M where the public message to Germany ("purely defensive") didn't
-match the move — the kind of intent-vs-action gap the project is built
-to surface. The previous 2-year Sonnet canonical (`20260528T214253Z`,
-deleted 2026-05-29) is preserved in the timing table above as a data point.
+Produces tight 1–2-sentence strategy notes, clearly probes in early
+negotiation rounds, closes deals in round 3, and lets dialogue visibly
+steer orders. The current canonical (`20260531T202425Z`,
+`python -m diplomacy_a2a run --log-prompts --with-commentary`) played 10
+game-years to F1910M and ended with two leaders tied at 8 SCs (England,
+France), two near-eliminated (Germany at 2, Austria at 1), and three in
+the middle (Italy, Russia, Turkey each at 5). The LLM commentary flagged
+several agents publicly debunking each other's strength claims using
+geography reasoning, e.g., *"Austria correctly identified that Turkey's
+'strength 4' attack on BUD was mathematically impossible (CON, ANK, SMY
+can't reach BUD in one move; F BLA can't support a land attack)"* — the
+adjacency-inference behavior the rules.md Geography & adjacency section
+was designed to enable. The previous 5-year Sonnet canonical
+(`20260529T225943Z`, kept for behavioral comparison) is described in
+"Old vs new canonical: behavioral comparison at year 5" above.
 
 ### Haiku (cheaper, fallback for experiments)
 
@@ -95,6 +100,96 @@ deleted 2026-05-29) is preserved in the timing table above as a data point.
 - Likely viable for the controlled experiments **if** persona prompts
   (axis B) override the default cautious behavior; needs empirical
   confirmation, which is what axis A's first run is for.
+
+### Old vs new canonical: behavioral comparison at year 5
+
+Compares the first 5 years of:
+
+- **Old** (`20260529T225943Z`): 5 years, per-power placeholder personas
+  (France conservative, Germany opportunist, Austria defensive, etc.),
+  pre-SC-importance rules.md.
+- **New** (`20260531T202425Z`): 10 years, uniform `BASELINE_PERSONA`
+  across all 7 powers, rules.md with the added SC-importance paragraph
+  and Geography & adjacency section.
+
+Three variables changed at once (persona, prompt content, length), so
+this is not a controlled axis-A test; it answers "do these three
+changes together produce different play?" not "which change caused
+what?". Goal-3's axis A and axis B will isolate the variables.
+
+**Quantitative differences at end of F1905M:**
+
+| Metric | OLD | NEW |
+|---|---:|---:|
+| Phases played to Y5 | 18 | 14 |
+| Aggressive % (move + support-move / all movement orders) | 34.5% | 41.9% |
+| Bounced units | 40 | 49 |
+| Dislodged units | 7 | 4 |
+| Std dev of SC counts at F1905M | 1.07 | 0.90 |
+| Powers ≤ 2 SCs (near elimination) | 0 | 0 |
+| Powers ≥ 7 SCs (dominant) | 0 | 0 |
+
+**Per-power aggressiveness shift:**
+
+| Power | OLD | NEW | Δ |
+|---|---:|---:|---:|
+| Austria | 26.7% | 52.3% | **+25.6 pp** |
+| Italy | 41.0% | 55.3% | +14.2 pp |
+| Russia | 28.6% | 39.1% | +10.6 pp |
+| France | 40.0% | 47.5% | +7.5 pp |
+| Germany | 29.8% | 31.0% | +1.2 pp |
+| England | 34.2% | 31.8% | -2.4 pp |
+| Turkey | 47.1% | 37.1% | -9.9 pp |
+
+The biggest mover is Austria: under the old "defensive and central; hold
+the position, broker peace" placeholder persona, Austria played 26.7%
+active moves; under the uniform baseline, Austria becomes the *most*
+aggressive of all 7 powers at 52.3%. Italy and Russia shift toward
+attack-heavy play as well. Turkey moves the other way (from the old
+"patient and long-game" placeholder to slightly less aggressive baseline
+play).
+
+**Tactical sophistication signal:** Bounces increase but dislodgements
+decrease. More attacks meet equal-strength supports rather than
+dislodging undefended units. Consistent with agents coordinating
+defensive support orders better, or with offensive attacks being more
+predictable to defenders.
+
+**Opening strategy notes are remarkably similar across both runs.**
+S1901M strategy notes hit the canonical Diplomacy openings in both
+games (Austria → Balkans, England → Norway + North Sea, Germany →
+Holland + Denmark, etc.). The per-power placeholder personas in OLD
+didn't drive much opening differentiation; the uniform baseline doesn't
+lose any opening quality.
+
+**Y5 doesn't yet show divergence; Y10 does.** OLD's final F1905M
+standings: GER 6 / RUS 6 / AUS 5 / FRA 5 / ITA 5 / ENG 4 / TUR 3 (no
+eliminations, no dominant power). NEW's F1905M standings are similarly
+balanced: ENG 6 / FRA 6 / AUS 5 / GER 5 / RUS 4 / ITA 4 / TUR 4. But
+by F1910M (the new run's full length), NEW shows ENG 8 / FRA 8 / ITA 5
+/ RUS 5 / TUR 5 / GER 2 / AUS 1 — two leaders tied at 8 SCs, Austria
+effectively eliminated. **A 5-year window misses the asymmetry the
+new prompt produces; 10 years reveals it.**
+
+**LLM commentary highlights from the new run** (the commentary captures
+agents using geography reasoning to debunk each other's claims, which
+the new rules.md Geography & adjacency section was designed to enable):
+
+- F1907M: *"Austria successfully called Russia's bluff: Moscow claimed
+  'strength 2' on RUM but A MOS cannot reach RUM in one move..."*
+- F1909M: *"Austria correctly identified that Turkey's 'strength 4'
+  attack on BUD was mathematically impossible (CON, ANK, SMY can't
+  reach BUD in one move; F BLA can't support a land attack)..."*
+- F1910M: *"Russia successfully took RUM by coordinating A SEV→RUM with
+  A GAL support at strength 2, finally breaking Austria's long-held
+  defense — but only after Turkey's late pivot away from RUM
+  (redirecting to BUL instead) cleared the path; Turkey's 'generous'
+  concession of RUM was driven by Italy's pressure to vacate BUD, not
+  altruism."*
+
+These dialogue patterns are more analytically sophisticated than the
+old canonical's typical phase commentary, which tended to describe
+orders rather than analyze inter-power claims.
 
 ---
 
