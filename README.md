@@ -313,7 +313,7 @@ slide per phase). Each slide contains:
 - **Negotiation transcripts**: a link to all agent-to-agent dialogue that
   preceded that phase's orders.
 - **KPI charts**: each player's supply center (SC) counts as well as
-  their Sum-of-Squares (SoS) score, where SoS = SC² / (ΣSC)².
+  their Sum-of-Squares (SoS) score, where SoS = SC² / Σ(SC²).
 
 ## Summary of Main Findings *(placeholder)*
 
