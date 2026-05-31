@@ -132,22 +132,23 @@ explicit growth directive:
 > Be the first power to **control 18 supply centers** (out of 34 on the
 > board). A solo victory ends the game. Anything less is a loss or a draw.
 >
-> Supply centers are the only resource that matters in Diplomacy: more
-> centers means a larger army (Winter Adjustments builds one unit per
-> excess center) and more political weight at the table. Failing to
-> acquire centers leaves you weaker each year while rivals grow, so
-> growth must be a priority, not an afterthought.
+> Supply centers are the principal resource that matters most in
+> Diplomacy: more centers means a larger army (Winter Adjustments
+> builds one unit per excess center) and more political weight at
+> the table. Failing to acquire centers leaves you weaker each year
+> while rivals grow.
 
 The `## Strategy / context for negotiation` section reinforces this:
 
 > The supply-center count after Fall (especially Fall 1901, Fall 1902)
 > signals who is winning and reshapes alliances.
 
-Agents are explicitly told that SCs are the win condition, that 18 is the
-solo threshold, that 34 exist, that the Fall SC count is the politically
-charged number, and that aggressive growth is required. Per-power persona
-variations (axis B, eventually) can encode further acquisitiveness or
-restraint on top of this baseline.
+Agents are explicitly told that SCs are the win condition, that 18 is
+the solo threshold, that 34 exist, that the Fall SC count is the
+politically charged number, that SC count mechanically determines army
+size, and that failing to acquire centers leaves them weaker while
+rivals grow. Per-power persona variations (axis B, eventually) can
+encode further acquisitiveness or restraint on top of this baseline.
 
 ---
 
