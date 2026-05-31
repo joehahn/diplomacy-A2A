@@ -201,7 +201,7 @@ agents (`--power-model`, `--power-memory`), and control output
   overrides; the CLI flag is **axis B** of the goal-3 experiments — design in
   [REFERENCE.md](REFERENCE.md).
 
-## Architecture
+## Code architecture
 
 - **`diplomacy_a2a/llm/`** — All LLM calls go through one small interface
   called `LLMClient`, with `AnthropicClient` as its only implementation
@@ -216,7 +216,7 @@ agents (`--power-model`, `--power-memory`), and control output
   then commit orders, then Meta's `diplomacy` library adjudicates.
   See also **Negotiation protocol** below.
 - **`results/`** — each game logs gameplay to
-  `results/<run-id>/transcript.jsonl`; `python -m diplomacy_a2a render
+  `results/<run-id>/transcript.jsonl`, so `python -m diplomacy_a2a render
   results/<run-id>/ --with-commentary` then builds a dashboard for
   browsing the turn-by-turn movements, the agents' inter-turn
   negotiations, and the LLM-generated commentary on the play.
