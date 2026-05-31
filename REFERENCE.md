@@ -326,10 +326,10 @@ so a rerun will produce *similar* dynamics, not identical transcripts.
 Model IDs are pinned in `diplomacy_a2a/config.py` so reruns are
 comparable across model releases.
 
-The `render` subcommand is free (no LLM); `commentary` adds about $0.50
-of Sonnet calls for an 18-phase game; `--with-commentary` rolls game +
-commentary + re-render into one command. A `--smoke` run (Haiku, 1 year,
-1 round) costs pennies.
+The `render` subcommand is free (no LLM); `commentary` adds about $0.03
+per phase of Sonnet calls (e.g. ≈$1 for a 36-phase game, ≈$0.50 for an
+18-phase game); `--with-commentary` rolls game + commentary + re-render
+into one command. A `--smoke` run (Haiku, 1 year, 1 round) costs pennies.
 
 ---
 

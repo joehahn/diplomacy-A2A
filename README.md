@@ -324,9 +324,11 @@ pre-game collusion, information asymmetry), the success-vs-spend chart
 described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
-Cost to execute the canonical game is about $10 when using Haiku LLM,
-$25 when using Sonnet, and $30 for Opus, with all games completing in
-about 2.7 hours.
+Cost to execute the canonical game is about **$25 when using Sonnet**
+(measured) with wall-time ≈2.6 hours. Haiku and Opus runs at the same
+configuration are extrapolated from per-token rate ratios: Haiku is
+roughly 1/3 of Sonnet (≈$8), while Opus is roughly 5× Sonnet (≈$120).
+Only Sonnet has been measured at the canonical configuration.
 
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).

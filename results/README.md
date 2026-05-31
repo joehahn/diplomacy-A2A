@@ -53,7 +53,8 @@ python -m diplomacy_a2a render results/<run-id>/ --refresh-commentary  # force r
 ```
 
 `render` is the LLM-free path; `commentary` (or `render --with-commentary`)
-adds the ≈$0.50 / ≈2 min strategic-interpretation pass.
+adds about $0.03 per phase of Sonnet calls (e.g., ≈$1 / ≈4 min for a
+36-phase game).
 
 ## Canonical run
 
