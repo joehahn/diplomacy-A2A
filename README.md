@@ -243,7 +243,7 @@ visibility across the **full board** every turn:
 An agent does **not** see other powers' submitted orders, their legal-move lists,
 or any private messages it wasn't party to — only its own correspondence.
 
-Agents do not have eyes. **Geography is not spelled out.** There is deliberately no adjacency table or
+**Agents do not have eyes**, and geography is not explicitly spelled out. There is deliberately no adjacency table or
 coordinates in the prompt. Tactical correctness comes from the legal-moves list
 (an illegal move simply isn't offered), and strategic geographic reasoning
 ("Galicia borders us both") relies on the model's built-in knowledge of the
