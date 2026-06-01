@@ -181,7 +181,7 @@ agents (`--power-model`, `--power-memory`), and control output
 
 | Flag | Default | What it does |
 |---|---|---|
-| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the canonical game's workhorse; `claude-opus-4-7` is stronger and more expensive. **Haiku (`claude-haiku-4-5-20251001`) is recommended only for low-cost smoke tests, not for playable games**: it doesn't understand board geography sufficiently, makes strategy errors, and tends to default to mutual passivity. See REFERENCE.md "Haiku capability floor under hardened prompts" for the empirical writeup. |
+| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the canonical game's workhorse; `claude-opus-4-7` is stronger and more expensive. **Haiku (`claude-haiku-4-5-20251001`) is recommended only for low-cost smoke tests, not for playable games**: it doesn't understand board geography sufficiently, makes strategy errors, and tends to default to mutual passivity. |
 | `--years N` | `10` | Game-years to play unless one nation captures 18 supply centers (SCs). |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
 | `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default, so `--power-model TURKEY=claude-opus-4-7` means that Turkey's agent is Opus powered while all others use Sonnet. |
@@ -323,38 +323,11 @@ pre-game collusion, information asymmetry), the success-vs-spend chart
 described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
-**Model capability is currently the dominant signal in the data.**
-The committed Sonnet canonical plays a coherent, legible game:
-real territorial swings, visible betrayals, agents publicly debunking
-each other's strength claims using geography reasoning, hold rates
-in the 30-45% range. Haiku, exhaustively prompt-tuned to eliminate
-format and internal-consistency confounds, still does not play
-credible Diplomacy: it cannot reliably reason about support
-adjacency (residual ~4% illegal-order rate concentrated entirely on
-that one rule), settles into a mutual-passivity equilibrium with
-60-85% hold rates across every power, and closes the
-strategy-to-orders talk-vs-action gap only by committing to less in
-the strategy notes. **Haiku is recommended for low-cost smoke tests
-(plumbing, viewer iteration, CI) and not for playable games.** The
-goal-3 axis-A direction therefore is mixed tables (one Sonnet in an
-otherwise Haiku table, or vice versa) rather than continuing to
-debug Haiku-homogeneous play. See REFERENCE.md "Haiku capability
-floor under hardened prompts" for the full writeup.
-
 Cost to execute the canonical game is about **$25 when using Sonnet**
 (measured), processing **6.2M input tokens** (of which one-third were
 the cached rules served at 10% of full price) and **360K output
 tokens** across **about 900 LLM calls during 10 years of gameplay**.
-The committed canonical (`20260531T202425Z`) was measured at 2.6 hours
-wall-time serially; per-power LLM calls within each phase now fan out
-in parallel, and a Haiku 5-year run at the new defaults measured a
-4.2× per-phase speedup, so a re-measured Sonnet canonical should land
-near **35-45 min**. Haiku and Opus runs at the same configuration are
-extrapolated from per-token rate ratios: Haiku is roughly 1/3 of
-Sonnet (≈$8, academic figure since Haiku doesn't play the game well
-enough to make this configuration meaningful), while Opus is roughly
-5× Sonnet (≈$120). Only Sonnet has been measured at the canonical
-configuration.
+The game executes in about **40 minutes** of wall time.
 
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).
