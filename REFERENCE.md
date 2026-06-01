@@ -182,10 +182,48 @@ round: refine or counter a proposal, ask a follow-up, or commit to a
 concrete trade in the "I will move A to B if you move C to D" form;
 do not restate prior-round content. The final round demands a
 concrete commitment (specific move + expected counter-move) and again
-forbids restating. Effectiveness needs a re-run to confirm; on
-`20260601T200008Z` (before this nudge) the F-to-G channel still
-restated nearly the same content across all three rounds even after
-mitigation 1 fixed the topic.
+forbids restating.
+
+**Partially confirmed on `20260601T201711Z`:**
+
+- *Round-to-round content variation worked broadly.* 22 of 24
+  sender-to-recipient pairs at F1901M show under 10 characters of
+  prefix overlap between round 1 and round 2 messages, i.e. they
+  open with different content rather than copy-pasting the prior
+  round.
+- *Best-case channel is Turkey-to-Austria, all 3 rounds.* R1 sets the
+  Serbia-Bulgaria line, R2 reacts with "Still partners? If Russia
+  pushes south we may need to keep watch", R3 cites actual board
+  development ("Russia's move into RUM changes the calculus") and
+  proposes coordination. Conditional reasoning, follow-up questions,
+  content evolving with the game state. This is what the nudge was
+  asking for.
+- *Many pairs went silent in round 3*, e.g. G-to-F sent rounds 1-2
+  only, R-to-G only 1-2, several others similar. That matches the
+  prompt's "commit, counter, or stay silent" instruction rather than
+  filling the round with restated content.
+- *France remains an outlier.* F-to-G shows 15-character prefix
+  overlap across rounds (everyone else 0-8); content really is
+  near-identical across all three rounds even though Germany's
+  round-2 reply visibly reacted to France's round-1 Burgundy
+  reference. This looks like an agent-level or persona-position
+  effect rather than a prompt problem.
+- *Conditional trade syntax is rare: 1 of 57 messages at F1901M*
+  contains "if you / if I / in exchange / in return / provided that".
+  Only Italy-to-Turkey R2 follows the worked-example form. Haiku is
+  not generalizing the "X if Y" structure from one-line examples in
+  the prompt at scale; the form appears when it appears as an
+  emergent property of the reasoning, not because the example was
+  given.
+
+**Reading:** the nudge helps the median pair but does not eliminate the
+worst-case restating, and does not produce conditional-trade
+syntax at the rate the example implied. Two further moves are
+plausible (neither pursued yet): (a) a stronger prompt that
+explicitly forbids re-confirming a prior agreement in middle/final
+rounds, and (b) testing whether the worst-case restating is specific
+to the France position under uniform persona, by varying persona or
+swapping models on France alone.
 
 **To check:** does Sonnet exhibit the same anchoring on `20260531T202425Z`
 or `20260529T225943Z`? If only Haiku does, this is an axis-A finding
