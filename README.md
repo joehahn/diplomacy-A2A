@@ -323,8 +323,8 @@ pre-game collusion, information asymmetry), the success-vs-spend chart
 described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
-Cost to execute the canonical game is about **$25 when using Sonnet**
-(measured), processing **6.2M input tokens** (of which one-third were
+Cost to execute the canonical game is about **$25 when using Sonnet**,
+which processes **6.2M input tokens** (of which one-third were
 the cached rules served at 10% of full price) and **360K output
 tokens** across **about 900 LLM calls during 10 years of gameplay**.
 The game executes in about **40 minutes** of wall time.
