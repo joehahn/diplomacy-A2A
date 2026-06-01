@@ -276,7 +276,11 @@ class Agent:
             f"## Dialogue history (private to you)\n{dialogue_block}\n\n"
             f"{round_note}"
             f"Send private messages to any subset of the other powers (or none). "
-            f"Keep each message to 2–4 sentences."
+            f"Keep each message to 2–4 sentences. Each message should be "
+            f"specifically useful to its recipient: focus on threats, "
+            f"opportunities, deals, or proposals that bear on units and powers "
+            f"adjacent to *them*, not generic concerns about distant powers "
+            f"the recipient cannot directly act on this turn."
         )
         chat = self.client.chat(
             system=self._system,

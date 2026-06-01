@@ -101,6 +101,63 @@ was designed to enable. The previous 5-year Sonnet canonical
   (axis B) override the default cautious behavior; needs empirical
   confirmation, which is what axis A's first run is for.
 
+### Negotiation failure mode: globally-salient vs relationally-relevant threats
+
+Observed in the Haiku 5-yr run `20260601T192447Z` (uniform
+`BASELINE_PERSONA`, adjacency table on). Inspecting France's messages
+to Germany across the three negotiation rounds before F1901M shows a
+pattern worth naming.
+
+All three rounds repeat near-identical content: *"Russia's growth is
+alarming, 4 centers, GAL, UKR, RUM, BOT all under their control. If
+they push into the Balkans or Mediterranean next, the balance breaks.
+Something to watch closely together."* Four things go wrong at once:
+
+1. **Russia's 4 centers is Russia's starting position.** Russia is the
+   only power that begins with 4 SCs (MOS, STP, WAR, SEV); the other
+   six start with 3. After S1901M every power still has its starting
+   count, since SCs can only change in Fall. France is framing the
+   opening board as new growth.
+2. **GAL, UKR, BOT are not supply centers.** Of the four locations
+   France lists, only RUM is an SC, and it's contested (Austria's
+   `A SER → RUM` bounced Russia's `F SEV → RUM`, so Russia controls
+   neither). The other three are non-SC territories where having units
+   gains zero centers. France conflates "has a unit on a tile" with
+   "owns a center".
+3. **Russia is geographically irrelevant to France in 1901.** France
+   and Russia share no border anywhere; for Russia to threaten France
+   directly, Russia would have to cross Germany, Austria, or Italy
+   first. The locally-relevant powers for an F-to-G channel are
+   England (shared sea border), Italy (Piedmont/TYS), and Burgundy
+   itself (the F-G fault line). Russia is the worst candidate for an
+   F-to-G coalition pitch in this position.
+4. **Three rounds of identical content with no concrete ask.** No
+   proposed coordinated move, no conditional offer, no "you do X and
+   I'll do Y". Just repeated vague warnings. The simultaneous-then-
+   sequential round structure exists so agents can probe, react, and
+   close; France used all three rounds for the same opener.
+
+(1) and (2) are factual errors the model could fix with closer
+reading of the SC standings block. (3) and (4) are the more
+interesting findings: the model anchored on **"biggest power on the
+board"** (Russia, 4 SCs) and offered that as **"biggest power relevant
+to this conversation"**, ignoring geographic distance and the
+recipient's actual neighbors. This is a generic A2A failure mode
+where agents default to globally-visible signals over relationally-
+correct ones, and worth checking for in any setting with information
+asymmetry and limited shared structure.
+
+**Mitigation tried:** the negotiation user prompt now instructs each
+message to be specifically useful to its recipient, focused on threats
+and opportunities involving units and powers adjacent to *them*, not
+generic concerns about distant powers the recipient cannot act on.
+Effectiveness needs a re-run to confirm.
+
+**To check:** does Sonnet exhibit the same anchoring on `20260531T202425Z`
+or `20260529T225943Z`? If only Haiku does, this is an axis-A finding
+(smaller models reason about the board rather than the conversation).
+If both do, the prompt nudge above is the right primary fix.
+
 ### Old vs new canonical: behavioral comparison at year 5
 
 Compares the first 5 years of:
