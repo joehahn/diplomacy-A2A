@@ -13,7 +13,7 @@ The CLI is organized as three subcommands, split along cost / LLM-use lines:
               Use this after tweaking viewer code without re-running games.
 
   commentary  Generate commentary.json — LLM-written strategic interpretation
-              per phase. Modest cost (~$1 on Sonnet for the canonical's 36
+              per phase. Modest cost (~$1 on Sonnet for the canonical's 33
               phases). Re-runnable with a different model via --model.
 
 Composition flag — `--with-commentary` (valid on both `run` and `render`)
@@ -47,6 +47,13 @@ def _add_run_args(p: argparse.ArgumentParser) -> None:
                    help="negotiation rounds before each movement phase (default: 3)")
     p.add_argument("--results-dir", default="results", type=Path,
                    help="root directory for artifacts (default: results/)")
+    p.add_argument("--category", default="", metavar="NAME",
+                   help="optional subfolder under --results-dir to write the "
+                        "run into (e.g. 'canonical', 'axis_a', 'axis_b'). With "
+                        "an empty value (default) the run lands directly under "
+                        "--results-dir/<run-id>/, matching the historical "
+                        "layout. Used to keep goal-3 experiment grids "
+                        "organized.")
     p.add_argument("--log-prompts", action="store_true",
                    help="also dump each agent's exact prompt+response to "
                         "prompts.jsonl / prompts.md")
@@ -114,7 +121,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("run_dir", type=Path,
                           help="path to a finished run directory, e.g. "
-                               "results/20260529T225943Z/")
+                               "results/canonical/20260529T225943Z/")
     p_render.add_argument("--with-commentary", action="store_true",
                           help="ensure commentary.json is present (generate it if "
                                "missing or refresh it if --refresh-commentary), then "
@@ -221,6 +228,7 @@ def _run_subcommand(args: argparse.Namespace) -> None:
             years=years,
             negotiation_rounds=rounds,
             results_root=args.results_dir,
+            category=args.category,
             verbose=not args.quiet,
             log_prompts=args.log_prompts,
             log_prompts_years=args.log_prompts_years,

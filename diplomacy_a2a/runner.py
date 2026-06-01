@@ -5,7 +5,8 @@ movement phase, agent calls for orders, validation, library
 adjudication, map rendering, transcript logging, and final markdown +
 HTML postmortem rendering.
 
-Produces under `results/<run-id>/`, in two levels separated by provenance:
+Produces under `results/<category>/<run-id>/` (or `results/<run-id>/`
+when no category is supplied), in two levels separated by provenance:
 
 Top level (source of truth, produced live during the game):
 - `transcript.jsonl` — structured event log
@@ -127,6 +128,7 @@ def run_game(
     years: int = 10,
     personas: dict[str, str] | None = None,
     results_root: Path = Path("results"),
+    category: str = "",  # optional subfolder under results_root (e.g. "canonical", "axis_a")
     negotiation_rounds: int = 3,  # rounds per MOVEMENT phase (0 = skip)
     max_phases: int = 50,  # safety stop
     verbose: bool = True,
@@ -158,7 +160,10 @@ def run_game(
     power_memory = power_memory or {}
 
     run_id = _run_id()
-    run_dir = results_root / run_id
+    # With a category (e.g. "canonical", "axis_a"), the run lands under
+    # results_root/category/<run-id>/ so goal-3 experiment grids stay
+    # organized. Empty category keeps the historical results_root/<run-id>/.
+    run_dir = (results_root / category / run_id) if category else (results_root / run_id)
     run_dir.mkdir(parents=True, exist_ok=True)
     jsonl_path = run_dir / "transcript.jsonl"
 
