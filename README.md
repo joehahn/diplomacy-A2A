@@ -155,6 +155,9 @@ python -m diplomacy_a2a run --power-model TURKEY=claude-opus-4-7
 # per-power memory-depth override (Turkey context preserves past 5 movements)
 python -m diplomacy_a2a run --power-memory TURKEY=5
 
+# Write the run into an experiment subfolder (results/axis_a/<run-id>/)
+python -m diplomacy_a2a run --category axis_a --power-model TURKEY=claude-opus-4-7
+
 # Render a finished game, this step does not use any LLM
 python -m diplomacy_a2a render results/canonical/20260601T214429Z/
 
@@ -169,8 +172,10 @@ python -m diplomacy_a2a run --help            # game-execution options
 python -m diplomacy_a2a render --help         # render + commentary options
 ```
 
-Artifacts (transcript, maps, dashboard, report) land under `results/<run-id>/`.
-The transcript is the canonical artifact; every renderer derives from it.
+Artifacts (transcript, maps, dashboard, report) land under
+`results/<category>/<run-id>/` when `--category` is set, otherwise
+`results/<run-id>/`. The transcript is the canonical artifact; every
+renderer derives from it.
 
 ### Options
 
@@ -194,6 +199,7 @@ agents (`--power-model`, `--power-memory`), and control output
 | `--no-render` | off | Skip the dashboard render at end of game. Use this when you plan to run `render` separately, e.g. iterating on viewer code. |
 | `--smoke` | off | Shortcut for cheap end-to-end verification: Haiku, 1 year, 1 round. |
 | `--results-dir PATH` | `results` | Root directory for artifacts. |
+| `--category NAME` | – | Subfolder under `--results-dir` to organize the run (e.g. `canonical`, `axis_a`, `axis_b`). Empty default writes to `results/<run-id>/` like before. |
 | `--quiet` | off | Suppress the verbose phase-by-phase trace. |
 
 ### Options *not* in the CLI yet
@@ -219,11 +225,11 @@ agents (`--power-model`, `--power-memory`), and control output
 - **Agent orchestration** — agents exchange private messages each turn,
   then commit orders, then Meta's `diplomacy` library adjudicates.
   See also **Negotiation protocol** below.
-- **`results/`** — each game logs gameplay to
-  `results/<run-id>/transcript.jsonl`, so `python -m diplomacy_a2a render
-  results/<run-id>/ --with-commentary` then builds a dashboard for
-  browsing the turn-by-turn movements, the agents' inter-turn
-  negotiations, and the LLM-generated commentary on the play.
+- **`results/`**: game artifacts, organized by category subfolder
+  (`canonical/`, `axis_a/`, …). Each run writes `transcript.jsonl`,
+  then `python -m diplomacy_a2a render <run-dir>/ --with-commentary`
+  builds a dashboard for browsing the turn-by-turn movements, the
+  agents' inter-turn negotiations, and the LLM-generated commentary.
 
 ## What each agent knows
 
