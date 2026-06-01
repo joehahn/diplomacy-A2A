@@ -68,6 +68,12 @@ def _add_run_args(p: argparse.ArgumentParser) -> None:
                    help="override the memory depth (in movement turns) for one power "
                         "(repeatable). Example: --power-memory TURKEY=10 lets Turkey "
                         "remember 10 turns back while everyone else uses the default.")
+    p.add_argument("--no-adjacency-table", action="store_true",
+                   help="omit the standard-map adjacency table from the cached "
+                        "system prefix. By default the table is included, "
+                        "which reduces support-legality mistakes; turning it "
+                        "off forces agents to infer adjacency from the "
+                        "legal-moves list and training data (axis-E variant).")
     p.add_argument("--smoke", action="store_true",
                    help=f"cheap-mode shortcut: use {SMOKE_MODEL}, 1 year, 1 round")
     p.add_argument("--quiet", action="store_true",
@@ -222,6 +228,7 @@ def _run_subcommand(args: argparse.Namespace) -> None:
             power_clients=power_clients or None,
             memory=args.memory,
             power_memory=power_memory or None,
+            adjacency_table=not args.no_adjacency_table,
             render=not args.no_render,
         )
     except RunnerError as e:

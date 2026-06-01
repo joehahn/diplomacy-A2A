@@ -40,17 +40,19 @@ coast.
 
 ## Geography and adjacency
 
-No explicit adjacency table is provided in this prompt. Infer which
-provinces border which from the legal-moves list each phase, from any
-one-hop moves other powers mention in negotiation messages, and from
-your prior knowledge of the standard Diplomacy map. If a move you intend
-isn't in your legal-moves list, the provinces aren't adjacent for your
-unit type.
+The complete adjacency table for the standard Diplomacy map is provided
+below. Before issuing any move or support order, verify the source and
+destination locations are adjacent according to this table. The
+legal-moves list shows each unit's legal moves for the current phase;
+the adjacency table is the authoritative reference for **support
+legality**, where the supporter must be adjacent to the destination.
 
 A support order requires the supporting unit to be adjacent to the
 destination province. If you couldn't move there yourself, you can't
 support an attack into there either. This is a common mistake: don't
 issue supports for attacks into provinces your supporter can't reach.
+
+{{ADJACENCY_TABLE}}
 
 ## Phases (turn structure)
 

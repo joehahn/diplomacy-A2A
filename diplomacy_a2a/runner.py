@@ -108,6 +108,7 @@ def run_game(
     power_clients: dict[str, LLMClient] | None = None,  # per-power model overrides (axis A)
     memory: int = 3,  # default per-agent memory: last N movement turns recalled
     power_memory: dict[str, int] | None = None,  # per-power memory overrides
+    adjacency_table: bool = True,  # include the standard-map adjacency table in the cached prefix
     render: bool = True,  # also derive maps/report/HTML from the transcript at end
 ) -> Path:
     """Run a full game, save artifacts under results_root/<run-id>/.
@@ -140,6 +141,7 @@ def run_game(
             persona=personas[p],
             client=power_clients.get(p, client),
             memory=power_memory.get(p, memory),
+            adjacency_table=adjacency_table,
         )
         for p in POWERS
     }

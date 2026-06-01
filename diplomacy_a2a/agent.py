@@ -80,6 +80,7 @@ class Agent:
         client: LLMClient,
         rules: str | None = None,
         memory: int = 3,
+        adjacency_table: bool = True,
     ) -> None:
         self.power = power
         self.persona = persona
@@ -95,12 +96,32 @@ class Agent:
         #     phases (older messages drop out of the prompt).
         # `0` means a memoryless agent — only the current board, no recap.
         self.memory = max(0, memory)
+        # When True (default), the cached system prefix includes the
+        # standard-map adjacency table generated from the diplomacy library's
+        # authoritative loc_abut data. When False, the placeholder is
+        # replaced with a brief "no table, infer from legal moves" note.
+        self.adjacency_table = adjacency_table
         self._system = self._build_system_prompt()
 
     def _build_system_prompt(self) -> str:
         other_powers = ", ".join(p for p in POWERS if p != self.power)
+        rules = self.rules
+        if self.adjacency_table:
+            from diplomacy_a2a.game.adjacency import generate_adjacency_table
+            table_section = (
+                "## Adjacency table\n\n" + generate_adjacency_table()
+            )
+        else:
+            table_section = (
+                "## Adjacency table\n\n"
+                "(No adjacency table provided. Infer which provinces border "
+                "which from the legal-moves list each phase, from one-hop moves "
+                "other powers mention in negotiation messages, and from your "
+                "prior knowledge of the standard Diplomacy map.)"
+            )
+        rules = rules.replace("{{ADJACENCY_TABLE}}", table_section)
         return (
-            f"{self.rules}\n\n"
+            f"{rules}\n\n"
             f"You are playing as {self.power} in a game of Diplomacy.\n\n"
             f"## Your persona\n{self.persona}\n\n"
             "## Output formats\n\n"

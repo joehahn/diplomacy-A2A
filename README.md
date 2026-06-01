@@ -241,20 +241,19 @@ each turn:
 An agent does **not** see other powers' submitted orders, their legal-move lists,
 or any private messages it wasn't party to — only its own correspondence.
 
-Note that **agents do not have eyes**, and that the gameboard's geography
-is not explicitly spelled out.
-Agents' prompts do not include an adjacency table or any coordinate data.
-Tactical correctness comes by prompting the agents with a list of legal-moves
-(i.e. an illegal move simply isn't offered). That same list also implicitly
-reveals adjacency: a province not in the list is not reachable in one turn
-from the unit it would belong to, so strategic geographic reasoning beyond
-that (e.g. "Galicia borders us both") relies on the model's built-in
-knowledge of the standard Diplomacy map and the canonical province codes
-(`GAL`, `BOH`, …). Negotiation messages from other powers can also leak
-adjacency when a partner mentions a one-hop move (e.g. "I'll support A SIL
-→ MUN" effectively asserts that SIL and MUN are adjacent). Positions are conveyed as **text** using those codes,
-while the gameplay maps rendered by this project are for human viewers,
-and not the agents.
+Note that **agents do not have eyes**: positions are conveyed as text
+using the canonical province codes (`GAL`, `BOH`, …), and the gameplay
+maps rendered by this project are for human viewers, not the agents.
+
+Adjacency for the standard map is provided to each agent as an
+**explicit table** in the cached system prefix, generated from Meta's
+`diplomacy` library so it matches what the adjudicator uses. Agents
+reference the table for support and move legality, alongside the
+per-phase legal-moves list that shows which moves their own units may
+issue this phase. The `--no-adjacency-table` flag omits the table to
+preserve an inference-required regime for controlled-variation
+experiments. See [REFERENCE.md](REFERENCE.md) for the table's format
+and token cost.
 
 ## Negotiation protocol
 

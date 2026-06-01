@@ -193,6 +193,63 @@ orders rather than analyze inter-power claims.
 
 ---
 
+## Agent prompt: adjacency table
+
+By default the cached system prefix includes the complete adjacency
+table for the standard Diplomacy map, generated at runtime by
+[`diplomacy_a2a/game/adjacency.py`](diplomacy_a2a/game/adjacency.py)
+from Meta's `diplomacy` library. The table is the single source of
+truth for support-legality verification (the dominant failure mode of
+agents on this task) and a redundant ground truth for move legality
+alongside the per-phase legal-moves list.
+
+**Format.** One line per location: `` - `LOC` (type): neighbors ``. Type
+is `water`, `coast`, `land`, `fleet` (for coast-specific entries like
+`STP/NC`), or `army` (for the bare-province entries of multi-coast
+provinces). Neighbors are uppercase, comma-separated. Sample:
+
+```
+- `ADR` (water): ALB, APU, ION, TRI, VEN
+- `PAR` (land): BRE, BUR, GAS, PIC
+- `BRE` (coast): ENG, GAS, MAO, PAR, PIC
+- `STP` (army): FIN, LVN, MOS, NWY
+- `STP/NC` (fleet): BAR, NWY
+- `STP/SC` (fleet): BOT, FIN, LVN
+```
+
+**Generation.** `loc_abut` from the library handles all non-multi-coast
+provinces directly. For multi-coast provinces (STP, SPA, BUL), the
+bare-province `loc_abut` entry is `None` because the library models the
+coasts as the canonical locations; the army-view adjacency is synthesized
+with `m.abuts("A", prov, "-", dest)` over all candidate destinations so
+land-only neighbors like STP-MOS are not missed (a synthesis-by-coast-union
+would).
+
+**Notation note.** `loc_abut` mixes uppercase (fleet-reachable) and
+lowercase (army-only land border) entries. The table normalizes everything
+to uppercase to stay scannable for smaller models; the rare
+fleet-supports-via-land-only-adjacency cases (e.g., a fleet at ANK
+attempting a support involving the SMY land border) get caught by the
+adjudicator rather than disambiguated in the prompt.
+
+**Token cost.** ~1,100 tokens added to the ~1,750-token rules digest. At
+Sonnet's cached-prefix rate of $0.30 / M cache_read across roughly 900
+calls per canonical game, the table adds about $0.30 of cost.
+
+**Opting out.** The `--no-adjacency-table` CLI flag replaces the table
+with a fallback note instructing agents to infer adjacency from the
+legal-moves list, dialogue, and training data. The flag exists to
+support controlled-variation experiments (axis-E: information
+asymmetry) without changing other agent behavior.
+
+**Worked example in the prompt.** A short support-legality walkthrough
+is included immediately before the table (in the same `## Geography
+and adjacency` section of [`rules.md`](diplomacy_a2a/game/rules.md)) so
+agents see how to use the table on a concrete case, reducing the
+chance smaller models ignore the resource.
+
+---
+
 ## Agent prompt: supply-center visibility
 
 The view rendered by [`game/view.py::render_for_power`](diplomacy_a2a/game/view.py)
