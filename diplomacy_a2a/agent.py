@@ -194,14 +194,19 @@ class Agent:
                 "state your strategy and goals for this turn in 1-2 sentences. "
                 "Be concrete (name powers and provinces you care about), reflect "
                 "your standing relationships from the history above, and don't "
-                "hedge. No preamble, no headings, just the strategy."
+                "hedge. No preamble, no headings, just the strategy. "
+                "Do NOT include a `MESSAGES:` or `ORDERS:` section — those "
+                "formats are for other call types; you will be asked separately "
+                "for messages and for orders later this phase."
             )
         else:
             instruction = (
                 f"Negotiation for {state.phase} is complete. Re-state your "
                 "strategy and goals for the orders you're about to submit, in "
                 "1-2 sentences. Acknowledge any updates from the negotiation "
-                "(deals made, broken, or refused). No preamble, just the strategy."
+                "(deals made, broken, or refused). No preamble, just the strategy. "
+                "Do NOT include a `MESSAGES:` or `ORDERS:` section — orders are "
+                "submitted via a separate call right after this one."
             )
         user_msg = body + instruction
         chat = self.client.chat(
