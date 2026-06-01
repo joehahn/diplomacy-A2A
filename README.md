@@ -324,11 +324,12 @@ described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
 Cost to execute the canonical game is about **$24 when using Sonnet**,
-which processes **10.1M input tokens** (of which about **42% are
-cached prefix served at 10% of full price**) and **335K output
-tokens** across **about 880 LLM calls** (847 during 10 years of
-gameplay, plus 33 commentary calls in the post-pass). The game
-executes in about **31 minutes** of wall time.
+which processes **10.1M input tokens** (of which about **40% is
+cached and served at 10% of full price**) and **340K output tokens**
+across **about 880 LLM calls**, with the game executing in about
+**30 minutes** of wall time (dominated by Anthropic API round trips
+rather than local compute, so largely independent of the client
+machine).
 
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).
