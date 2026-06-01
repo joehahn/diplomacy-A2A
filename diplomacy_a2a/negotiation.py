@@ -11,6 +11,7 @@ accumulated dialogue into order generation.
 """
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from typing import Iterable
 
 from diplomacy_a2a.agent import Agent, DialogueMessage, MessagesResult, StrategyNote
@@ -42,14 +43,25 @@ def run_negotiation_round(
     new_messages: list[DialogueMessage] = []
     results: dict[str, MessagesResult] = {}
 
-    for power in powers_iter:
-        agent = agents[power]
+    def _call(power: str) -> MessagesResult:
         sh = (strategies_by_power or {}).get(power)
-        result = agent.negotiate(
+        return agents[power].negotiate(
             state, history,
             round_index=round_index, total_rounds=total_rounds,
             strategy_history=sh,
         )
+
+    # Within a round all powers see the same `history` snapshot and can be
+    # called in parallel; the round-level simultaneity guarantee is
+    # preserved because nothing here mutates `history`.
+    if len(powers_iter) <= 1:
+        per_power = {p: _call(p) for p in powers_iter}
+    else:
+        with ThreadPoolExecutor(max_workers=len(powers_iter)) as ex:
+            per_power = dict(zip(powers_iter, ex.map(_call, powers_iter)))
+
+    for power in powers_iter:
+        result = per_power[power]
         results[power] = result
         for recipient, text in result.messages.items():
             new_messages.append(

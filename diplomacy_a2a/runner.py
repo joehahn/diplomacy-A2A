@@ -23,9 +23,11 @@ run-id is a UTC timestamp like `20260523T231245Z`.
 from __future__ import annotations
 
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Callable, TypeVar
 
 from diplomacy_a2a.agent import Agent, DialogueMessage, StrategyNote, validate_orders
 from diplomacy_a2a.game.state import GameState, POWERS
@@ -90,6 +92,32 @@ def _accumulate(buckets: dict[str, dict[str, int]], model: str, chat) -> None:
     b["output"] += chat.output_tokens
     b["cache_create"] += chat.cache_creation_input_tokens
     b["cache_read"] += chat.cache_read_input_tokens
+
+
+_T = TypeVar("_T")
+
+
+def _fanout(powers: list[str], call: Callable[[str], _T]) -> dict[str, _T]:
+    """Run `call(power)` for each power concurrently; return results keyed by power.
+
+    All per-power LLM calls within a phase are independent — they read the
+    same `state` / `dialogue` / `strategy_history` snapshot and produce
+    per-power results — so a thread pool gives a 3-5× wall-time speedup
+    over the previous serial loop. Bookkeeping (transcript writes, token
+    accumulation, `state.submit`) stays on the main thread, after this
+    returns, in deterministic power order — so transcripts of parallel
+    runs remain byte-comparable to serial ones.
+
+    `max_workers=len(powers)` (capped at 7 by the caller's power list) lets
+    every acting power's call go out at once. If you hit Anthropic
+    rate limits, the AnthropicClient's existing 429-retry path absorbs
+    them; dial back the worker count here if it starts hurting wall time.
+    """
+    if len(powers) <= 1:
+        return {p: call(p) for p in powers}
+    with ThreadPoolExecutor(max_workers=len(powers)) as ex:
+        results = list(ex.map(call, powers))
+    return dict(zip(powers, results))
 
 
 def run_game(
@@ -220,12 +248,16 @@ def run_game(
             if is_movement and enable_strategy:
                 if verbose:
                     print("  --- Strategy: initial ---")
-                for power in powers_acting:
-                    res = agents[power].state_strategy(
+                strategy_results = _fanout(
+                    powers_acting,
+                    lambda power: agents[power].state_strategy(
                         state,
                         dialogue=dialogue_history,
                         strategy_history=strategies_by_power[power],
-                    )
+                    ),
+                )
+                for power in powers_acting:
+                    res = strategy_results[power]
                     _accumulate(tokens_by_model, power_model[power], res.chat)
                     note = StrategyNote(phase=short, kind="initial", text=res.text)
                     strategies_by_power[power].append(note)
@@ -294,12 +326,16 @@ def run_game(
             if is_movement and enable_strategy:
                 if verbose:
                     print("  --- Strategy: revised ---")
-                for power in powers_acting:
-                    res = agents[power].revise_strategy(
+                strategy_results = _fanout(
+                    powers_acting,
+                    lambda power: agents[power].revise_strategy(
                         state,
                         dialogue=dialogue_history,
                         strategy_history=strategies_by_power[power],
-                    )
+                    ),
+                )
+                for power in powers_acting:
+                    res = strategy_results[power]
                     _accumulate(tokens_by_model, power_model[power], res.chat)
                     note = StrategyNote(phase=short, kind="revised", text=res.text)
                     strategies_by_power[power].append(note)
@@ -322,16 +358,22 @@ def run_game(
                         print(f"    {power}: {res.text}")
 
             # ----- Order phase -----
-            for power in powers_acting:
-                # Agents receiving dialogue context see their own messages
-                # this phase + any history from prior phases.
-                result = agents[power].submit_orders(
+            # Agents receiving dialogue context see their own messages this
+            # phase + any history from prior phases. Calls fan out in
+            # parallel; `state.submit` + transcript writes happen serially
+            # below so adjudication input is deterministic.
+            order_results = _fanout(
+                powers_acting,
+                lambda power: agents[power].submit_orders(
                     state,
                     dialogue=dialogue_history,
                     strategy_history=(
                         strategies_by_power[power] if enable_strategy else None
                     ),
-                )
+                ),
+            )
+            for power in powers_acting:
+                result = order_results[power]
                 _accumulate(tokens_by_model, power_model[power], result.chat)
                 if log_this_phase:
                     prompts_writer.write(

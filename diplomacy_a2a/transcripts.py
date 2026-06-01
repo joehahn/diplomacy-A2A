@@ -31,7 +31,8 @@ import os
 import re
 import tempfile
 import textwrap
-from dataclasses import dataclass
+import threading
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -107,10 +108,16 @@ def _now_iso() -> str:
 
 @dataclass
 class TranscriptWriter:
-    """One-event-per-line JSONL writer. Flushes after every write for crash-safety."""
+    """One-event-per-line JSONL writer. Flushes after every write for crash-safety.
+
+    Thread-safe: writes are serialized with a lock so concurrent calls from
+    worker threads (e.g. API-error loggers firing during a parallel fan-out)
+    cannot interleave bytes and corrupt the JSONL.
+    """
 
     path: Path
     _fh: TextIO | None = None
+    _lock: "threading.Lock" = field(default_factory=lambda: threading.Lock())
 
     def open(self) -> "TranscriptWriter":
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -120,8 +127,10 @@ class TranscriptWriter:
     def write(self, event_type: str, **fields: Any) -> None:
         assert self._fh is not None, "TranscriptWriter not opened"
         event = {"type": event_type, "ts": _now_iso(), **fields}
-        self._fh.write(json.dumps(event, default=str) + "\n")
-        self._fh.flush()
+        line = json.dumps(event, default=str) + "\n"
+        with self._lock:
+            self._fh.write(line)
+            self._fh.flush()
 
     def close(self) -> None:
         if self._fh is not None:
