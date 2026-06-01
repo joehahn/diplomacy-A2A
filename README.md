@@ -327,9 +327,7 @@ Cost to execute the canonical game is about **$24 when using Sonnet**,
 which processes **10.1M input tokens** (of which about **40% is
 cached and served at 10% of full price**) and **340K output tokens**
 across **about 880 LLM calls**, with the game executing in about
-**30 minutes** of wall time (dominated by Anthropic API round trips
-rather than local compute, so largely independent of the client
-machine).
+**30 minutes** of wall time.
 
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).

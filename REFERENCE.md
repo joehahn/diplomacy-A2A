@@ -340,26 +340,44 @@ exhibits:
 3. A talk-vs-action gap that closes only because the *talk* gets
    smaller, not because *action* gets larger.
 
-The committed Sonnet 10-yr canonical (`20260601T214429Z`) shows the
-same three failure modes at significantly lower rates:
+The committed Sonnet 10-yr canonical (`20260601T214429Z`) shows
+four residual failure modes, three shared with Haiku at lower rates
+and one Sonnet-specific:
 
-- Illegal-order rate is 3.8% rather than 4.4%, and the residual is
-  still concentrated on support adjacency: France's
-  `A BUR S A BEL - HOL` repeats 8 times across phases, Italy's
-  `F EAS S F AEG - GRE` repeats 5 times, Germany's
+- **Support-adjacency illegal orders.** Illegal rate is 3.8% rather
+  than 4.4%, and the residual is concentrated entirely on support
+  adjacency: France's `A BUR S A BEL - HOL` repeats 8 times across
+  phases, Italy's `F EAS S F AEG - GRE` repeats 5 times, Germany's
   `F NTH S A DEN - SWE` repeats 3 times. Support adjacency is a
-  generic reasoning failure on this task, not a Haiku-specific one.
-- Hold rate averages 53% across powers rather than 70%. Lower, but
-  still high in absolute terms (Germany 48%, England 54%, France
+  generic reasoning failure on this task, not a Haiku-specific one,
+  and is the highest-impact remaining issue. Roadmap entry
+  "Surface legal supports in the per-phase view" proposes a
+  precomputed-allowlist fix.
+- **Hold rate averages 53% across powers** rather than 70%. Lower,
+  but still high in absolute terms (Germany 48%, England 54%, France
   65%); Sonnet is not playing a tactically aggressive game either.
-- Strategy-to-orders gap is mostly closed (F1904M spot-check shows
-  near-perfect alignment between revised strategy commitments and
-  submitted orders), but Sonnet exhibits a different pattern: 109
-  of 132 revised strategy notes append a preemptive `ORDERS:` block
-  to the strategy prose despite the prompt explicitly forbidding it.
-  89 of those preemptive blocks match the actual orders submitted in
-  the separate call that follows; 20 mismatch. The prohibition that
-  works on Haiku does not hold on Sonnet.
+  Some of this is defensive holds and tactical garrison, some is
+  passive equilibrium; current metric does not distinguish.
+- **Home-SC parking.** Sonnet leaves units on its own home SCs at
+  roughly 1.3-2.5 units per movement phase (Germany averages 2.05 of
+  3 home SCs occupied per phase, Russia 2.45 of 4, England 1.85 of
+  3, vs France's much-better 0.65). Parking is correct defense when
+  a home SC is under attack and wasteful when it blocks a winter
+  build. Current rules.md sentence does not qualify "unnecessarily";
+  a useful refinement would be to surface, on Fall phases for powers
+  that gained SCs that year, the specific home SCs that must be
+  empty for Winter builds.
+- **Sonnet-specific: preemptive `ORDERS:` block in revised strategy.**
+  The strategy-to-orders gap is mostly closed (F1904M spot-check
+  shows near-perfect alignment between revised strategy commitments
+  and submitted orders), but 109 of 132 revised strategy notes
+  append a preemptive `ORDERS:` block to the strategy prose despite
+  the prompt explicitly forbidding it. 89 of those preemptive blocks
+  match the actual orders submitted in the separate call that
+  follows; 20 mismatch. The prohibition that works on Haiku does not
+  hold on Sonnet. Pure transcript noise rather than agent-behavior
+  bug; could be stripped at render time without changing any game
+  logic.
 
 The behavioral gap that **does** clearly separate Sonnet from Haiku
 is on the negotiation-channel side: conditional-trade language at
@@ -715,10 +733,31 @@ Implementation: a script that asks each model the same fixed question
 set and scores accuracy. Cost is small (a few dollars across all three
 models).
 
-### Adjacency table fallback
+### Surface legal supports in the per-phase view
 
-Agents currently rely on the model's training-data knowledge of the
-standard Diplomacy map plus the canonical province codes (`GAL`, `BOH`,
-…) for spatial reasoning. If geography hallucinations ever surface in
-transcripts, a compact adjacency table can be added to the prompt as a
-cheap experiment.
+The per-power view currently lists each unit's legal moves but does
+not list the supports each unit could legally issue. Agents have to
+infer support legality from the adjacency table (a support order
+requires the supporting unit to be adjacent to the destination
+province). Both Sonnet and Haiku get this wrong at scale: in the
+canonical 33-phase Sonnet run, all 26 illegal orders are
+support-adjacency violations, and specific patterns repeat across
+many phases (France's `A BUR S A BEL - HOL` was attempted and dropped
+as illegal 8 times across the game). The adjacency information is in
+the prompt four times (rules.md, adjacency table, per-phase
+legal-moves list, hardened strategy-call instruction) and both models
+still violate the support-adjacency rule at a steady rate.
+
+The fix is to precompute legal supports per unit per phase and
+surface them alongside the legal-moves list. The agent then
+pattern-matches against an explicit allowlist rather than reasoning
+about adjacency. Adjudication is unchanged; only the prompt content
+shifts.
+
+Implementation: extend the per-power view (in `game/state.py`) to
+include, for each of the agent's units, the (sender, destination)
+pairs the unit could legally support, computed via the same
+`m.abuts()` library calls that compute move legality. Adds a few
+hundred tokens per per-phase view but eliminates the most repeated
+illegal-order pattern. No model changes needed; works for both Haiku
+and Sonnet. Roughly 50-100 lines.
