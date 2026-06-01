@@ -5,7 +5,7 @@ The CLI is organized as three subcommands, split along cost / LLM-use lines:
   run         Execute a game — agents negotiate, agents move, library
               adjudicates. Writes transcript.jsonl (+ prompts.jsonl if
               --log-prompts), auto-renders the dashboard at the end.
-              The only command that costs real money. ≈$25 for the
+              The only command that costs real money. ≈$24 for the
               canonical Sonnet 10-year configuration.
 
   render      Re-derive the dashboard from a finished transcript: maps,
@@ -100,7 +100,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_run = sub.add_parser(
         "run",
-        help="execute a game (LLM calls; ≈$25 / ≈35-45 min for the canonical 10-yr Sonnet run)",
+        help="execute a game (LLM calls; ≈$24 / ≈31 min for the canonical 10-yr Sonnet run)",
         description="Execute a game and (by default) render its dashboard. "
                     "This is the only command that costs real money.",
     )
