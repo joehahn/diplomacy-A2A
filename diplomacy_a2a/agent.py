@@ -179,7 +179,7 @@ class Agent:
         kind: str,  # "initial" or "revised"
         dialogue: list[DialogueMessage] | None,
         strategy_history: list[StrategyNote] | None,
-        max_tokens: int = 220,
+        max_tokens: int = 500,
         temperature: float = 0.6,
     ) -> StrategyResult:
         view = render_for_power(state, self.power, memory=self.memory)
@@ -194,18 +194,26 @@ class Agent:
                 "state your strategy and goals for this turn in 1-2 sentences. "
                 "Be concrete (name powers and provinces you care about), reflect "
                 "your standing relationships from the history above, and don't "
-                "hedge. No preamble, no headings, just the strategy. "
-                "Do NOT include a `MESSAGES:` or `ORDERS:` section — those "
-                "formats are for other call types; you will be asked separately "
-                "for messages and for orders later this phase."
+                "hedge. STRICT FORMAT: plain prose, 1-2 sentences only. No "
+                "markdown headers, no bold, no bullet lists, no `**Strategy:**` "
+                "or `Acknowledgements:` sections, no preamble. "
+                "Do NOT include a `MESSAGES:` or `ORDERS:` section; those "
+                "formats are for other call types and you will be asked "
+                "separately for messages and for orders later this phase."
             )
         else:
             instruction = (
                 f"Negotiation for {state.phase} is complete. Re-state your "
                 "strategy and goals for the orders you're about to submit, in "
                 "1-2 sentences. Acknowledge any updates from the negotiation "
-                "(deals made, broken, or refused). No preamble, just the strategy. "
-                "Do NOT include a `MESSAGES:` or `ORDERS:` section — orders are "
+                "(deals made, broken, or refused). STRICT FORMAT: plain prose, "
+                "1-2 sentences only. No markdown headers, no bold, no bullet "
+                "lists, no `**Strategy Restatement:**` or `Acknowledgements:` "
+                "sections, no preamble. "
+                "Verify your plan is internally consistent before stating it: "
+                "each unit can have only one order; supports require the "
+                "supporting unit to be adjacent to the destination province. "
+                "Do NOT include a `MESSAGES:` or `ORDERS:` section; orders are "
                 "submitted via a separate call right after this one."
             )
         user_msg = body + instruction
@@ -332,7 +340,16 @@ class Agent:
                 dialogue, self.power, recent_movements=self.memory
             )
             user_msg += f"\n\n## Dialogue history (private to you)\n{dialogue_block}"
-        user_msg += f"\n\nIt is your turn. Submit your orders for {state.phase}."
+        user_msg += (
+            f"\n\nIt is your turn. Submit your orders for {state.phase}. "
+            "Your orders should execute the commitments named in your most "
+            "recent revised strategy note for this phase (in the strategy "
+            "history above). If a stated move turns out to be illegal "
+            "(e.g., non-adjacent), substitute an order that pursues the "
+            "same objective rather than abandoning it. If you committed in "
+            "negotiation to a coalition action, your orders should reflect "
+            "that commitment."
+        )
 
         chat = self.client.chat(
             system=self._system,
