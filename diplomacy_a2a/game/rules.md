@@ -47,6 +47,11 @@ your prior knowledge of the standard Diplomacy map. If a move you intend
 isn't in your legal-moves list, the provinces aren't adjacent for your
 unit type.
 
+A support order requires the supporting unit to be adjacent to the
+destination province. If you couldn't move there yourself, you can't
+support an attack into there either. This is a common mistake: don't
+issue supports for attacks into provinces your supporter can't reach.
+
 ## Phases (turn structure)
 
 Each game year has up to five phases:
@@ -133,6 +138,12 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
   willing to deal with it; a power that always honors deals gets exploited.
 - The supply-center count after Fall (especially Fall 1901, Fall 1902)
   signals who is winning and reshapes alliances.
+- Don't let your own units sit unnecessarily on your home supply centers,
+  since doing so will block you from building new units there during the
+  subsequent Winter build phase.
+- Capturing another power's home supply center denies them that build
+  slot, which is doubly advantageous to you: you gain an SC and they
+  lose a build location.
 
 ## Common rejected order patterns to avoid
 
