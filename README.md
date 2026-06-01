@@ -181,7 +181,7 @@ agents (`--power-model`, `--power-memory`), and control output
 
 | Flag | Default | What it does |
 |---|---|---|
-| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the canonical game's workhorse; `claude-opus-4-7` is stronger and more expensive. **Haiku (`claude-haiku-4-5-20251001`) is recommended only for low-cost smoke tests, not for playable games**: it does not reliably reason about support adjacency, defaults to mutual passivity (60-85% hold rates), and shows a large strategy-to-orders gap. See REFERENCE.md "Haiku capability floor under hardened prompts" for the empirical writeup. |
+| `--model MODEL` | `claude-sonnet-4-6` | Anthropic model id used as the default for every power. Sonnet is the canonical game's workhorse; `claude-opus-4-7` is stronger and more expensive. **Haiku (`claude-haiku-4-5-20251001`) is recommended only for low-cost smoke tests, not for playable games**: it doesn't understand board geography sufficiently, makes strategy errors, and tends to default to mutual passivity. See REFERENCE.md "Haiku capability floor under hardened prompts" for the empirical writeup. |
 | `--years N` | `10` | Game-years to play unless one nation captures 18 supply centers (SCs). |
 | `--rounds N` | `3` | Negotiation rounds before each movement phase. `0` skips negotiation entirely. |
 | `--power-model POWER=MODEL` *(repeatable)* | – | Give one power a different model than the default, so `--power-model TURKEY=claude-opus-4-7` means that Turkey's agent is Opus powered while all others use Sonnet. |
