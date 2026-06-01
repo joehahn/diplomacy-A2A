@@ -44,6 +44,30 @@ ol.phases { line-height: 1.8; }
 .bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
                margin-left: 6px; font-weight: 700; }
 .bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
 .kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
            margin: 10px 0; }
 .kpi-svg { flex: 0 1 420px; width: 100%; max-width: 460px; height: auto;
@@ -108,7 +132,22 @@ ol.phases { line-height: 1.8; }
 <nav><a href='W1909A.html'>← back to WINTER 1909 ADJUSTMENTS (W1909A)</a><a href='index.html'>index</a></nav>
 <h2>Negotiation before SPRING 1910 MOVEMENT</h2>
 <div class='legend'><span class='chip' style='background:#c0392b'>AUSTRIA</span> <span class='chip' style='background:#2c5fa8'>ENGLAND</span> <span class='chip' style='background:#1f8aa8'>FRANCE</span> <span class='chip' style='background:#555555'>GERMANY</span> <span class='chip' style='background:#2e8b57'>ITALY</span> <span class='chip' style='background:#7d3c98'>RUSSIA</span> <span class='chip' style='background:#cc8a00'>TURKEY</span></div>
-<div class='thread'>
+<div class='pair-filter'>
+<h3>Filter to one pair</h3>
+<p class='hint'>Click any cell to show only that pair's conversation. The diagonal cells are each power's own row/column label.</p>
+<table class='pair-grid'>
+<thead><tr><th></th><th>AUS</th><th>ENG</th><th>FRA</th><th>GER</th><th>ITA</th><th>RUS</th><th>TUR</th></tr></thead><tbody>
+<tr><th>AUS</th><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td></tr>
+<tr><th>ENG</th><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td><a href='#pair-ENGLAND-ITALY'>·</a></td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>FRA</th><td class='diag'>—</td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td class='diag'>—</td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td><a href='#pair-FRANCE-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>GER</th><td class='diag'>—</td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td class='diag'>—</td><td><a href='#pair-GERMANY-ITALY'>·</a></td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>ITA</th><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td><a href='#pair-ENGLAND-ITALY'>·</a></td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td><a href='#pair-GERMANY-ITALY'>·</a></td><td class='diag'>—</td><td><a href='#pair-ITALY-RUSSIA'>·</a></td><td><a href='#pair-ITALY-TURKEY'>·</a></td></tr>
+<tr><th>RUS</th><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td><a href='#pair-FRANCE-RUSSIA'>·</a></td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td><a href='#pair-ITALY-RUSSIA'>·</a></td><td class='diag'>—</td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td></tr>
+<tr><th>TUR</th><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ITALY-TURKEY'>·</a></td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td><td class='diag'>—</td></tr>
+</tbody></table>
+<a class='clear' href='#'>Show all pairs</a>
+</div>
+<div class='thread' id='pair-AUSTRIA-TURKEY'>
 <div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Turkey, A SER → BUD is still strength 1 versus strength 1 — it bounces, same as every phase. England sits at 8 centers and France at 8; they are winning this game while you waste moves on guaranteed bounces against me. Consider redirecting A SER toward BUL or against Russia instead.</div></div>
@@ -118,7 +157,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R3</span></div><div class='btext'>A SER → BUD remains strength 1 versus strength 1 — it bounces, as it has every phase. I'm holding both centers this spring; redirect A SER against Russia or BUL where you can actually gain ground.</div></div>
 <div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>Austria, Italy is moving A VIE → BUD and Russia is taking RUM — you lose both centers regardless of what I do. I'm holding A SER defensively this turn as a gesture of good faith; consider whether any cooperation with me going forward serves your interests better than continued resistance.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ITALY-TURKEY'>
 <div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Spring 1910: Austria is gone and we've both grown to 5 centers — now we need to avoid stepping on each other in the Balkans. I'm keeping A VIE defensive this turn and would prefer we establish a clear line: I hold VIE/TRI and you hold BUD/SER. Can we agree on that boundary and coordinate against England's 8-center dominance instead?</div></div>
@@ -128,7 +167,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble empty'></div>
 <div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R3</span></div><div class='btext'>Final round: I accept the split — you take BUD with A VIE, I will move A SER → RUM with F BLA support (strength 2) to contest RUM alongside Russia. Actually, let's coordinate: you take BUD, Russia takes RUM, and I hold A SER in SER as our new border. F GRE supporting A VIE → BUD guarantees BUD falls — please execute A VIE → BUD with F GRE support and we eliminate Austria cleanly this turn.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-RUSSIA-TURKEY'>
 <div class='thread-head'><span style='color:#7d3c98'>RUSSIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Spring 1910: Austria is at A BUD and A RUM — you took BUD last fall so Austria's A BUD may not be able to support RUM this spring. I'm attacking RUM with A SEV→RUM + A MOS support (strength 2). Please push A SER→BUD or A CON→BUD to keep Austria's A BUD occupied and unable to support RUM — if A BUD cannot support, RUM falls to me guaranteed. After Austria is gone we must immediately coordinate against England at 8 centers with 7 fleets.</div></div>
@@ -138,7 +177,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble empty'></div>
 <div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>Critical update: I'm redirecting — Italy is taking BUD with A VIE, so please execute A SEV → RUM + A MOS support (strength 2) and I will hold A SER to secure the border. Austria is finally eliminated this turn with Italy taking BUD and you taking RUM. After this we coordinate against England's 8-center fleet dominance immediately.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-AUSTRIA-RUSSIA'>
 <div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Russia, your A SEV → RUM hits strength 1 versus my supported defense — it bounces again. England and France are both at 8 centers and pulling away; every phase you spend attacking me is a phase you're not growing against the actual board leaders. Hold A SEV and let's both survive.</div></div>
@@ -148,7 +187,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>A SEV → RUM is strength 1 versus my supported defense — it bounces again. England and France are both at 8 centers and winning; every phase you attack me is a phase wasted while they approach 18.</div></div>
 <div class='bubble empty'></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ENGLAND-FRANCE'>
 <div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R1</span></div><div class='btext'>France — you took BEL last fall after explicitly promising to hold A BUR defensively; that's a direct betrayal of our arrangement and I'm responding accordingly. I'm pressing hard this spring and you should expect significant pressure from the north — withdrawing from BEL now is your only path to avoiding a prolonged war that drains us both while Italy and Turkey grow unchecked.</div></div>
@@ -156,7 +195,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R2</span></div><div class='btext'>France — you're at 8 centers and so am I; if you take MUN you pull ahead and I cannot allow that. I'm not in a position to stop you militarily this spring from the north, but Italy is pressing A VIE → TYR which cuts your support and bounces you off MUN — so the move likely fails anyway. Let's talk seriously about a genuine boundary rather than racing each other into the ground.</div></div>
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Spring 1910 — BEL was a growth move I needed to survive competitively; you're at 10 and I'm at 8, the gap was becoming decisive. I'm pressing A TYR → MUN this spring to reach 9, not threatening your holdings — confirm you're not moving into MUN simultaneously and we avoid a pointless bounce. A France at 9 is healthier for the board than you running to 11+ while Italy and Turkey grow unchecked behind us.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ENGLAND-GERMANY'>
 <div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R1</span></div><div class='btext'>Germany — France betrayed me by taking BEL and we're now both at 8 centers; this is the moment for you to coordinate with me against France rather than be absorbed by them. If you move A MUN toward France's holdings and I press from the north, we can both grow at France's expense — what are your intentions this spring?</div></div>
@@ -164,7 +203,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Germany — France is pressing A TYR → MUN this spring; hold A MUN and I'll support you from F BAL if there's any way to do so. A Germany holding MUN is worth more to me than a France with 9 centers — stay firm and I'll work to keep you alive as a buffer.</div></div>
 <div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>France just told me A TYR is moving to MUN this spring — this is exactly the coordination moment you described. If you support pressure on France's position from the north while I hold MUN, we both benefit; I'm willing to move A BER toward KIE or SIL to cut into France's flank if you can give me cover. Tell me concretely what you need from my two units.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ENGLAND-RUSSIA'>
 <div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Russia — France betrayed me last fall and we're now tied at 8 centers each; I need the northern boundary to hold firmly so I can focus my pressure south against France. Please confirm F STP/SC stays defensive and away from SWE/NWY this spring.</div></div>
@@ -172,7 +211,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Russia — I hear your concern about my center count, but France is my equal at 8 centers and pressing to grow; I'm not running away with the board. The northern boundary holds from my side — F STP/SC stays yours, SWE stays mine, and we both focus on France's expansion before they outpace everyone.</div></div>
 <div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>England at 8 centers with 7 fleets is the board's dominant threat — France is also at 8 and both of you are racing toward 18 while the rest of us are far behind. I'm finishing Austria this spring and then I need to make a serious decision about northern positioning; let's talk genuinely about how this game ends.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-FRANCE-ITALY'>
 <div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R1</span></div><div class='btext'>Spring 1910 — England sits at 10 centers with 7 fleets and is on a solo win trajectory; I'm at 8 and you're at 5. I'm growing toward MUN this spring but the real problem is England pulling away from everyone. Are you in a position to threaten any of England's holdings or coordinate with me on containment?</div></div>
@@ -180,7 +219,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R2</span></div><div class='btext'>Spring 1910 — A TYR is moving to MUN this spring, not VIE or TRI; I have no interest in your Austrian gains. England at 10 centers with 7 fleets is the existential threat to both of us — after I take MUN I want to seriously coordinate with you on containing England's northern expansion before they hit 18.</div></div>
 <div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R2</span></div><div class='btext'>Spring 1910 round 2: I need A TYR to stay away from VIE this turn — I'm moving A VIE forward to take BUD from Austria and cannot leave VIE defended if your army is adjacent. Confirm A TYR holds or moves away from VIE and I'll keep my forces focused on Austria rather than looking west.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-FRANCE-RUSSIA'>
 <div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Spring 1910 — England is at 10 centers and accelerating; if we don't coordinate containment now the game ends in their solo win. I'm pressing MUN to reach 9, but I need you to threaten England's northern holdings — SWE, NWY, or DEN — to force them to defend rather than expand. What are your spring intentions?</div></div>
@@ -188,7 +227,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Spring 1910 — England is at 10 centers and you told me they have 8 centers and 7 fleets; that's a solo win trajectory if we don't act now. I'm pressing MUN to reach 9, but I need you to move on SWE or NWY this spring to force England to defend north rather than expand further — are you committed to that pressure?</div></div>
 <div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → FRANCE<span class='rnd'>R2</span></div><div class='btext'>Round 2: Turkey is hitting BUD at strength 3 this spring and I'm taking RUM — Austria is eliminated this turn. After that I'm repositioning north. England at 8 centers with 7 fleets is the clearest solo threat; I'm open to coordinating pressure on their northern position if you're pressing from the west simultaneously.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-AUSTRIA-ITALY'>
 <div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R1</span></div><div class='btext'>Italy, you hold VIE and TRI — France has A TYR right next to both of you and 8 centers. France is your real threat, not me with 2 units. A ceasefire between us while you address France is rational; I'm not in a position to threaten you anyway.</div></div>
@@ -198,7 +237,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R3</span></div><div class='btext'>France holds A TYR adjacent to both your TRI and VIE with 8 centers — that's your existential threat, not my 2-unit rump state. I'm holding defensively and pose zero threat to you this spring.</div></div>
 <div class='bubble empty'></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ENGLAND-ITALY'>
 <div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → ITALY<span class='rnd'>R1</span></div><div class='btext'>Italy — France sits at 8 centers and just stabbed me by taking BEL; they have A TYR positioned near you and fleets dominating the Med. This is the moment to press France's southern flank hard — if we coordinate now before France consolidates further, we can both grow at their expense.</div></div>
@@ -206,7 +245,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → ITALY<span class='rnd'>R2</span></div><div class='btext'>Italy — France is pressing A TYR → MUN this spring to reach 9 centers and pull ahead of both of us; if you move A VIE → TYR you cut that attack and France bounces off MUN. This is the moment — block France's growth and I'll coordinate with you on their southern flank afterward.</div></div>
 <div class='bubble empty'></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-GERMANY-RUSSIA'>
 <div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Spring 1910 — you mentioned coordinating against England after Austria; I'm ready now. If A WAR → SIL this spring, I can press A BER → KIE or support your move into English territory — England has 8 centers and needs to be slowed. Tell me what you need.</div></div>
@@ -214,13 +253,13 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>France is pressing A TYR → MUN this spring and has 8 centers — they're the biggest threat to everyone right now. If A WAR → SIL this spring I can coordinate A BER to support or move in tandem; England is also moving against France so this is the moment to slow them down.</div></div>
 <div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Round 2: Austria falls this spring — I'm taking RUM, Turkey takes BUD. After that I want to press England's northern flank. A WAR→SIL is on my radar for next fall; confirm what you can do from MUN/BER to support pressure on England's position.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-FRANCE-GERMANY'>
 <div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R1</span></div><div class='btext'>Spring 1910 — A TYR is moving to MUN this spring and it will succeed; I have the numbers. If you want to negotiate any arrangement for your BER unit's survival, I'm open to that conversation, but MUN is mine this move.</div></div>
 <div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Spring 1910 — I'm holding defensively; MUN and BER are mine and I'm not pressing you. I helped you last fall with A MUN S A BUR → RUH — I'm asking you to leave A TYR out of MUN this spring and we continue our non-aggression arrangement.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ITALY-RUSSIA'>
 <div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Spring 1910: Austria is eliminated and Turkey now holds BUD and SER — they're at 5 centers and growing into the Balkans. I'm trying to hold the line at VIE/TRI; if you're pressing toward GAL or RUM, we could coordinate to limit Turkey's expansion together.</div></div>
@@ -228,7 +267,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Spring 1910: Turkey and I are splitting Austria's last two centers — I'm taking BUD with A VIE, Turkey takes RUM. If you can push toward RUM simultaneously that creates pressure Austria can't handle. After Austria is gone, Turkey at 6 centers in the Balkans becomes our shared problem.</div></div>
 <div class='bubble empty'></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-GERMANY-ITALY'>
 <div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ITALY<span class='rnd'>R2</span></div><div class='btext'>France has A TYR and is moving it to MUN this spring — that threatens both of us since France at 8 centers pushing into central Europe is dangerous for Italy too. If you support A MUN from VIE or hold A TYR in place to block, we both gain; I can support your moves in return.</div></div>

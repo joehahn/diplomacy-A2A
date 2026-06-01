@@ -546,6 +546,30 @@ ol.phases { line-height: 1.8; }
 .bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
                margin-left: 6px; font-weight: 700; }
 .bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
 .kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
            margin: 10px 0; }
 .kpi-svg { flex: 0 1 420px; width: 100%; max-width: 460px; height: auto;
@@ -849,6 +873,38 @@ def _dialogue_threads(label: str, msgs: list[tuple[int, str, str, str]]) -> list
     )
     out = [f"<h2>Negotiation before {label}</h2>", f"<div class='legend'>{legend}</div>"]
 
+    # 7x7 pair-filter grid. Each cell links to the corresponding pair's
+    # thread anchor; the CSS :has() rule collapses the page to that one
+    # thread when targeted. "Show all" clears the fragment.
+    pair_keys = {tuple(sorted(k)) for k in threads}
+    out.append("<div class='pair-filter'>")
+    out.append("<h3>Filter to one pair</h3>")
+    out.append(
+        "<p class='hint'>Click any cell to show only that pair's "
+        "conversation. The diagonal cells are each power's own row/column "
+        "label.</p>"
+    )
+    abbrev = {p: p[:3] for p in present}
+    out.append("<table class='pair-grid'>")
+    out.append("<thead><tr><th></th>" +
+               "".join(f"<th>{abbrev[p]}</th>" for p in present) +
+               "</tr></thead><tbody>")
+    for row in present:
+        cells = [f"<th>{abbrev[row]}</th>"]
+        for col in present:
+            if row == col:
+                cells.append("<td class='diag'>—</td>")
+            else:
+                key = tuple(sorted((row, col)))
+                if key in pair_keys:
+                    cells.append(f"<td><a href='#pair-{key[0]}-{key[1]}'>·</a></td>")
+                else:
+                    cells.append("<td class='diag'>—</td>")
+        out.append("<tr>" + "".join(cells) + "</tr>")
+    out.append("</tbody></table>")
+    out.append("<a class='clear' href='#'>Show all pairs</a>")
+    out.append("</div>")
+
     # Most active threads first (by total message count).
     def _count(rounds: dict) -> int:
         return sum(len(by_sender) for by_sender in rounds.values())
@@ -856,7 +912,7 @@ def _dialogue_threads(label: str, msgs: list[tuple[int, str, str, str]]) -> list
     for key in sorted(threads, key=lambda k: (-_count(threads[k]), k)):
         left, right = key
         cl, cr = POWER_COLORS.get(left, "#777"), POWER_COLORS.get(right, "#777")
-        out.append("<div class='thread'>")
+        out.append(f"<div class='thread' id='pair-{left}-{right}'>")
         out.append(
             f"<div class='thread-head'><span style='color:{cl}'>{left}</span>"
             f"<span class='arr'> ⇄ </span>"

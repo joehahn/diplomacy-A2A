@@ -44,6 +44,30 @@ ol.phases { line-height: 1.8; }
 .bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
                margin-left: 6px; font-weight: 700; }
 .bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
 .kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
            margin: 10px 0; }
 .kpi-svg { flex: 0 1 420px; width: 100%; max-width: 460px; height: auto;
@@ -108,7 +132,22 @@ ol.phases { line-height: 1.8; }
 <nav><a href='start.html'>← back to Initial position</a><a href='index.html'>index</a></nav>
 <h2>Negotiation before SPRING 1901 MOVEMENT</h2>
 <div class='legend'><span class='chip' style='background:#c0392b'>AUSTRIA</span> <span class='chip' style='background:#2c5fa8'>ENGLAND</span> <span class='chip' style='background:#1f8aa8'>FRANCE</span> <span class='chip' style='background:#555555'>GERMANY</span> <span class='chip' style='background:#2e8b57'>ITALY</span> <span class='chip' style='background:#7d3c98'>RUSSIA</span> <span class='chip' style='background:#cc8a00'>TURKEY</span></div>
-<div class='thread'>
+<div class='pair-filter'>
+<h3>Filter to one pair</h3>
+<p class='hint'>Click any cell to show only that pair's conversation. The diagonal cells are each power's own row/column label.</p>
+<table class='pair-grid'>
+<thead><tr><th></th><th>AUS</th><th>ENG</th><th>FRA</th><th>GER</th><th>ITA</th><th>RUS</th><th>TUR</th></tr></thead><tbody>
+<tr><th>AUS</th><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-AUSTRIA-GERMANY'>·</a></td><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td></tr>
+<tr><th>ENG</th><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td class='diag'>—</td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>FRA</th><td class='diag'>—</td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td class='diag'>—</td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td></tr>
+<tr><th>GER</th><td><a href='#pair-AUSTRIA-GERMANY'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td class='diag'>—</td><td><a href='#pair-GERMANY-ITALY'>·</a></td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>ITA</th><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td class='diag'>—</td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td><a href='#pair-GERMANY-ITALY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ITALY-TURKEY'>·</a></td></tr>
+<tr><th>RUS</th><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td class='diag'>—</td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td></tr>
+<tr><th>TUR</th><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ITALY-TURKEY'>·</a></td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td><td class='diag'>—</td></tr>
+</tbody></table>
+<a class='clear' href='#'>Show all pairs</a>
+</div>
+<div class='thread' id='pair-AUSTRIA-TURKEY'>
 <div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Austria and Turkey have historically clashed, but I think we can do better. I'm focused on Serbia and the western Balkans; if you're heading for Bulgaria and the Black Sea area, we need not fight. Let's talk about how to divide the Balkans without unnecessary conflict.</div></div>
@@ -118,7 +157,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble empty'></div>
 <div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>We're aligned — I'll take BUL, you take SER. Let's both execute cleanly this spring and then discuss Fall coordination, particularly around RUM and GRE. A strong Austro-Turkish axis can keep Russia in check.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-RUSSIA-TURKEY'>
 <div class='thread-head'><span style='color:#7d3c98'>RUSSIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>I'd like a peaceful opening between us. My Sevastopol fleet is heading for Rumania, not the Black Sea, so there's no reason for conflict. Let's both grow quietly in 1901 and figure out longer-term arrangements once we see how the board develops.</div></div>
@@ -128,7 +167,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble empty'></div>
 <div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>Thanks for the open communication — I'm moving into Bulgaria this spring and pushing into the Black Sea area. As long as SEV heads to RUM as you said, we have no conflict. Looking forward to coordinating after Spring resolves.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-AUSTRIA-ITALY'>
 <div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R1</span></div><div class='btext'>I propose a clear early boundary: I have no designs on Venice or any Italian home center, and I ask the same respect for Trieste. I'm moving into the Balkans this year — Serbia is my immediate target. If we can agree on non-aggression, we can both expand peacefully without watching our backs.</div></div>
@@ -136,7 +175,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R2</span></div><div class='btext'>Glad we're aligned. I'll stay out of Venice and Tyrolia; please keep clear of Trieste and Albania. If we're both eyeing Greece eventually, let's discuss timing after Spring moves resolve.</div></div>
 <div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>Good, we're aligned — I won't touch Trieste this year and I'm moving my fleet south toward Tunis. I'm sending A VEN to Tyrolia to keep options open against Germany, not Austria. Hope we can build on this understanding.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-AUSTRIA-RUSSIA'>
 <div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I'd like to coordinate on the Balkans. My plan is to take Serbia this year; I'd expect you to take Rumania from Sevastopol, which leaves us both expanding without conflict. I have no interest in Galicia if you're not pushing south — can we agree to respect each other's spheres this year?</div></div>
@@ -144,7 +183,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Thanks for the confirmation — I'll respect your space in Galicia if you're heading for Rumania. Let's both focus on our natural expansion zones and check in after Spring to coordinate for Fall.</div></div>
 <div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>Good — we're aligned. I'll take Rumania with Sevastopol, you take Serbia. I'm keeping Warsaw defensive or moving it somewhere that doesn't threaten Galicia. Looking forward to a productive 1901 for both of us.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ENGLAND-FRANCE'>
 <div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Happy to open 1901 cooperatively — I'm planning to stay out of ENG if you stay out of NTH. Let's avoid a Channel standoff and both pick up easy centers. What are your opening intentions?</div></div>
@@ -152,7 +191,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R2</span></div><div class='btext'>Thanks for the clarity — that works well for me. I'll stay out of Picardy and Burgundy. I'm planning to move into the Channel this spring just to keep flexibility for Belgium, but I have no hostile intent toward France. Let's keep this cooperative.</div></div>
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Sounds like we're aligned — I'll stay out of the Channel and focus on Iberia and Burgundy. Belgium is yours if you want it; I have no interest in the Low Countries this year. Let's keep this cooperative spirit going.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ENGLAND-GERMANY'>
 <div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R1</span></div><div class='btext'>I'd like to coordinate in the north — I'm moving F EDI to NTH to grab Norway. If you're heading to Denmark, we can split Scandinavia cleanly and avoid stepping on each other. Are you planning to contest NTH or DEN?</div></div>
@@ -160,7 +199,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Good to hear — sounds like we're aligned. I'll take NTH and push for Norway, you take DEN and HOL. No friction between us. Let's both do well in 1901 and talk about next steps after the fall.</div></div>
 <div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Good — sounds like we're aligned. I'll take Denmark with F KIE - DEN and push toward Holland. Let's keep the north clean and profitable for both of us this year.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-FRANCE-GERMANY'>
 <div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R1</span></div><div class='btext'>I'd like to propose a cordial split: I take Spain and Portugal, you take Holland and Denmark. If we both push into Burgundy we'll just bounce each other — I suggest I take BUR this spring while you focus north, and we both gain more ground that way.</div></div>
@@ -168,7 +207,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R2</span></div><div class='btext'>That works perfectly — I'll take BUR uncontested and you take RUH, Holland, and Denmark. We both gain without bouncing each other. Looking forward to a productive 1901.</div></div>
 <div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R2</span></div><div class='btext'>I hear you, but I can't leave Burgundy open — if you move there uncontested it's a direct threat to Munich. I'm going to order MUN toward Burgundy to ensure a bounce. If you do the same, we both stay safe; if you don't, I take it. Your call, but I'd rather we bounce and build trust.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ITALY-TURKEY'>
 <div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Italy and Turkey have natural room to coexist — I'm heading for Tunis and you for Bulgaria/Romania. No conflict needed between us early on. Want to discuss longer-term coordination against Austria in the Balkans?</div></div>
@@ -178,7 +217,7 @@ ol.phases { line-height: 1.8; }
 <div class='bubble empty'></div>
 <div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R3</span></div><div class='btext'>Confirming our understanding — I'm focused on BUL and the Black Sea, you're heading for Tunis. No overlap between us. Let's compare notes after Spring to see how we can support each other's positions going forward.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-ENGLAND-RUSSIA'>
 <div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I'm planning to take Norway via NTH this spring — I'd appreciate if you could leave NWY open for me and we can avoid any friction in Scandinavia. In return, I'm happy to stay out of your Baltic interests.</div></div>
@@ -186,13 +225,13 @@ ol.phases { line-height: 1.8; }
 <div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Sounds like a clean split — you take Sweden, I take Norway, and we avoid any Scandinavian collision. I appreciate the transparency and I'll honor it in return.</div></div>
 <div class='bubble empty'></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-FRANCE-ITALY'>
 <div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
 <div class='rgrid'>
 <div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R1</span></div><div class='btext'>Friendly greetings from France. I have no designs on Piedmont or the Italian peninsula — my focus is entirely on Iberia and the western Med. Let's stay out of each other's way and both grow comfortably.</div></div>
 <div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>I'll stay out of Piedmont and the western Med if you stay out of the Italian peninsula. We can each grow in our own directions in 1901 without stepping on each other's toes.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-GERMANY-RUSSIA'>
 <div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
 <div class='rgrid'>
 <div class='bubble empty'></div>
@@ -200,13 +239,13 @@ ol.phases { line-height: 1.8; }
 <div class='bubble empty'></div>
 <div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Confirming my northern plan: STP fleet goes to the Gulf of Bothnia this spring, aiming for Sweden in Fall. I have no interest in Denmark or Holland — those are yours if you want them. Should be clean sailing for both of us.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-AUSTRIA-GERMANY'>
 <div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
 <div class='rgrid'>
 <div class='bubble empty'></div>
 <div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Hello from Berlin — I want to keep our relationship friendly from the start. I'm focused entirely on the north this year, no interest in your sphere. Happy to coordinate if there's ever a common concern.</div></div>
 </div></div>
-<div class='thread'>
+<div class='thread' id='pair-GERMANY-ITALY'>
 <div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
 <div class='rgrid'>
 <div class='bubble empty'></div>
