@@ -572,7 +572,7 @@ body:has(.thread:target) .thread { display: none; }
 body:has(.thread:target) .thread:target { display: block; }
 .kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
            margin: 10px 0; }
-.kpi-svg { flex: 0 1 420px; width: 100%; max-width: 460px; height: auto;
+.kpi-svg { flex: 0 1 840px; width: 100%; max-width: 900px; height: auto;
            background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
 .kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
 .kpi-axis { stroke: #bbb; stroke-width: 0.6; }
@@ -780,9 +780,9 @@ def _kpi_charts_for_phase(
     centers_by_phase: dict[str, dict[str, int]],
     up_to: str,
 ) -> str:
-    """Build the two KPI charts (SC count and SoS share) + a single shared
-    legend for a movement-phase slide, showing the running history up to and
-    including `up_to`. Returns empty string if there aren't enough points.
+    """Build the SC-count KPI chart + a shared legend for a movement-phase
+    slide, showing the running history up to and including `up_to`. Returns
+    empty string if there aren't enough points.
     """
     if up_to not in phase_order:
         return ""
@@ -792,28 +792,20 @@ def _kpi_charts_for_phase(
         return ""
     powers = sorted({pw for ph in phases for pw in centers_by_phase[ph].keys()})
     sc_series: dict[str, list[float]] = {p: [] for p in powers}
-    sos_series: dict[str, list[float]] = {p: [] for p in powers}
     for ph in phases:
         c = centers_by_phase[ph]
-        total_sq = sum(v * v for v in c.values()) or 1
         for p in powers:
-            v = c.get(p, 0)
-            sc_series[p].append(v)
-            sos_series[p].append((v * v) / total_sq)
-    # Dynamic y-axis bounds — just above the max observed value, with floors
+            sc_series[p].append(c.get(p, 0))
+    # Dynamic y-axis bound — just above the max observed value, with a floor
     # so the chart doesn't look cramped at the very start of a game.
     sc_max_obs = max(max(pts) for pts in sc_series.values())
     sc_ymax = max(sc_max_obs + 1, 5)
-    sos_max_obs = max(max(pts) for pts in sos_series.values())
-    sos_ymax = max(round(sos_max_obs * 1.15, 2), 0.25)
     sc_chart = _kpi_chart(
         "Supply centers", sc_series, ymax=sc_ymax, ylabel="SC", x_labels=phases,
-    )
-    sos_chart = _kpi_chart(
-        "SoS share", sos_series, ymax=sos_ymax, ylabel="share", x_labels=phases,
+        width=840, height=360,
     )
     legend = _kpi_legend(powers)
-    return f"<div class='kpi-row'>{sc_chart}{sos_chart}{legend}</div>"
+    return f"<div class='kpi-row'>{sc_chart}{legend}</div>"
 
 
 # Coloring in the "What happened" narration:
@@ -1075,6 +1067,21 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         elapsed = run_ended.get("elapsed_seconds", 0)
         settings_rows.append(("Wall time", f"{elapsed/60:.1f} min ({elapsed:.0f} s)"))
         settings_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
+        # Illegal-orders rate across all movement-phase orders the agents
+        # submitted. An illegal order is one the adjudicator rejected as
+        # malformed or geometrically impossible (e.g., supporting an attack
+        # into a non-adjacent province). Filtered out before resolution.
+        total_orders = illegal_orders = 0
+        for e in events:
+            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
+                total_orders += len(e.get("valid", [])) + len(e.get("invalid", []))
+                illegal_orders += len(e.get("invalid", []))
+        if total_orders > 0:
+            pct = 100 * illegal_orders / total_orders
+            settings_rows.append((
+                "Illegal orders",
+                f"{illegal_orders} of {total_orders} ({pct:.1f}%)",
+            ))
         # Final standings ordered by SC count
         final_centers = run_ended.get("final_state", {}).get("centers", {})
         if final_centers:
