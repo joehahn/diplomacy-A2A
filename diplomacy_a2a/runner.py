@@ -245,8 +245,7 @@ def run_game(
                             power=power, prompt=res.prompt,
                         )
                     if verbose:
-                        preview = res.text if len(res.text) < 110 else res.text[:107] + "..."
-                        print(f"    {power}: {preview}")
+                        print(f"    {power}: {res.text}")
 
             # ----- Negotiation rounds (movement phases only) -----
             phase_dialogue: list[DialogueMessage] = []
@@ -289,8 +288,7 @@ def run_game(
                     phase_dialogue.extend(new_msgs)
                     if verbose:
                         for m in new_msgs:
-                            preview = m.text if len(m.text) < 80 else m.text[:77] + "..."
-                            print(f"    {m.sender} → {m.recipient}: {preview}")
+                            print(f"    {m.sender} → {m.recipient}: {m.text}")
 
             # ----- Revised strategy notes (after negotiation, before orders) -----
             if is_movement and enable_strategy:
@@ -321,8 +319,7 @@ def run_game(
                             power=power, prompt=res.prompt,
                         )
                     if verbose:
-                        preview = res.text if len(res.text) < 110 else res.text[:107] + "..."
-                        print(f"    {power}: {preview}")
+                        print(f"    {power}: {res.text}")
 
             # ----- Order phase -----
             for power in powers_acting:
