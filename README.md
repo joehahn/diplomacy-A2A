@@ -43,7 +43,7 @@ well-prompted frontier LLM, and with all players represented by AI agents.
 
 ## Visual dive into a representative game
 
-You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260531T202425Z/dashboard/index.html)**,
+You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/20260601T214429Z/dashboard/index.html)**,
 which uses Sonnet to power seven AI agents across 10 game-years. A game
 year has five phases (Spring Movement & Retreats, Fall Movement &
 Retreats, Winter Adjustments), so the canonical contains 20 movement
@@ -156,13 +156,13 @@ python -m diplomacy_a2a run --power-model TURKEY=claude-opus-4-7
 python -m diplomacy_a2a run --power-memory TURKEY=5
 
 # Render a finished game, this step does not use any LLM
-python -m diplomacy_a2a render results/20260531T202425Z/
+python -m diplomacy_a2a render results/20260601T214429Z/
 
 # Add or refresh LLM commentary on a finished run, then render
-python -m diplomacy_a2a render results/20260531T202425Z/ --with-commentary
+python -m diplomacy_a2a render results/20260601T214429Z/ --with-commentary
 
 # Generate commentary only, no render (useful in scripts)
-python -m diplomacy_a2a commentary results/20260531T202425Z/
+python -m diplomacy_a2a commentary results/20260601T214429Z/
 
 python -m diplomacy_a2a --help                # subcommand list
 python -m diplomacy_a2a run --help            # game-execution options

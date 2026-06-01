@@ -54,8 +54,9 @@ row above).
 | 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, strategy log, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
 | 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no strategy log | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
 | 20260529T225943Z *(previous canonical, 5-yr)* | Sonnet | 3 rounds, 5 yr, strategy on, `--log-prompts`, per-power placeholder personas | 18 | 4479s | **≈249** | **$11.98** + $0.50 commentary |
-| 20260531T202425Z **(canonical, 10-yr, serial)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, uniform baseline persona, post-SC-importance rules | 36 | 9434s | **≈262** | **$24.69** + commentary |
-| *(deleted; parallel-fan-out measurement)* | Haiku | 3 rounds, 5 yr, strategy on, `--with-commentary`, uniform baseline | 17 | 588s | **≈35** | **$3.43** (Haiku rates) |
+| *(deleted; previous 10-yr canonical, serial)* | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, uniform baseline persona | 36 | 9434s | **≈262** | **$24.69** + commentary |
+| *(deleted; parallel-fan-out Haiku measurement)* | Haiku | 3 rounds, 5 yr, strategy on, `--with-commentary`, uniform baseline | 17 | 588s | **≈35** | **$3.43** (Haiku rates) |
+| 20260601T214429Z **(canonical, 10-yr, parallel)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, `--with-commentary`, uniform baseline persona, all 2026-06-01 prompt improvements | 33 | 1873s | **≈57** | **$24.03** + commentary |
 
 **Headline (serial regime):** Haiku is ≈3-4× faster than Sonnet *per
 phase on simple workloads* (1 round, no strategy log). On the
@@ -65,13 +66,13 @@ call count dominates: Haiku doesn't make fewer calls than Sonnet, and
 the strategy + 3-round combo is call-heavy. Cost is still ≈1/3
 across the board.
 
-**Parallel fan-out effect:** the last row above shows ≈35 s/phase on
-Haiku canonical workload, vs ≈145 s/phase on the same model under the
-serial plain-vanilla baseline. That is a 4.2× per-phase speedup on
-Haiku. Extrapolating to the Sonnet canonical workload (was ≈262
-s/phase serial) predicts ≈60-70 s/phase parallel, i.e. ≈35-45 min
-wall-time for the 36-phase 10-year canonical. Sonnet has not yet
-been re-measured under the parallel path.
+**Parallel fan-out effect:** the deleted Haiku measurement row shows
+≈35 s/phase on Haiku canonical workload, vs ≈145 s/phase on the same
+model under the serial plain-vanilla baseline, a 4.2× per-phase
+speedup. The current Sonnet 10-yr canonical (`20260601T214429Z`, last
+row) lands at ≈57 s/phase parallel vs ≈262 s/phase on the previous
+serial Sonnet canonical, a 4.6× speedup, for a 31-minute wall-time
+total across 33 phases.
 
 ---
 
@@ -79,21 +80,24 @@ been re-measured under the parallel path.
 
 ### Sonnet (canonical model)
 
-Produces tight 1–2-sentence strategy notes, clearly probes in early
-negotiation rounds, closes deals in round 3, and lets dialogue visibly
-steer orders. The current canonical (`20260531T202425Z`,
-`python -m diplomacy_a2a run --log-prompts --with-commentary`) played 10
-game-years to F1910M and ended with two leaders tied at 8 SCs (England,
-France), two near-eliminated (Germany at 2, Austria at 1), and three in
-the middle (Italy, Russia, Turkey each at 5). The LLM commentary flagged
-several agents publicly debunking each other's strength claims using
-geography reasoning, e.g., *"Austria correctly identified that Turkey's
-'strength 4' attack on BUD was mathematically impossible (CON, ANK, SMY
-can't reach BUD in one move; F BLA can't support a land attack)"* — the
-adjacency-inference behavior the rules.md Geography & adjacency section
-was designed to enable. The previous 5-year Sonnet canonical
-(`20260529T225943Z`, kept for behavioral comparison) is described in
-"Old vs new canonical: behavioral comparison at year 5" above.
+Produces tight 1-2 sentence strategy notes, opens negotiations with
+concrete bilateral proposals, closes deals across rounds, and lets
+dialogue visibly drive orders. The current canonical
+(`20260601T214429Z`,
+`python -m diplomacy_a2a run --log-prompts --with-commentary`) played
+10 game-years to S1911M and ended with Germany dominant at 8 SCs,
+three powers tied at 6 (France, Italy, Russia), Austria at 5, England
+stuck at 3 throughout, and Turkey eliminated at F1906M.
+Conditional-trade language (`"if you / if I / in exchange / in
+return"`) appears in **51.7%** of all messages, anti-leader containment
+talk is matched by **26 actual moves into the dominant power's
+supply centers** across the game, and revised-strategy commitments
+align with actual orders to a degree never observed in Haiku runs.
+F1901M France-to-Germany opens with *"Would you support A BUR into BEL
+from RUH? In return, I'll support you into Denmark or stay clear of
+your northern moves"*, and the deal locks in at round 2 with both
+sides committing to specific supports. This is the kind of A2A
+behavior the goal-2 deliverable wants the demo to make visible.
 
 ### Haiku (cheaper, fallback for experiments)
 
@@ -226,10 +230,12 @@ rounds, and (b) testing whether the worst-case restating is specific
 to the France position under uniform persona, by varying persona or
 swapping models on France alone.
 
-**To check:** does Sonnet exhibit the same anchoring on `20260531T202425Z`
-or `20260529T225943Z`? If only Haiku does, this is an axis-A finding
-(smaller models reason about the board rather than the conversation).
-If both do, the prompt nudges above are the right primary fix.
+**Sonnet does not exhibit this anchoring** on the current canonical
+(`20260601T214429Z`): F1901M France-to-Germany opens directly with
+a concrete bilateral Belgium-support proposal, no Russia mentions,
+no globally-salient-but-locally-irrelevant content. The anchoring is
+a Haiku-specific failure mode at the boundary of the model's
+capability floor, consistent with the broader Haiku finding below.
 
 ### Haiku capability floor under hardened prompts
 
@@ -334,13 +340,33 @@ exhibits:
 3. A talk-vs-action gap that closes only because the *talk* gets
    smaller, not because *action* gets larger.
 
-The committed Sonnet 10-yr canonical (committed under
-`results/20260531T202425Z/`) shows none
-of these patterns at the same configuration: no markdown noise in
-strategy notes, no repeat support-adjacency illegal moves, hold rates
-roughly half of Haiku's, real territorial swings, and visible
-betrayals. The Haiku-versus-Sonnet behavioral gap is large enough
-that it is the dominant signal in the data, not a confound.
+The committed Sonnet 10-yr canonical (`20260601T214429Z`) shows the
+same three failure modes at significantly lower rates:
+
+- Illegal-order rate is 3.8% rather than 4.4%, and the residual is
+  still concentrated on support adjacency: France's
+  `A BUR S A BEL - HOL` repeats 8 times across phases, Italy's
+  `F EAS S F AEG - GRE` repeats 5 times, Germany's
+  `F NTH S A DEN - SWE` repeats 3 times. Support adjacency is a
+  generic reasoning failure on this task, not a Haiku-specific one.
+- Hold rate averages 53% across powers rather than 70%. Lower, but
+  still high in absolute terms (Germany 48%, England 54%, France
+  65%); Sonnet is not playing a tactically aggressive game either.
+- Strategy-to-orders gap is mostly closed (F1904M spot-check shows
+  near-perfect alignment between revised strategy commitments and
+  submitted orders), but Sonnet exhibits a different pattern: 109
+  of 132 revised strategy notes append a preemptive `ORDERS:` block
+  to the strategy prose despite the prompt explicitly forbidding it.
+  89 of those preemptive blocks match the actual orders submitted in
+  the separate call that follows; 20 mismatch. The prohibition that
+  works on Haiku does not hold on Sonnet.
+
+The behavioral gap that **does** clearly separate Sonnet from Haiku
+is on the negotiation-channel side: conditional-trade language at
+51.7% rather than 14.4%, real territorial swings, Turkey eliminated
+by F1906M, visible bilateral deals driving order coordination,
+26 actual moves into the dominant power's SCs across the game vs the
+Haiku run's 2.
 
 The right axis-A experimental design therefore is **mixed tables**
 (one Sonnet in an otherwise Haiku table, or vice versa) to measure
@@ -348,96 +374,6 @@ how much a single capable agent can change the equilibrium, rather
 than continuing to debug Haiku-homogeneous play. The "Haiku might
 be fine with better prompts" hypothesis is rejected on the evidence
 here.
-
-### Old vs new canonical: behavioral comparison at year 5
-
-Compares the first 5 years of:
-
-- **Old** (`20260529T225943Z`): 5 years, per-power placeholder personas
-  (France conservative, Germany opportunist, Austria defensive, etc.),
-  pre-SC-importance rules.md.
-- **New** (`20260531T202425Z`): 10 years, uniform `BASELINE_PERSONA`
-  across all 7 powers, rules.md with the added SC-importance paragraph
-  and Geography & adjacency section.
-
-Three variables changed at once (persona, prompt content, length), so
-this is not a controlled axis-A test; it answers "do these three
-changes together produce different play?" not "which change caused
-what?". Goal-3's axis A and axis B will isolate the variables.
-
-**Quantitative differences at end of F1905M:**
-
-| Metric | OLD | NEW |
-|---|---:|---:|
-| Phases played to Y5 | 18 | 14 |
-| Aggressive % (move + support-move / all movement orders) | 34.5% | 41.9% |
-| Bounced units | 40 | 49 |
-| Dislodged units | 7 | 4 |
-| Std dev of SC counts at F1905M | 1.07 | 0.90 |
-| Powers ≤ 2 SCs (near elimination) | 0 | 0 |
-| Powers ≥ 7 SCs (dominant) | 0 | 0 |
-
-**Per-power aggressiveness shift:**
-
-| Power | OLD | NEW | Δ |
-|---|---:|---:|---:|
-| Austria | 26.7% | 52.3% | **+25.6 pp** |
-| Italy | 41.0% | 55.3% | +14.2 pp |
-| Russia | 28.6% | 39.1% | +10.6 pp |
-| France | 40.0% | 47.5% | +7.5 pp |
-| Germany | 29.8% | 31.0% | +1.2 pp |
-| England | 34.2% | 31.8% | -2.4 pp |
-| Turkey | 47.1% | 37.1% | -9.9 pp |
-
-The biggest mover is Austria: under the old "defensive and central; hold
-the position, broker peace" placeholder persona, Austria played 26.7%
-active moves; under the uniform baseline, Austria becomes the *most*
-aggressive of all 7 powers at 52.3%. Italy and Russia shift toward
-attack-heavy play as well. Turkey moves the other way (from the old
-"patient and long-game" placeholder to slightly less aggressive baseline
-play).
-
-**Tactical sophistication signal:** Bounces increase but dislodgements
-decrease. More attacks meet equal-strength supports rather than
-dislodging undefended units. Consistent with agents coordinating
-defensive support orders better, or with offensive attacks being more
-predictable to defenders.
-
-**Opening strategy notes are remarkably similar across both runs.**
-S1901M strategy notes hit the canonical Diplomacy openings in both
-games (Austria → Balkans, England → Norway + North Sea, Germany →
-Holland + Denmark, etc.). The per-power placeholder personas in OLD
-didn't drive much opening differentiation; the uniform baseline doesn't
-lose any opening quality.
-
-**Y5 doesn't yet show divergence; Y10 does.** OLD's final F1905M
-standings: GER 6 / RUS 6 / AUS 5 / FRA 5 / ITA 5 / ENG 4 / TUR 3 (no
-eliminations, no dominant power). NEW's F1905M standings are similarly
-balanced: ENG 6 / FRA 6 / AUS 5 / GER 5 / RUS 4 / ITA 4 / TUR 4. But
-by F1910M (the new run's full length), NEW shows ENG 8 / FRA 8 / ITA 5
-/ RUS 5 / TUR 5 / GER 2 / AUS 1 — two leaders tied at 8 SCs, Austria
-effectively eliminated. **A 5-year window misses the asymmetry the
-new prompt produces; 10 years reveals it.**
-
-**LLM commentary highlights from the new run** (the commentary captures
-agents using geography reasoning to debunk each other's claims, which
-the new rules.md Geography & adjacency section was designed to enable):
-
-- F1907M: *"Austria successfully called Russia's bluff: Moscow claimed
-  'strength 2' on RUM but A MOS cannot reach RUM in one move..."*
-- F1909M: *"Austria correctly identified that Turkey's 'strength 4'
-  attack on BUD was mathematically impossible (CON, ANK, SMY can't
-  reach BUD in one move; F BLA can't support a land attack)..."*
-- F1910M: *"Russia successfully took RUM by coordinating A SEV→RUM with
-  A GAL support at strength 2, finally breaking Austria's long-held
-  defense — but only after Turkey's late pivot away from RUM
-  (redirecting to BUL instead) cleared the path; Turkey's 'generous'
-  concession of RUM was driven by Italy's pressure to vacate BUD, not
-  altruism."*
-
-These dialogue patterns are more analytically sophisticated than the
-old canonical's typical phase commentary, which tended to describe
-orders rather than analyze inter-power claims.
 
 ---
 

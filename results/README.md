@@ -58,7 +58,7 @@ adds about $0.03 per phase of Sonnet calls (e.g., ≈$1 / ≈4 min for a
 
 ## Canonical run
 
-### `20260531T202425Z/` — current canonical (10-year)
+### `20260601T214429Z/`: current canonical (10-year)
 
 ```bash
 python -m diplomacy_a2a run --log-prompts --with-commentary
@@ -67,33 +67,34 @@ python -m diplomacy_a2a run --log-prompts --with-commentary
 Sonnet 4.6, 10 game-years, 3 negotiation rounds per movement phase, agent
 memory = 3 movement turns, self-authored strategy notes on, prompt+response
 dump for the first game-year, uniform baseline persona across all 7 powers,
-plus the LLM-commentary post-pass. 36 phases, **≈$25 / ≈2.6 hr**.
+plus the LLM-commentary post-pass. 33 phases, **≈$24 / ≈31 min** (parallel
+per-power LLM fan-out).
 
-Final standings at W1910A (no solo win, played to the 10-year cap;
-Austria effectively eliminated at 1 SC):
+Final standings at S1911M (no solo win, played to the 10-year cap;
+Turkey eliminated at F1906M):
 
 | Power | SC count | Centers |
 |---|---:|---|
-| England | 8 | EDI, LON, LVP, NWY, DEN, HOL, KIE, SWE |
-| France  | 8 | BRE, MAR, PAR, POR, SPA, TUN, VEN, BEL |
-| Italy   | 5 | NAP, ROM, TRI, GRE, VIE |
-| Russia  | 5 | MOS, SEV, STP, WAR, RUM |
-| Turkey  | 5 | ANK, CON, SMY, BUL, SER |
-| Germany | 2 | BER, MUN |
-| Austria | 1 | BUD |
+| Germany | 8 | BEL, BER, DEN, HOL, KIE, MUN, NWY, SWE |
+| France  | 6 | BRE, MAR, PAR, POR, SPA, TUN |
+| Italy   | 6 | ANK, BUL, NAP, ROM, SMY, VEN |
+| Russia  | 6 | CON, MOS, RUM, SEV, STP, WAR |
+| Austria | 5 | BUD, GRE, SER, TRI, VIE |
+| England | 3 | EDI, LON, LVP |
+| Turkey  | 0 | (eliminated) |
 
-Italy occupies Vienna (Austria's traditional capital) and Trieste, so
-the historically Austrian home is split: Austria retains only Budapest.
+Italy occupies Ankara and Smyrna (Turkey's traditional home centers);
+Russia holds Constantinople. Germany surges from 2 SCs in F1902M to 8 by
+F1910M, becoming the dominant power.
 
-[**View this run's turn-by-turn dashboard**](https://joehahn.github.io/diplomacy-A2A/results/20260531T202425Z/dashboard/index.html)
+[**View this run's turn-by-turn dashboard**](https://joehahn.github.io/diplomacy-A2A/results/20260601T214429Z/dashboard/index.html)
 (GitHub Pages) to flip through the maps, narration, commentary, agent
 strategies, and dialogue.
 
-### `20260529T225943Z/` — previous canonical (5-year), kept for comparison
+### `20260529T225943Z/`: earlier 5-year run, kept as a smaller example
 
-The earlier 5-year canonical is preserved as the comparison anchor for the
-"Old vs new canonical: behavioral comparison at year 5" subsection in
-[REFERENCE.md](../REFERENCE.md). That run used per-power placeholder
-personas and the pre-SC-importance rules.md. Final standings at F1905M
-were Germany 6 / Russia 6 / Austria 5 / France 5 / Italy 5 / England 4
-/ Turkey 3 — no eliminations, no dominant power.
+A 5-year Sonnet run with per-power placeholder personas, retained because
+it is roughly half the size of the canonical and useful as a quick
+visitor example without scrolling through 10 game-years. Final standings
+at F1905M were Germany 6 / Russia 6 / Austria 5 / France 5 / Italy 5 /
+England 4 / Turkey 3, no eliminations, no dominant power.
