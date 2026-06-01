@@ -40,7 +40,8 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 All rows except the last are serial (one per-power LLM call at a time
 within each phase); the parallel fan-out landed in commit `1b2a19b`
 and divides per-phase wall time by ≈4× on observed Haiku numbers
-(see the last row vs `20260529T191351Z`).
+(see the last row vs the serial Haiku plain-vanilla baseline on the
+row above).
 
 | Run | Model | Settings | Phases | Total time | **s / phase** | Cost reported |
 |---|---|---|---:|---:|---:|---:|
@@ -54,7 +55,7 @@ and divides per-phase wall time by ≈4× on observed Haiku numbers
 | 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no strategy log | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
 | 20260529T225943Z *(previous canonical, 5-yr)* | Sonnet | 3 rounds, 5 yr, strategy on, `--log-prompts`, per-power placeholder personas | 18 | 4479s | **≈249** | **$11.98** + $0.50 commentary |
 | 20260531T202425Z **(canonical, 10-yr, serial)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, uniform baseline persona, post-SC-importance rules | 36 | 9434s | **≈262** | **$24.69** + commentary |
-| 20260601T192447Z **(parallel fan-out)** | Haiku | 3 rounds, 5 yr, strategy on, `--with-commentary`, uniform baseline | 17 | 588s | **≈35** | **$3.43** (Haiku rates) |
+| *(deleted; parallel-fan-out measurement)* | Haiku | 3 rounds, 5 yr, strategy on, `--with-commentary`, uniform baseline | 17 | 588s | **≈35** | **$3.43** (Haiku rates) |
 
 **Headline (serial regime):** Haiku is ≈3-4× faster than Sonnet *per
 phase on simple workloads* (1 round, no strategy log). On the
@@ -119,10 +120,10 @@ was designed to enable. The previous 5-year Sonnet canonical
 
 ### Negotiation failure mode: globally-salient vs relationally-relevant threats
 
-Observed in the Haiku 5-yr run `20260601T192447Z` (uniform
-`BASELINE_PERSONA`, adjacency table on). Inspecting France's messages
-to Germany across the three negotiation rounds before F1901M shows a
-pattern worth naming.
+Observed in an early Haiku 5-yr run (uniform `BASELINE_PERSONA`,
+adjacency table on). Inspecting France's messages to Germany across
+the three negotiation rounds before F1901M shows a pattern worth
+naming.
 
 All three rounds repeat near-identical content: *"Russia's growth is
 alarming, 4 centers, GAL, UKR, RUM, BOT all under their control. If
@@ -167,12 +168,12 @@ asymmetry and limited shared structure.
 negotiation user prompt now instructs each message to be specifically
 useful to its recipient, focused on threats and opportunities involving
 units and powers adjacent to *them*, not generic concerns about
-distant powers the recipient cannot act on. **Confirmed on
-`20260601T200008Z`:** France's F1901M messages to Germany shifted from
-three rounds about Russia (geographically irrelevant, factually wrong)
-to three rounds about Burgundy (the literal F-G fault line) plus
-France's actual western moves (Spain, Portugal, Gascony). Zero Russia
-mentions, zero false SC claims.
+distant powers the recipient cannot act on. **Confirmed on a follow-up
+Haiku run:** France's F1901M messages to Germany shifted from three
+rounds about Russia (geographically irrelevant, factually wrong) to
+three rounds about Burgundy (the literal F-G fault line) plus France's
+actual western moves (Spain, Portugal, Gascony). Zero Russia mentions,
+zero false SC claims.
 
 **Mitigation 2 (targets item 4, react-and-close across rounds):** the
 round-tactic note in the same prompt now branches three ways. Round 1
@@ -184,7 +185,7 @@ do not restate prior-round content. The final round demands a
 concrete commitment (specific move + expected counter-move) and again
 forbids restating.
 
-**Partially confirmed on `20260601T201711Z`:**
+**Partially confirmed on a subsequent Haiku run:**
 
 - *Round-to-round content variation worked broadly.* 22 of 24
   sender-to-recipient pairs at F1901M show under 10 characters of
@@ -229,6 +230,124 @@ swapping models on France alone.
 or `20260529T225943Z`? If only Haiku does, this is an axis-A finding
 (smaller models reason about the board rather than the conversation).
 If both do, the prompt nudges above are the right primary fix.
+
+### Haiku capability floor under hardened prompts
+
+This is a clean negative finding from the goal-3 axis-A direction:
+under prompts hardened specifically to eliminate format-compliance
+confounds and force orders to execute the agent's own stated plan,
+Haiku still does not play coherent Diplomacy at the level needed for
+legible A2A interaction. Reported here as a documented capability
+result so future axis-A work starts from "Haiku is the floor" rather
+than "Haiku might be fine with better prompts".
+
+**Setup.** Haiku 4.5, 5 game-years, 3 negotiation rounds, uniform
+`BASELINE_PERSONA`, adjacency table on, with the following prompt
+hardenings live (all committed in `ad21678` and prior):
+
+- Strategy-call `max_tokens` raised 220 to 500 so format compliance
+  is observable without truncation noise.
+- Strategy-call instruction adds a STRICT FORMAT clause: plain prose,
+  1-2 sentences, no markdown headers, no bold, no bullet lists, no
+  `**Strategy:**` / `Acknowledgements:` sections.
+- Revised-strategy instruction adds an internal-consistency reminder:
+  each unit can have only one order; supports require the supporting
+  unit to be adjacent to the destination province.
+- Orders prompt now states explicitly: orders should execute the
+  commitments named in the most recent revised strategy note; if a
+  stated move turns out to be illegal, substitute an order that
+  pursues the same objective rather than abandoning it; if a coalition
+  action was committed in negotiation, orders should reflect it.
+
+Baseline for comparison is an identical Haiku 5-yr run with the
+pre-hardening strategy/orders prompts (same model, year count,
+persona, and negotiation prompt). Transcripts were inspected but
+not retained; the analysis is preserved here.
+
+**What the hardening fixed cleanly.**
+
+| Metric | Pre-hardening | Post-hardening |
+|---|---:|---:|
+| Revised notes with markdown headers | 65 / 70 | **0 / 70** |
+| Revised notes with bullet lists | 13 / 70 | **0 / 70** |
+| Revised notes truncated mid-sentence | 28 / 70 | **0 / 70** |
+| Median sentences per revised note | 4-6 | **2** |
+| Avg revised-note length (chars) | 843 | 648 |
+| Illegal-order rate | 7.7% (23/297) | **4.4%** (13/298) |
+
+F1902M strategy-to-orders alignment, spot-checked across all 7
+powers, is essentially perfect post-hardening. Every revised
+strategy maps cleanly to the orders submitted. Compare to the
+pre-hardening baseline where Germany F1902M revised committed
+"F BAL → DEN" and orders sent F BAL → BOT, England F1902M revised
+committed "A CLY → NWY" and orders sent A CLY → LVP.
+
+**What the hardening did not fix.**
+
+| Metric | Pre-hardening | Post-hardening |
+|---|---:|---:|
+| Conditional-trade rate (`"if you / if I / in exchange / in return"`) | 14.4% (77/536) | 14.4% (76/527) |
+| Hold-rate, average across powers | 65.1% | **70.2%** (higher) |
+| Hold-rate, max single power | 84% (Turkey) | 85% (England) |
+
+All 13 illegal orders in the post-hardening run are
+**support-adjacency violations**, the same specific rule (a support
+order requires the supporting unit to be adjacent to the destination
+province). Examples: Austria `A VIE S A SER` repeated across S1903M,
+S1904M, S1905M (Vienna is not adjacent to Serbia); England
+`F EDI S F NTH - DEN` (Edinburgh not adjacent to Denmark); Germany
+`F BAL S A SIL` (Baltic not adjacent to Silesia); Italy
+`F ION S A VEN - TYR`; France `F LYO S F TYS - TUN`. The rule is in
+`rules.md`, the adjacency table is in the cached system prefix, the
+per-phase legal-moves list shows what each unit can legally do, and
+the revised-strategy instruction now restates the rule explicitly.
+Haiku still violates it.
+
+**Interpretation.** The strategy-to-orders gap closed, but mostly by
+Haiku committing to less. Every revised strategy at F1902M says some
+form of *"I'm holding defensively this fall"* or *"consolidating my
+position"*. The hardened prompt eliminated the "overpromise in
+revised, under-deliver in orders" pattern by causing Haiku to under-
+promise in revised. Aggressive coalition action vanished from the
+revised strategies too. The behavioral equilibrium is seven powers
+all writing "no expansion this turn, just solid defense".
+
+This shows up in outcomes: the post-hardening run ended with
+`FRA=7, ENG=5, RUS=5, TUR=5, AUS=4, GER=3, ITA=3`, more balanced
+than the pre-hardening `RUS=8, ENG=5, TUR=5, AUS=4, FRA=4, ITA=4,
+GER=2` Russia runaway. The balance is real, but the causal mechanism
+is "everyone played passively" rather than "everyone played skillfully
+against a dominant power". France's 7 came from peaceful expansion
+into uncontested centers (Belgium, Portugal, Mid-Atlantic Ocean
+area), not from outmaneuvering anyone.
+
+**Implication for goal-3 axis A.** Under maximally hardened prompts
+that eliminate format and internal-consistency confounds, Haiku still
+exhibits:
+
+1. A residual ~4% illegal-order rate, concentrated entirely on a
+   single rule (support adjacency) that is present in four redundant
+   places in the prompt.
+2. A behavioral equilibrium of mutual passivity, where the
+   negotiation channel discusses coalition action but revised
+   strategies and orders both retreat to defensive holds.
+3. A talk-vs-action gap that closes only because the *talk* gets
+   smaller, not because *action* gets larger.
+
+The committed Sonnet 10-yr canonical (committed under
+`results/20260531T202425Z/`) shows none
+of these patterns at the same configuration: no markdown noise in
+strategy notes, no repeat support-adjacency illegal moves, hold rates
+roughly half of Haiku's, real territorial swings, and visible
+betrayals. The Haiku-versus-Sonnet behavioral gap is large enough
+that it is the dominant signal in the data, not a confound.
+
+The right axis-A experimental design therefore is **mixed tables**
+(one Sonnet in an otherwise Haiku table, or vice versa) to measure
+how much a single capable agent can change the equilibrium, rather
+than continuing to debug Haiku-homogeneous play. The "Haiku might
+be fine with better prompts" hypothesis is rejected on the evidence
+here.
 
 ### Old vs new canonical: behavioral comparison at year 5
 
