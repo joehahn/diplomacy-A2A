@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset='utf-8'><title>FALL 1908 MOVEMENT (F1908M) — 20260601T214429Z</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px;
+       margin: 0 auto; padding: 20px; color: #222; }
+h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
+h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
+.meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
+table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
+                                       vertical-align: top; }
+table.settings th { font-weight: 600; color: #555; white-space: nowrap;
+                    min-width: 160px; }
+table.settings td { color: #222; }
+nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
+      gap: 8px; }
+nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
+                   font-size: 0.95em; }
+nav a { background: #eef; color: #224; }
+nav a:hover { background: #dde; }
+nav span.disabled { background: #f5f5f5; color: #bbb; }
+img.map { max-width: 100%; border: 1px solid #ddd; }
+h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em; }
+.orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
+          margin: 12px 0; font-size: 0.9em; }
+.orders .power { margin: 4px 0; }
+.orders .power b { display: inline-block; min-width: 80px; }
+.invalid { color: #c33; }
+ol.phases { line-height: 1.8; }
+.legend { font-size: 0.78em; color: #666; margin: 6px 0 10px; }
+.legend .chip { display: inline-block; padding: 1px 8px; margin: 2px 4px 2px 0;
+                border-radius: 10px; color: #fff; font-weight: 600; }
+.thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
+.thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
+.thread-head .arr { color: #aaa; font-weight: 400; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-items: start; }
+.bubble { padding: 7px 11px; border-radius: 12px; border-top-left-radius: 3px;
+          background: #f6f6f8; border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.empty { background: none; border: none; }
+.bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
+                 letter-spacing: 0.02em; }
+.bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
+               margin-left: 6px; font-weight: 700; }
+.bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
+.kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+           margin: 10px 0; }
+.kpi-svg { flex: 0 1 840px; width: 100%; max-width: 900px; height: auto;
+           background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
+.kpi-axis { stroke: #bbb; stroke-width: 0.6; }
+.kpi-tick { font-size: 9px; fill: #888; }
+.kpi-axis-label { font-size: 9.5px; fill: #666; font-weight: 500; }
+.kpi-legend { flex: 0 0 auto; font-size: 0.78em; line-height: 1.6;
+              padding: 6px 10px; background: #fafafa; border: 1px solid #eee;
+              border-radius: 4px; }
+.kpi-legend .leg-row { display: flex; align-items: center; gap: 6px; }
+.kpi-legend .leg-swatch { display: inline-block; width: 14px; height: 8px;
+                          border-radius: 2px; flex: 0 0 auto; }
+.kpi-legend .leg-label { font-weight: 600; color: #444; }
+.narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
+        margin: 10px 0; font-size: 0.9em; }
+.narr .nrow { margin: 4px 0; line-height: 1.4; }
+.narr .nrow > b:first-child { display: inline-block; min-width: 78px; }
+.orders-link { display: inline-block; margin: 2px 0 12px; padding: 4px 11px; font-size: 0.85em;
+               background: #eef; color: #224; border-radius: 4px; text-decoration: none; }
+.orders-link:hover { background: #dde; }
+.modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; }
+.modal:target { display: block; }
+.modal-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+                  background: rgba(0, 0, 0, 0.45); }
+.modal-card { position: relative; margin: 6vh auto; background: #fff; max-width: 620px;
+              max-height: 82vh; overflow: auto; padding: 14px 22px 20px; border-radius: 8px;
+              box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.modal-card h2 { margin-top: 4px; }
+.modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
+               color: #999; text-decoration: none; }
+.modal-close:hover { color: #333; }
+.commentary { background: #f0f4ff; border-left: 3px solid #7a8fd8; padding: 10px 14px;
+              margin: 14px 0; font-size: 0.92em; line-height: 1.5; font-style: italic;
+              color: #333; }
+.commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
+                      text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
+                      display: block; margin-bottom: 6px; }
+.commentary .clist { margin: 0; padding-left: 20px; }
+.commentary .clist li { margin: 5px 0; }
+.nego-link { display: inline-block; margin: 14px 0; padding: 9px 16px; font-size: 0.95em;
+             font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
+             border-radius: 6px; text-decoration: none; }
+.nego-link:hover { background: #fde0ec; }
+.narr .r-fail { color: #0a8fa8; }
+.narr .r-bad { color: #c0392b; }
+.narr .r-warn { color: #c77a0a; }
+.strategies { background: #fbf6ee; border-left: 3px solid #d8b870; padding: 8px 14px;
+              margin: 14px 0; font-size: 0.92em; }
+.strategies summary { cursor: pointer; }
+.strategies .slist { margin-top: 8px; }
+.strategies .srow { padding: 6px 0; border-top: 1px dotted #e8d8b8; }
+.strategies .srow:first-child { border-top: none; }
+.strategies .srow b { display: inline-block; min-width: 78px; }
+.strategies .sline { margin: 3px 0 3px 80px; line-height: 1.4; }
+.strategies .stag { display: inline-block; font-size: 0.72em; font-weight: 700;
+                    text-transform: uppercase; color: #8a6a2e; min-width: 56px;
+                    margin-right: 6px; letter-spacing: 0.04em; }
+</style>
+</head><body>
+<nav><a href='S1908M.html'>← SPRING 1908 MOVEMENT (S1908M)</a><a href='index.html'>index (28/34)</a><a href='S1909M.html'>SPRING 1909 MOVEMENT (S1909M) →</a></nav>
+<h1>FALL 1908 MOVEMENT <code>(F1908M)</code></h1>
+<h2>What happened this phase</h2>
+<a class='orders-link' href='#orders-modal'>▤ Orders this phase</a>
+<div class='narr'><div class='nrow'><b style='color:#c0392b'>AUSTRIA</b> A BUL <b class='r-fail'>supports</b> F GRE <b class='r-warn'>(support cut)</b>; F GRE holds; A SER <b class='r-fail'>supports</b> A BUL; A GAL holds; A VIE holds; A TRI holds</div><div class='nrow'><b style='color:#2c5fa8'>ENGLAND</b> F ENG → NTH <b class='r-warn'>(bounced)</b>; F LON holds; A EDI → YOR <b class='r-warn'>(bounced)</b></div><div class='nrow'><b style='color:#1f8aa8'>FRANCE</b> A BEL → HOL <b class='r-warn'>(bounced)</b>; A MAR holds; F NAO holds; F SPA/SC holds; F TUN holds; F POR holds <b class='r-bad'>(illegal: A BUR S A BEL - HOL)</b></div><div class='nrow'><b style='color:#555555'>GERMANY</b> A YOR → LON <b class='r-warn'>(bounced)</b>; F NTH <b class='r-fail'>supports</b> F HOL <b class='r-warn'>(support cut)</b>; F HOL holds; A RUH <b class='r-fail'>supports</b> F HOL; A MUN holds; A BER holds; F KIE <b class='r-fail'>supports</b> F HOL</div><div class='nrow'><b style='color:#2e8b57'>ITALY</b> F AEG → GRE <b class='r-warn'>(bounced)</b>; A CON holds; F TYS holds; F NAP holds; A VEN holds <b class='r-bad'>(illegal: F EAS S F AEG - GRE)</b></div><div class='nrow'><b style='color:#7d3c98'>RUSSIA</b> F RUM → BUL/EC <b class='r-warn'>(bounced)</b>; F BLA <b class='r-fail'>supports</b> F RUM → BUL/EC; A UKR holds; A WAR holds; A MOS holds</div></div>
+<div class='kpi-row'><svg viewBox='0 0 840 360' class='kpi-svg' xmlns='http://www.w3.org/2000/svg'>
+<text x='420' y='14' text-anchor='middle' class='kpi-title'>Supply centers</text>
+<line x1='46' y1='20' x2='46' y2='298' class='kpi-axis'/>
+<line x1='46' y1='298' x2='828' y2='298' class='kpi-axis'/>
+<line x1='43' y1='298.0' x2='46' y2='298.0' class='kpi-axis'/>
+<text x='41' y='301.0' text-anchor='end' class='kpi-tick'>0</text>
+<line x1='43' y1='159.0' x2='46' y2='159.0' class='kpi-axis'/>
+<text x='41' y='162.0' text-anchor='end' class='kpi-tick'>4</text>
+<line x1='43' y1='20.0' x2='46' y2='20.0' class='kpi-axis'/>
+<text x='41' y='23.0' text-anchor='end' class='kpi-tick'>8</text>
+<line x1='46.0' y1='298' x2='46.0' y2='300' class='kpi-axis'/>
+<text x='46.0' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 46.0,303.0)'>S1901M</text>
+<line x1='76.1' y1='298' x2='76.1' y2='300' class='kpi-axis'/>
+<text x='76.1' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 76.1,303.0)'>F1901M</text>
+<line x1='106.2' y1='298' x2='106.2' y2='300' class='kpi-axis'/>
+<text x='106.2' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 106.2,303.0)'>W1901A</text>
+<line x1='136.2' y1='298' x2='136.2' y2='300' class='kpi-axis'/>
+<text x='136.2' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 136.2,303.0)'>S1902M</text>
+<line x1='166.3' y1='298' x2='166.3' y2='300' class='kpi-axis'/>
+<text x='166.3' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 166.3,303.0)'>S1902R</text>
+<line x1='196.4' y1='298' x2='196.4' y2='300' class='kpi-axis'/>
+<text x='196.4' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 196.4,303.0)'>F1902M</text>
+<line x1='226.5' y1='298' x2='226.5' y2='300' class='kpi-axis'/>
+<text x='226.5' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 226.5,303.0)'>F1902R</text>
+<line x1='256.5' y1='298' x2='256.5' y2='300' class='kpi-axis'/>
+<text x='256.5' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 256.5,303.0)'>W1902A</text>
+<line x1='286.6' y1='298' x2='286.6' y2='300' class='kpi-axis'/>
+<text x='286.6' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 286.6,303.0)'>S1903M</text>
+<line x1='316.7' y1='298' x2='316.7' y2='300' class='kpi-axis'/>
+<text x='316.7' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 316.7,303.0)'>F1903M</text>
+<line x1='346.8' y1='298' x2='346.8' y2='300' class='kpi-axis'/>
+<text x='346.8' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 346.8,303.0)'>W1903A</text>
+<line x1='376.8' y1='298' x2='376.8' y2='300' class='kpi-axis'/>
+<text x='376.8' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 376.8,303.0)'>S1904M</text>
+<line x1='406.9' y1='298' x2='406.9' y2='300' class='kpi-axis'/>
+<text x='406.9' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 406.9,303.0)'>F1904M</text>
+<line x1='437.0' y1='298' x2='437.0' y2='300' class='kpi-axis'/>
+<text x='437.0' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 437.0,303.0)'>W1904A</text>
+<line x1='467.1' y1='298' x2='467.1' y2='300' class='kpi-axis'/>
+<text x='467.1' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 467.1,303.0)'>S1905M</text>
+<line x1='497.2' y1='298' x2='497.2' y2='300' class='kpi-axis'/>
+<text x='497.2' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 497.2,303.0)'>F1905M</text>
+<line x1='527.2' y1='298' x2='527.2' y2='300' class='kpi-axis'/>
+<text x='527.2' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 527.2,303.0)'>F1905R</text>
+<line x1='557.3' y1='298' x2='557.3' y2='300' class='kpi-axis'/>
+<text x='557.3' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 557.3,303.0)'>W1905A</text>
+<line x1='587.4' y1='298' x2='587.4' y2='300' class='kpi-axis'/>
+<text x='587.4' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 587.4,303.0)'>S1906M</text>
+<line x1='617.5' y1='298' x2='617.5' y2='300' class='kpi-axis'/>
+<text x='617.5' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 617.5,303.0)'>S1906R</text>
+<line x1='647.5' y1='298' x2='647.5' y2='300' class='kpi-axis'/>
+<text x='647.5' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 647.5,303.0)'>F1906M</text>
+<line x1='677.6' y1='298' x2='677.6' y2='300' class='kpi-axis'/>
+<text x='677.6' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 677.6,303.0)'>W1906A</text>
+<line x1='707.7' y1='298' x2='707.7' y2='300' class='kpi-axis'/>
+<text x='707.7' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 707.7,303.0)'>S1907M</text>
+<line x1='737.8' y1='298' x2='737.8' y2='300' class='kpi-axis'/>
+<text x='737.8' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 737.8,303.0)'>F1907M</text>
+<line x1='767.8' y1='298' x2='767.8' y2='300' class='kpi-axis'/>
+<text x='767.8' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 767.8,303.0)'>F1907R</text>
+<line x1='797.9' y1='298' x2='797.9' y2='300' class='kpi-axis'/>
+<text x='797.9' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 797.9,303.0)'>S1908M</text>
+<line x1='828.0' y1='298' x2='828.0' y2='300' class='kpi-axis'/>
+<text x='828.0' y='303.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 828.0,303.0)'>F1908M</text>
+<text x='12' y='159' text-anchor='middle' class='kpi-axis-label' transform='rotate(-90 12,159)'>SC</text>
+<polyline points='46.0,191.1 76.1,156.3 106.2,156.3 136.2,156.3 166.3,156.3 196.4,156.3 226.5,156.3 256.5,156.3 286.6,156.3 316.7,156.3 346.8,156.3 376.8,156.3 406.9,156.3 437.0,156.3 467.1,156.3 497.2,156.3 527.2,121.5 557.3,121.5 587.4,121.5 617.5,121.5 647.5,86.8 677.6,86.8 707.7,86.8 737.8,86.8 767.8,86.8 797.9,86.8 828.0,86.8' fill='none' stroke='#c0392b' stroke-width='1.3'/>
+<circle cx='46.0' cy='191.1' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='76.1' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='106.2' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='136.2' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='166.3' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='196.4' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='226.5' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='256.5' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='286.6' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='316.7' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='346.8' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='376.8' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='406.9' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='437.0' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='467.1' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='497.2' cy='156.3' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='527.2' cy='121.5' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='557.3' cy='121.5' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='587.4' cy='121.5' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='617.5' cy='121.5' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='647.5' cy='86.8' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='677.6' cy='86.8' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='707.7' cy='86.8' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='737.8' cy='86.8' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='767.8' cy='86.8' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='797.9' cy='86.8' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<circle cx='828.0' cy='86.8' r='2.2' fill='#c0392b' stroke='white' stroke-width='0.6'/>
+<polyline points='46.0,191.9 76.1,157.2 106.2,157.2 136.2,157.2 166.3,157.2 196.4,157.2 226.5,157.2 256.5,157.2 286.6,157.2 316.7,157.2 346.8,157.2 376.8,157.2 406.9,157.2 437.0,157.2 467.1,157.2 497.2,157.2 527.2,191.9 557.3,191.9 587.4,191.9 617.5,191.9 647.5,191.9 677.6,191.9 707.7,191.9 737.8,191.9 767.8,191.9 797.9,191.9 828.0,191.9' fill='none' stroke='#2c5fa8' stroke-width='1.3'/>
+<circle cx='46.0' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='76.1' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='106.2' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='136.2' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='166.3' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='196.4' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='226.5' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='256.5' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='286.6' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='316.7' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='346.8' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='376.8' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='406.9' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='437.0' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='467.1' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='497.2' cy='157.2' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='527.2' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='557.3' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='587.4' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='617.5' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='647.5' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='677.6' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='707.7' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='737.8' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='767.8' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='797.9' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<circle cx='828.0' cy='191.9' r='2.2' fill='#2c5fa8' stroke='white' stroke-width='0.6'/>
+<polyline points='46.0,192.8 76.1,123.3 106.2,123.3 136.2,123.3 166.3,123.3 196.4,123.3 226.5,88.6 256.5,88.6 286.6,88.6 316.7,88.6 346.8,88.6 376.8,88.6 406.9,88.6 437.0,88.6 467.1,88.6 497.2,88.6 527.2,53.9 557.3,53.9 587.4,53.9 617.5,53.9 647.5,53.9 677.6,53.9 707.7,53.9 737.8,53.9 767.8,53.9 797.9,53.9 828.0,53.9' fill='none' stroke='#1f8aa8' stroke-width='1.3'/>
+<circle cx='46.0' cy='192.8' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='76.1' cy='123.3' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='106.2' cy='123.3' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='136.2' cy='123.3' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='166.3' cy='123.3' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='196.4' cy='123.3' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='226.5' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='256.5' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='286.6' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='316.7' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='346.8' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='376.8' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='406.9' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='437.0' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='467.1' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='497.2' cy='88.6' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='527.2' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='557.3' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='587.4' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='617.5' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='647.5' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='677.6' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='707.7' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='737.8' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='767.8' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='797.9' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<circle cx='828.0' cy='53.9' r='2.2' fill='#1f8aa8' stroke='white' stroke-width='0.6'/>
+<polyline points='46.0,193.8 76.1,124.2 106.2,124.2 136.2,124.2 166.3,124.2 196.4,124.2 226.5,124.2 256.5,124.2 286.6,124.2 316.7,124.2 346.8,124.2 376.8,124.2 406.9,89.5 437.0,89.5 467.1,89.5 497.2,89.5 527.2,54.8 557.3,54.8 587.4,54.8 617.5,54.8 647.5,54.8 677.6,54.8 707.7,54.8 737.8,54.8 767.8,54.8 797.9,54.8 828.0,54.8' fill='none' stroke='#555555' stroke-width='1.3'/>
+<circle cx='46.0' cy='193.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='76.1' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='106.2' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='136.2' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='166.3' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='196.4' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='226.5' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='256.5' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='286.6' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='316.7' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='346.8' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='376.8' cy='124.2' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='406.9' cy='89.5' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='437.0' cy='89.5' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='467.1' cy='89.5' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='497.2' cy='89.5' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='527.2' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='557.3' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='587.4' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='617.5' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='647.5' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='677.6' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='707.7' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='737.8' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='767.8' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='797.9' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<circle cx='828.0' cy='54.8' r='2.2' fill='#555555' stroke='white' stroke-width='0.6'/>
+<polyline points='46.0,194.7 76.1,159.9 106.2,159.9 136.2,159.9 166.3,159.9 196.4,159.9 226.5,159.9 256.5,159.9 286.6,159.9 316.7,125.2 346.8,125.2 376.8,125.2 406.9,90.4 437.0,90.4 467.1,90.4 497.2,90.4 527.2,90.4 557.3,90.4 587.4,90.4 617.5,90.4 647.5,90.4 677.6,90.4 707.7,90.4 737.8,90.4 767.8,90.4 797.9,90.4 828.0,90.4' fill='none' stroke='#2e8b57' stroke-width='1.3'/>
+<circle cx='46.0' cy='194.7' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='76.1' cy='159.9' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='106.2' cy='159.9' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='136.2' cy='159.9' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='166.3' cy='159.9' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='196.4' cy='159.9' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='226.5' cy='159.9' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='256.5' cy='159.9' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='286.6' cy='159.9' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='316.7' cy='125.2' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='346.8' cy='125.2' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='376.8' cy='125.2' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='406.9' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='437.0' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='467.1' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='497.2' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='527.2' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='557.3' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='587.4' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='617.5' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='647.5' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='677.6' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='707.7' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='737.8' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='767.8' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='797.9' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<circle cx='828.0' cy='90.4' r='2.2' fill='#2e8b57' stroke='white' stroke-width='0.6'/>
+<polyline points='46.0,160.8 76.1,91.3 106.2,91.3 136.2,91.3 166.3,91.3 196.4,91.3 226.5,91.3 256.5,91.3 286.6,91.3 316.7,91.3 346.8,91.3 376.8,91.3 406.9,126.0 437.0,126.0 467.1,126.0 497.2,126.0 527.2,126.0 557.3,126.0 587.4,126.0 617.5,126.0 647.5,126.0 677.6,126.0 707.7,126.0 737.8,126.0 767.8,126.0 797.9,126.0 828.0,126.0' fill='none' stroke='#7d3c98' stroke-width='1.3'/>
+<circle cx='46.0' cy='160.8' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='76.1' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='106.2' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='136.2' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='166.3' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='196.4' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='226.5' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='256.5' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='286.6' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='316.7' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='346.8' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='376.8' cy='91.3' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='406.9' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='437.0' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='467.1' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='497.2' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='527.2' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='557.3' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='587.4' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='617.5' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='647.5' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='677.6' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='707.7' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='737.8' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='767.8' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='797.9' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<circle cx='828.0' cy='126.0' r='2.2' fill='#7d3c98' stroke='white' stroke-width='0.6'/>
+<polyline points='46.0,196.4 76.1,161.7 106.2,161.7 136.2,161.7 166.3,161.7 196.4,161.7 226.5,161.7 256.5,161.7 286.6,161.7 316.7,161.7 346.8,161.7 376.8,161.7 406.9,196.4 437.0,196.4 467.1,196.4 497.2,196.4 527.2,265.9 557.3,265.9 587.4,265.9 617.5,265.9 647.5,300.7 677.6,300.7 707.7,300.7 737.8,300.7 767.8,300.7 797.9,300.7 828.0,300.7' fill='none' stroke='#cc8a00' stroke-width='1.3'/>
+<circle cx='46.0' cy='196.4' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='76.1' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='106.2' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='136.2' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='166.3' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='196.4' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='226.5' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='256.5' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='286.6' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='316.7' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='346.8' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='376.8' cy='161.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='406.9' cy='196.4' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='437.0' cy='196.4' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='467.1' cy='196.4' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='497.2' cy='196.4' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='527.2' cy='265.9' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='557.3' cy='265.9' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='587.4' cy='265.9' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='617.5' cy='265.9' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='647.5' cy='300.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='677.6' cy='300.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='707.7' cy='300.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='737.8' cy='300.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='767.8' cy='300.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='797.9' cy='300.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+<circle cx='828.0' cy='300.7' r='2.2' fill='#cc8a00' stroke='white' stroke-width='0.6'/>
+</svg><div class='kpi-legend'><div class='leg-row'><span class='leg-swatch' style='background:#c0392b'></span><span class='leg-label'>AUSTRIA</span></div><div class='leg-row'><span class='leg-swatch' style='background:#2c5fa8'></span><span class='leg-label'>ENGLAND</span></div><div class='leg-row'><span class='leg-swatch' style='background:#1f8aa8'></span><span class='leg-label'>FRANCE</span></div><div class='leg-row'><span class='leg-swatch' style='background:#555555'></span><span class='leg-label'>GERMANY</span></div><div class='leg-row'><span class='leg-swatch' style='background:#2e8b57'></span><span class='leg-label'>ITALY</span></div><div class='leg-row'><span class='leg-swatch' style='background:#7d3c98'></span><span class='leg-label'>RUSSIA</span></div><div class='leg-row'><span class='leg-swatch' style='background:#cc8a00'></span><span class='leg-label'>TURKEY</span></div></div></div>
+<h3 class='mapcap'>Orders — start positions, arrows show moves</h3>
+<img class='map' src='F1908M.svg' alt='Orders — start positions, arrows show moves'>
+<h3 class='mapcap'>Result — positions after this phase resolved</h3>
+<img class='map' src='F1908M.result.svg' alt='Result — positions after this phase resolved'>
+<details class='strategies'><summary><b>Agent strategies this phase</b> — each power's self-authored plan (initial · revised) — private to that agent.</summary>
+<div class='slist'>
+<div class='srow'><b style='color:#c0392b'>AUSTRIA</b>
+<div class='sline'><span class='stag'>initial</span> My top priority this fall is capturing RUM with A SER → RUM supported by A GAL (strength 2 against Russia's F RUM at strength 1), while defending F GRE with A BUL support against Italy's persistent F AEG pressure and holding A BUL with A SER support against A CON — but since A SER cannot do both, I must choose between attacking RUM or defending BUL, and I'll prioritize the RUM capture since Italy's A CON → BUL bounced last spring and I need that seventh center to stay competitive.</div>
+<div class='sline'><span class='stag'>revised</span> Russia claims F RUM is defended at strength 3 (F BLA S F RUM, A UKR S F RUM), which would bounce my A SER → RUM + A GAL support at 2 vs 3, so I'll instead defend BUL with A SER support and hold GRE with A BUL support, keeping my 6 centers intact while Italy's A CON → BUL and F AEG → GRE both bounce. A GAL, A VIE, and A TRI hold defensively to secure my core.
+
+ORDERS:
+A BUL S F GRE
+F GRE H
+A SER S A BUL
+A GAL H
+A VIE H
+A TRI H</div>
+</div>
+<div class='srow'><b style='color:#2c5fa8'>ENGLAND</b>
+<div class='sline'><span class='stag'>initial</span> My absolute priority this fall is retaking YOR from Germany with A EDI - YOR while using my fleets to either push into NTH or support France's HOL attack, as I need to break Germany's stranglehold on my home territory before I'm permanently locked at 3 centers with no path to growth.</div>
+<div class='sline'><span class='stag'>revised</span> France's final message confirms they're pushing A BEL - HOL with BUR support at strength 2, and since F NTH is tied up defending against my F ENG - NTH move, HOL falls guaranteed while A YOR - LON fails at 1-strength against F LON; I'll execute F ENG - NTH, F LON H, and A EDI - YOR to retake my home territory and break Germany's northern grip simultaneously.
+
+ORDERS:
+F ENG - NTH
+F LON H
+A EDI - YOR</div>
+</div>
+<div class='srow'><b style='color:#1f8aa8'>FRANCE</b>
+<div class='sline'><span class='stag'>initial</span> HOL has bounced five times now and I need to finally break through or pivot entirely — this fall I'm pressing A BEL - HOL with A BUR support at strength 2, counting on England's F ENG - NTH to cut F NTH's support of HOL so A RUH alone cannot hold, while keeping all southern units in place to maintain my Italian non-aggression arrangement.</div>
+<div class='sline'><span class='stag'>revised</span> England confirmed F ENG - NTH to cut German support chains, meaning HOL will have A RUH defending at strength 1 against my A BEL - HOL with A BUR support at strength 2 — HOL finally falls this turn, bringing me to 8 centers. I'm holding all southern units in place per my Italian non-aggression arrangement while pressing the decisive northern breakthrough.
+
+ORDERS:
+A BEL - HOL
+A BUR S A BEL - HOL
+A MAR H
+F NAO H
+F SPA/SC H
+F TUN H
+F POR H</div>
+</div>
+<div class='srow'><b style='color:#555555'>GERMANY</b>
+<div class='sline'><span class='stag'>initial</span> My top priority this fall is finally taking LON from England by moving A YOR - LON with F NTH support, while holding HOL firmly against France's persistent A BEL - HOL attack using A RUH and F KIE backing — reaching 8 centers this fall is essential to staying competitive with France and Italy.</div>
+<div class='sline'><span class='stag'>revised</span> France has confirmed A BEL - HOL with A BUR support (strength 2) again, and England has again threatened F ENG - NTH to cut my NTH support, so I must put F NTH on HOL support to hold it at strength 2 against France's attack, while A YOR moves directly to LON at strength 1 against an unsupported F LON — England's F ENG is going to NTH not supporting LON, so this should succeed and bring me to 8 centers.
+
+ORDERS:
+A YOR - LON
+F NTH S F HOL
+F HOL H
+A RUH S F HOL
+A MUN H
+A BER H
+F KIE S F HOL</div>
+</div>
+<div class='srow'><b style='color:#2e8b57'>ITALY</b>
+<div class='sline'><span class='stag'>initial</span> My top priority this fall is to finally take GRE from Austria using F AEG supported by F EAS, while using A CON to press BUL and coordinating with Russia's F RUM and F BLA to crack Austria's defensive line — I cannot afford another bounce while France and Germany sit at 7 SCs each.</div>
+<div class='sline'><span class='stag'>revised</span> Russia has committed F RUM → BUL/EC with F BLA support at strength 2, which takes BUL and cuts A BUL's support of F GRE, so I'm ordering F AEG → GRE with F EAS support to finally take that center while A CON holds in CON to avoid bouncing Russia in BUL, and F TYS and F NAP hold defensively per my agreement with France while A VEN holds to protect the Italian homeland.
+
+ORDERS:
+F AEG - GRE
+F EAS S F AEG - GRE
+A CON H
+F TYS H
+F NAP H
+A VEN H</div>
+</div>
+<div class='srow'><b style='color:#7d3c98'>RUSSIA</b>
+<div class='sline'><span class='stag'>initial</span> My top priority this fall is taking BUL from Austria using F RUM → BUL/EC with F BLA support at strength 2, which would bring me to 6 centers and cut Austria back to 5, while coordinating with Italy (who should be pressing GRE with F AEG and F EAS) to split Austria's defensive line simultaneously.</div>
+<div class='sline'><span class='stag'>revised</span> Italy confirmed A CON holds (not moving to BUL) and committed F AEG → GRE with F EAS support, so I'm pressing F RUM → BUL/EC with F BLA support at strength 2 to take BUL from Austria while defending against Austria's threatened A SER → RUM by having A UKR support F RUM, giving F RUM strength 3 to repel both the BUL attack and Austria's counter — wait, F RUM can only have one order, so I must choose: attack BUL/EC (and risk losing RUM to Austria's A SER → RUM supported by A GAL at strength 2) or defend RUM. Since Italy confirmed the coordination and Austria's A SER → RUM with A GAL support is a real threat, I'll commit F RUM → BUL/EC and use F BLA to support it, accepting that Austria may retake RUM, because gaining BUL nets me a center regardless and Italy simultaneously takes GRE, collapsing Austria from 6 to 4 centers in one turn.
+
+ORDERS:
+F RUM - BUL/EC
+F BLA S F RUM - BUL/EC
+A UKR H
+A WAR H
+A MOS H</div>
+</div>
+</div></details>
+<div class='commentary'><span class='clabel'>Commentary</span><ul class='clist'><li>Austria completely ignored its own messaging: it told Russia it was attacking RUM with A SER + A GAL, told Italy it was moving A SER to RUM to leave BUL unsupported, yet actually ordered A SER to support A BUL and A GAL to hold — a deliberate deception that successfully defended both BUL and GRE while letting Italy and Russia waste their attacks.</li><li>Italy was played by Austria's false promise: believing A SER would move to RUM and leave A BUL unsupported, Italy sent F AEG at GRE expecting a clean take, only to bounce off Austria's fully supported defensive line — Italy gained nothing despite coordinating with both Russia and France.</li><li>Russia's F RUM → BUL/EC attack, supported by F BLA, bounced cleanly off Austria's A SER-supported A BUL, exactly as Austria privately predicted — Russia wasted its two-fleet strike and remains at 5 centers with its Balkan ambitions stalled for another season.</li><li>Germany's attempt to take LON failed again (A YOR bounced F LON), and France's A BEL → HOL was simultaneously bounced by Germany's triple-stacked defense (F NTH support, A RUH, F KIE) — the Anglo-French coordination collapsed because England moved F ENG → NTH instead of supporting BEL-HOL as France explicitly requested, leaving France one unit short of the breakthrough.</li><li>Turkey's eliminated position is being used as an active intelligence and disinformation broker, feeding Austria, Russia, and Italy contradictory "confirmed orders" to sow confusion — and it worked, contributing to Italy's miscalculation about A SER's actual destination.</li></ul></div>
+<a class='nego-link' href='F1908M.negotiation.html'>💬 Read the negotiation before SPRING 1909 MOVEMENT →</a>
+<nav><a href='S1908M.html'>← SPRING 1908 MOVEMENT (S1908M)</a><a href='index.html'>index (28/34)</a><a href='S1909M.html'>SPRING 1909 MOVEMENT (S1909M) →</a></nav>
+<div id='orders-modal' class='modal'>
+<a class='modal-backdrop' href='#'></a>
+<div class='modal-card'>
+<a class='modal-close' href='#' title='close'>&times;</a>
+<h2>Orders this phase</h2>
+<div class='orders'>
+<div class='power'><b>AUSTRIA</b>: <code>A BUL S F GRE</code> · <code>F GRE H</code> · <code>A SER S A BUL</code> · <code>A GAL H</code> · <code>A VIE H</code> · <code>A TRI H</code></div>
+<div class='power'><b>ENGLAND</b>: <code>F ENG - NTH</code> · <code>F LON H</code> · <code>A EDI - YOR</code></div>
+<div class='power'><b>FRANCE</b>: <code>A BEL - HOL</code> · <code>A MAR H</code> · <code>F NAO H</code> · <code>F SPA/SC H</code> · <code>F TUN H</code> · <code>F POR H</code> <span class='invalid'>(illegal: <code>A BUR S A BEL - HOL</code>)</span></div>
+<div class='power'><b>GERMANY</b>: <code>A YOR - LON</code> · <code>F NTH S F HOL</code> · <code>F HOL H</code> · <code>A RUH S F HOL</code> · <code>A MUN H</code> · <code>A BER H</code> · <code>F KIE S F HOL</code></div>
+<div class='power'><b>ITALY</b>: <code>F AEG - GRE</code> · <code>A CON H</code> · <code>F TYS H</code> · <code>F NAP H</code> · <code>A VEN H</code> <span class='invalid'>(illegal: <code>F EAS S F AEG - GRE</code>)</span></div>
+<div class='power'><b>RUSSIA</b>: <code>F RUM - BUL/EC</code> · <code>F BLA S F RUM - BUL/EC</code> · <code>A UKR H</code> · <code>A WAR H</code> · <code>A MOS H</code></div>
+</div>
+</div></div>
+</body></html>
