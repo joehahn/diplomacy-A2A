@@ -63,7 +63,7 @@ def generate_commentary(
     client: LLMClient,
     *,
     out_path: Path | None = None,
-    max_tokens: int = 320,
+    max_tokens: int = 700,
     temperature: float = 0.7,
 ) -> dict[str, list[str]]:
     """Write per-phase strategic commentary to commentary.json; return it.
