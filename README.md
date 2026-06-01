@@ -325,7 +325,7 @@ described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
 Cost to execute the canonical game is about **$25 when using Sonnet**
-(measured) with wall-time ≈2.6 hours. The canonical run made **about 900 LLM calls during gameplay**,
+(measured) with wall-time ≈2.6 hours. The canonical run made **about 900 LLM calls during 10 years of gameplay**,
 processing **6.2M input tokens** (of which one-third were the cached
 rules served at 10% of full price) and **360K output tokens**. Haiku and Opus runs at the same
 configuration are extrapolated from per-token rate ratios: Haiku is
