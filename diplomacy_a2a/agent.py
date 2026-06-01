@@ -266,10 +266,27 @@ class Agent:
             f"orders for {state.phase}. All powers message simultaneously this "
             f"round, so others won't see yours until the next round. "
         )
-        if round_index >= total_rounds:
-            round_note += "This is the FINAL round — you commit orders next, so close any deals now. "
-        elif round_index == 1:
-            round_note += "Further rounds follow, so you can open threads now and react to replies later. "
+        if round_index == 1:
+            round_note += (
+                "Round 1 is for opening threads and probing positions; "
+                "replies arrive in round 2. "
+            )
+        elif round_index >= total_rounds:
+            round_note += (
+                "This is the FINAL round before orders. Close with a concrete "
+                "commitment: name the specific move you will make this phase "
+                "and what you expect the recipient to do in return. Do not "
+                "restate prior-round content; either commit, counter, or stay "
+                "silent. "
+            )
+        else:
+            round_note += (
+                f"This is round {round_index} of {total_rounds}. React to the "
+                "messages you received last round: refine or counter a "
+                "proposal, ask a follow-up question, or commit to a concrete "
+                "trade (e.g. 'I will move A to B if you move C to D'). Do "
+                "not restate content from prior rounds. "
+            )
         user_msg = (
             f"{view}\n\n"
             f"## Your strategy history (private to you)\n{strategy_block}\n\n"

@@ -163,16 +163,34 @@ where agents default to globally-visible signals over relationally-
 correct ones, and worth checking for in any setting with information
 asymmetry and limited shared structure.
 
-**Mitigation tried:** the negotiation user prompt now instructs each
-message to be specifically useful to its recipient, focused on threats
-and opportunities involving units and powers adjacent to *them*, not
-generic concerns about distant powers the recipient cannot act on.
-Effectiveness needs a re-run to confirm.
+**Mitigation 1 (targets items 1-3, relational relevance):** the
+negotiation user prompt now instructs each message to be specifically
+useful to its recipient, focused on threats and opportunities involving
+units and powers adjacent to *them*, not generic concerns about
+distant powers the recipient cannot act on. **Confirmed on
+`20260601T200008Z`:** France's F1901M messages to Germany shifted from
+three rounds about Russia (geographically irrelevant, factually wrong)
+to three rounds about Burgundy (the literal F-G fault line) plus
+France's actual western moves (Spain, Portugal, Gascony). Zero Russia
+mentions, zero false SC claims.
+
+**Mitigation 2 (targets item 4, react-and-close across rounds):** the
+round-tactic note in the same prompt now branches three ways. Round 1
+is for opening threads and probing. Middle rounds (round 2 of 3, round
+2-3 of 4, etc.) tell the agent to react to messages received last
+round: refine or counter a proposal, ask a follow-up, or commit to a
+concrete trade in the "I will move A to B if you move C to D" form;
+do not restate prior-round content. The final round demands a
+concrete commitment (specific move + expected counter-move) and again
+forbids restating. Effectiveness needs a re-run to confirm; on
+`20260601T200008Z` (before this nudge) the F-to-G channel still
+restated nearly the same content across all three rounds even after
+mitigation 1 fixed the topic.
 
 **To check:** does Sonnet exhibit the same anchoring on `20260531T202425Z`
 or `20260529T225943Z`? If only Haiku does, this is an axis-A finding
 (smaller models reason about the board rather than the conversation).
-If both do, the prompt nudge above is the right primary fix.
+If both do, the prompt nudges above are the right primary fix.
 
 ### Old vs new canonical: behavioral comparison at year 5
 
