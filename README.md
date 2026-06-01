@@ -324,12 +324,17 @@ described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
 Cost to execute the canonical game is about **$25 when using Sonnet**
-(measured) with wall-time ≈2.6 hours. The canonical run made **about 900 LLM calls during 10 years of gameplay**,
-processing **6.2M input tokens** (of which one-third were the cached
-rules served at 10% of full price) and **360K output tokens**. Haiku and Opus runs at the same
-configuration are extrapolated from per-token rate ratios: Haiku is
-roughly 1/3 of Sonnet (≈$8), while Opus is roughly 5× Sonnet (≈$120).
-Only Sonnet has been measured at the canonical configuration.
+(measured), processing **6.2M input tokens** (of which one-third were
+the cached rules served at 10% of full price) and **360K output
+tokens** across **about 900 LLM calls during 10 years of gameplay**.
+The committed canonical (`20260531T202425Z`) was measured at 2.6 hours
+wall-time serially; per-power LLM calls within each phase now fan out
+in parallel, and a Haiku 5-year run at the new defaults measured a
+4.2× per-phase speedup, so a re-measured Sonnet canonical should land
+near **35-45 min**. Haiku and Opus runs at the same configuration are
+extrapolated from per-token rate ratios: Haiku is roughly 1/3 of
+Sonnet (≈$8), while Opus is roughly 5× Sonnet (≈$120). Only Sonnet
+has been measured at the canonical configuration.
 
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).

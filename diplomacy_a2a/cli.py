@@ -5,16 +5,16 @@ The CLI is organized as three subcommands, split along cost / LLM-use lines:
   run         Execute a game — agents negotiate, agents move, library
               adjudicates. Writes transcript.jsonl (+ prompts.jsonl if
               --log-prompts), auto-renders the dashboard at the end.
-              The only command that costs real money. ≈$8-12 for the
-              canonical Sonnet 5-year configuration.
+              The only command that costs real money. ≈$25 for the
+              canonical Sonnet 10-year configuration.
 
   render      Re-derive the dashboard from a finished transcript: maps,
               report.md, HTML slideshow. No LLM, free, sub-second.
               Use this after tweaking viewer code without re-running games.
 
   commentary  Generate commentary.json — LLM-written strategic interpretation
-              per phase. Modest cost (~$0.50 on Sonnet for 18 phases).
-              Re-runnable with a different model via --model.
+              per phase. Modest cost (~$1 on Sonnet for the canonical's 36
+              phases). Re-runnable with a different model via --model.
 
 Composition flag — `--with-commentary` (valid on both `run` and `render`)
 runs the commentary step then re-renders so the slides include it. This is
@@ -100,7 +100,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_run = sub.add_parser(
         "run",
-        help="execute a game (LLM calls; ≈$8-12 / ≈80 min for the canonical)",
+        help="execute a game (LLM calls; ≈$25 / ≈35-45 min for the canonical 10-yr Sonnet run)",
         description="Execute a game and (by default) render its dashboard. "
                     "This is the only command that costs real money.",
     )

@@ -37,6 +37,11 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 
 ## Per-phase wall-time observations
 
+All rows except the last are serial (one per-power LLM call at a time
+within each phase); the parallel fan-out landed in commit `1b2a19b`
+and divides per-phase wall time by ≈4× on observed Haiku numbers
+(see the last row vs `20260529T191351Z`).
+
 | Run | Model | Settings | Phases | Total time | **s / phase** | Cost reported |
 |---|---|---|---:|---:|---:|---:|
 | 20260524T031616Z | Sonnet | no negotiation | 7 | – | – | $0.35 |
@@ -48,13 +53,24 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 | 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, strategy log, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
 | 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no strategy log | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
 | 20260529T225943Z *(previous canonical, 5-yr)* | Sonnet | 3 rounds, 5 yr, strategy on, `--log-prompts`, per-power placeholder personas | 18 | 4479s | **≈249** | **$11.98** + $0.50 commentary |
-| 20260531T202425Z **(canonical, 10-yr)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, uniform baseline persona, post-SC-importance rules | 36 | 9434s | **≈262** | **$24.69** + commentary |
+| 20260531T202425Z **(canonical, 10-yr, serial)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, uniform baseline persona, post-SC-importance rules | 36 | 9434s | **≈262** | **$24.69** + commentary |
+| 20260601T192447Z **(parallel fan-out)** | Haiku | 3 rounds, 5 yr, strategy on, `--with-commentary`, uniform baseline | 17 | 588s | **≈35** | **$3.43** (Haiku rates) |
 
-**Headline:** Haiku is ≈3–4× faster than Sonnet *per phase on simple workloads*
-(1 round, no strategy log). On the current canonical workload (3 rounds × strategy
-log, the default) the per-phase advantage **collapses to roughly parity** because
-per-phase call count dominates — Haiku doesn't make fewer calls than Sonnet, and
-the strategy + 3-round combo is call-heavy. Cost is still ≈1/3 across the board.
+**Headline (serial regime):** Haiku is ≈3-4× faster than Sonnet *per
+phase on simple workloads* (1 round, no strategy log). On the
+canonical workload (3 rounds × strategy log, the default) the
+per-phase advantage collapses to roughly parity because per-phase
+call count dominates: Haiku doesn't make fewer calls than Sonnet, and
+the strategy + 3-round combo is call-heavy. Cost is still ≈1/3
+across the board.
+
+**Parallel fan-out effect:** the last row above shows ≈35 s/phase on
+Haiku canonical workload, vs ≈145 s/phase on the same model under the
+serial plain-vanilla baseline. That is a 4.2× per-phase speedup on
+Haiku. Extrapolating to the Sonnet canonical workload (was ≈262
+s/phase serial) predicts ≈60-70 s/phase parallel, i.e. ≈35-45 min
+wall-time for the 36-phase 10-year canonical. Sonnet has not yet
+been re-measured under the parallel path.
 
 ---
 
