@@ -581,8 +581,9 @@ body:has(.thread:target) .thread { display: none; }
 body:has(.thread:target) .thread:target { display: block; }
 .kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
            margin: 10px 0; }
-.kpi-svg { flex: 0 1 840px; width: 100%; max-width: 900px; height: auto;
+.kpi-svg { flex: 0 1 1008px; width: 100%; max-width: 1080px; height: auto;
            background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.kpi-svg circle:hover { r: 4.5; cursor: default; }
 .kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
 .kpi-axis { stroke: #bbb; stroke-width: 0.6; }
 .kpi-tick { font-size: 9px; fill: #888; }
@@ -764,9 +765,12 @@ def _kpi_chart(
             f"<polyline points='{coords}' fill='none' stroke='{color}' stroke-width='1.3'/>"
         )
         for i, v in enumerate(pts):
+            v_int = int(v) if abs(v - round(v)) < 1e-6 else v
+            tip = f"{power} at {x_labels[i]}: {v_int} {ylabel}"
             parts.append(
-                f"<circle cx='{xs[i]:.1f}' cy='{y_for(v, power):.1f}' r='2.2' "
-                f"fill='{color}' stroke='white' stroke-width='0.6'/>"
+                f"<circle cx='{xs[i]:.1f}' cy='{y_for(v, power):.1f}' r='3.0' "
+                f"fill='{color}' stroke='white' stroke-width='0.8'>"
+                f"<title>{tip}</title></circle>"
             )
     parts.append("</svg>")
     return "\n".join(parts)
@@ -811,7 +815,7 @@ def _kpi_charts_for_phase(
     sc_ymax = max(sc_max_obs + 1, 5)
     sc_chart = _kpi_chart(
         "Supply centers", sc_series, ymax=sc_ymax, ylabel="SC", x_labels=phases,
-        width=840, height=360,
+        width=1008, height=432,
     )
     legend = _kpi_legend(powers)
     return f"<div class='kpi-row'>{sc_chart}{legend}</div>"
@@ -1201,11 +1205,15 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             recap_html.append("<a class='orders-link' href='#orders-modal'>▤ Orders this phase</a>")
         if narration_rows:
             recap_html.append("<div class='narr'>" + "".join(narration_rows) + "</div>")
-            short = sl.get("short", "")
-            if short.endswith("M"):
-                charts_html = _kpi_charts_for_phase(phase_order, centers_by_phase, short)
-                if charts_html:
-                    recap_html.append(charts_html)
+
+        # KPI chart (SC counts over time) lives in its own block, rendered
+        # after the commentary; movement-phase slides only.
+        kpi_html: list[str] = []
+        short = sl.get("short", "")
+        if short.endswith("M"):
+            charts_html = _kpi_charts_for_phase(phase_order, centers_by_phase, short)
+            if charts_html:
+                kpi_html.append(charts_html)
 
         # Raw orders live in a no-JS CSS :target popup, hidden until the link
         # above is clicked.
@@ -1304,6 +1312,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 *maps_result_html,
                 *recap_html,
                 *commentary_html,
+                *kpi_html,
                 nav,
                 *orders_modal,
             ]
