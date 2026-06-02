@@ -948,15 +948,18 @@ def _orders_block(orders: dict[str, dict[str, Any]]) -> list[str]:
 def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     """Generate index.html + one slide per board state under out_dir.
 
-    Slide layout reflects the natural narrative order — read the talk,
-    then see what it produced:
+    Each movement-phase slide is self-contained and reads top to bottom
+    as the natural flow of a turn: plan, talk, revise, execute, see
+    result, interpret.
 
-    - Slide 0 (`start.html`): the opening board (no orders), with the
-      negotiation that happens *before* the first movement below it.
-    - Each phase slide: the orders on top, then two maps (the orders as
-      arrows on the start-of-phase board, and the resulting board after
-      adjudication), then the negotiation leading into the *next* movement
-      phase at the bottom — teeing up the next slide's reveal.
+    - Slide 0 (`start.html`): the opening board only, no orders or
+      dialogue.
+    - Each phase slide: the orders map (start-of-phase positions with
+      move arrows), then the initial strategies collapsible, then the
+      link to that phase's negotiation transcript, then the revised
+      strategies collapsible, then the result map (board after
+      adjudication), then the "what happened" narration and the raw
+      orders modal link, then the LLM commentary.
     """
     events = [json.loads(line) for line in jsonl_path.read_text().splitlines() if line.strip()]
 
@@ -1037,11 +1040,13 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "dialogue": [],
             }
         )
-    # Attach each movement phase's negotiation to the slide before it.
+    # Attach each movement phase's negotiation to the *same* slide as the
+    # movement phase it produces. slides[mi + 1] is phases[mi]'s slide
+    # because slides[0] is the opening "Initial position" placeholder.
     for mi, ph in enumerate(phases):
         if ph["short"].endswith("M"):
-            slides[mi]["dialogue"] = dialogue_by_phase.get(ph["short"], [])
-            slides[mi]["dialogue_label"] = ph["long"]
+            slides[mi + 1]["dialogue"] = dialogue_by_phase.get(ph["short"], [])
+            slides[mi + 1]["dialogue_label"] = ph["long"]
 
     # --- index.html ---
     # Settings table: what the game was actually configured with.
@@ -1163,10 +1168,17 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             "</nav>"
         )
 
-        maps_html: list[str] = []
-        for caption, src in sl["maps"]:
-            maps_html.append(f"<h3 class='mapcap'>{caption}</h3>")
-            maps_html.append(f"<img class='map' src='{src}' alt='{caption}'>")
+        # Split maps so the orders/opening map can lead the slide and the
+        # result map can land after the revised strategies; the new layout
+        # reads as plan to talk to revise to execute to result.
+        maps_top_html: list[str] = []
+        maps_result_html: list[str] = []
+        for i, (caption, src) in enumerate(sl["maps"]):
+            block = [
+                f"<h3 class='mapcap'>{caption}</h3>",
+                f"<img class='map' src='{src}' alt='{caption}'>",
+            ]
+            (maps_result_html if i > 0 else maps_top_html).extend(block)
 
         narration_rows = []
         for pw, text in (sl.get("narration") or []):
@@ -1209,34 +1221,43 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "</div></div>",
             ]
 
-        strategies_html: list[str] = []
+        # Strategies split into two collapsibles so the negotiation link can
+        # sit between them. Initial strategies are each power's plan BEFORE
+        # the dialogue; revised strategies are the plan AFTER. Empty kinds
+        # are skipped so smoke runs and pre-strategy-log runs still render.
         strat = sl.get("strategies") or {}
-        if strat:
-            strategies_html.append(
-                "<details class='strategies'><summary>"
-                "<b>Agent strategies this phase</b> — each power's self-authored plan "
-                "(initial · revised) — private to that agent."
-                "</summary>"
-            )
-            strategies_html.append("<div class='slist'>")
+
+        def _strategies_block(kind: str, summary: str) -> list[str]:
+            out: list[str] = [
+                f"<details class='strategies'><summary>{summary}</summary>",
+                "<div class='slist'>",
+            ]
             for pw in sorted(strat):
+                text = strat[pw].get(kind, "")
+                if not text:
+                    continue
                 color = POWER_COLORS.get(pw, "#777")
-                entries = strat[pw]
-                initial = entries.get("initial", "")
-                revised = entries.get("revised", "")
-                strategies_html.append(
+                out.append(
                     f"<div class='srow'><b style='color:{color}'>{pw}</b>"
+                    f"<div class='sline'>{_esc(text)}</div></div>"
                 )
-                if initial:
-                    strategies_html.append(
-                        f"<div class='sline'><span class='stag'>initial</span> {_esc(initial)}</div>"
-                    )
-                if revised:
-                    strategies_html.append(
-                        f"<div class='sline'><span class='stag'>revised</span> {_esc(revised)}</div>"
-                    )
-                strategies_html.append("</div>")
-            strategies_html.append("</div></details>")
+            out.append("</div></details>")
+            return out
+
+        strategies_initial_html: list[str] = []
+        strategies_revised_html: list[str] = []
+        if strat and any(s.get("initial") for s in strat.values()):
+            strategies_initial_html = _strategies_block(
+                "initial",
+                "<b>Initial strategies (pre-negotiation)</b>, "
+                "each power's self-authored plan before talking.",
+            )
+        if strat and any(s.get("revised") for s in strat.values()):
+            strategies_revised_html = _strategies_block(
+                "revised",
+                "<b>Revised strategies (post-negotiation)</b>, "
+                "each power's updated plan after the negotiation above.",
+            )
 
         commentary_html: list[str] = []
         comm = sl.get("commentary")
@@ -1268,15 +1289,21 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 _html_page(title=f"Negotiation — {sl['title']} — {run_id}", body=child_body)
             )
 
+        # Body order follows the natural reading flow of a phase:
+        # orders map (plan), initial strategies, negotiation link, revised
+        # strategies, result map (outcome), then narration/orders modal/
+        # commentary (interpretation), so each slide is self-contained.
         body = "\n".join(
             [
                 nav,
                 f"<h1>{sl['heading']}</h1>",
-                *recap_html,
-                *maps_html,
-                *strategies_html,
-                *commentary_html,
+                *maps_top_html,
+                *strategies_initial_html,
                 *nego_link_html,
+                *strategies_revised_html,
+                *maps_result_html,
+                *recap_html,
+                *commentary_html,
                 nav,
                 *orders_modal,
             ]

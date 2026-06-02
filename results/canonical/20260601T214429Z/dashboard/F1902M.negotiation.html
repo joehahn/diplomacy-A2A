@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset='utf-8'><title>Negotiation — FALL 1902 MOVEMENT (F1902M) — 20260601T214429Z</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px;
+       margin: 0 auto; padding: 20px; color: #222; }
+h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
+h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
+.meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
+table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
+                                       vertical-align: top; }
+table.settings th { font-weight: 600; color: #555; white-space: nowrap;
+                    min-width: 160px; }
+table.settings td { color: #222; }
+nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
+      gap: 8px; }
+nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
+                   font-size: 0.95em; }
+nav a { background: #eef; color: #224; }
+nav a:hover { background: #dde; }
+nav span.disabled { background: #f5f5f5; color: #bbb; }
+img.map { max-width: 100%; border: 1px solid #ddd; }
+h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em; }
+.orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
+          margin: 12px 0; font-size: 0.9em; }
+.orders .power { margin: 4px 0; }
+.orders .power b { display: inline-block; min-width: 80px; }
+.invalid { color: #c33; }
+ol.phases { line-height: 1.8; }
+.legend { font-size: 0.78em; color: #666; margin: 6px 0 10px; }
+.legend .chip { display: inline-block; padding: 1px 8px; margin: 2px 4px 2px 0;
+                border-radius: 10px; color: #fff; font-weight: 600; }
+.thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
+.thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
+.thread-head .arr { color: #aaa; font-weight: 400; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-items: start; }
+.bubble { padding: 7px 11px; border-radius: 12px; border-top-left-radius: 3px;
+          background: #f6f6f8; border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.empty { background: none; border: none; }
+.bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
+                 letter-spacing: 0.02em; }
+.bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
+               margin-left: 6px; font-weight: 700; }
+.bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
+.kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+           margin: 10px 0; }
+.kpi-svg { flex: 0 1 840px; width: 100%; max-width: 900px; height: auto;
+           background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
+.kpi-axis { stroke: #bbb; stroke-width: 0.6; }
+.kpi-tick { font-size: 9px; fill: #888; }
+.kpi-axis-label { font-size: 9.5px; fill: #666; font-weight: 500; }
+.kpi-legend { flex: 0 0 auto; font-size: 0.78em; line-height: 1.6;
+              padding: 6px 10px; background: #fafafa; border: 1px solid #eee;
+              border-radius: 4px; }
+.kpi-legend .leg-row { display: flex; align-items: center; gap: 6px; }
+.kpi-legend .leg-swatch { display: inline-block; width: 14px; height: 8px;
+                          border-radius: 2px; flex: 0 0 auto; }
+.kpi-legend .leg-label { font-weight: 600; color: #444; }
+.narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
+        margin: 10px 0; font-size: 0.9em; }
+.narr .nrow { margin: 4px 0; line-height: 1.4; }
+.narr .nrow > b:first-child { display: inline-block; min-width: 78px; }
+.orders-link { display: inline-block; margin: 2px 0 12px; padding: 4px 11px; font-size: 0.85em;
+               background: #eef; color: #224; border-radius: 4px; text-decoration: none; }
+.orders-link:hover { background: #dde; }
+.modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; }
+.modal:target { display: block; }
+.modal-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+                  background: rgba(0, 0, 0, 0.45); }
+.modal-card { position: relative; margin: 6vh auto; background: #fff; max-width: 620px;
+              max-height: 82vh; overflow: auto; padding: 14px 22px 20px; border-radius: 8px;
+              box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.modal-card h2 { margin-top: 4px; }
+.modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
+               color: #999; text-decoration: none; }
+.modal-close:hover { color: #333; }
+.commentary { background: #f0f4ff; border-left: 3px solid #7a8fd8; padding: 10px 14px;
+              margin: 14px 0; font-size: 0.92em; line-height: 1.5; font-style: italic;
+              color: #333; }
+.commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
+                      text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
+                      display: block; margin-bottom: 6px; }
+.commentary .clist { margin: 0; padding-left: 20px; }
+.commentary .clist li { margin: 5px 0; }
+.nego-link { display: inline-block; margin: 14px 0; padding: 9px 16px; font-size: 0.95em;
+             font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
+             border-radius: 6px; text-decoration: none; }
+.nego-link:hover { background: #fde0ec; }
+.narr .r-fail { color: #0a8fa8; }
+.narr .r-bad { color: #c0392b; }
+.narr .r-warn { color: #c77a0a; }
+.strategies { background: #fbf6ee; border-left: 3px solid #d8b870; padding: 8px 14px;
+              margin: 14px 0; font-size: 0.92em; }
+.strategies summary { cursor: pointer; }
+.strategies .slist { margin-top: 8px; }
+.strategies .srow { padding: 6px 0; border-top: 1px dotted #e8d8b8; }
+.strategies .srow:first-child { border-top: none; }
+.strategies .srow b { display: inline-block; min-width: 78px; }
+.strategies .sline { margin: 3px 0 3px 80px; line-height: 1.4; }
+.strategies .stag { display: inline-block; font-size: 0.72em; font-weight: 700;
+                    text-transform: uppercase; color: #8a6a2e; min-width: 56px;
+                    margin-right: 6px; letter-spacing: 0.04em; }
+</style>
+</head><body>
+<nav><a href='F1902M.html'>← back to FALL 1902 MOVEMENT (F1902M)</a><a href='index.html'>index</a></nav>
+<h2>Negotiation before FALL 1902 MOVEMENT</h2>
+<div class='legend'><span class='chip' style='background:#c0392b'>AUSTRIA</span> <span class='chip' style='background:#2c5fa8'>ENGLAND</span> <span class='chip' style='background:#1f8aa8'>FRANCE</span> <span class='chip' style='background:#555555'>GERMANY</span> <span class='chip' style='background:#2e8b57'>ITALY</span> <span class='chip' style='background:#7d3c98'>RUSSIA</span> <span class='chip' style='background:#cc8a00'>TURKEY</span></div>
+<div class='pair-filter'>
+<h3>Filter to one pair</h3>
+<p class='hint'>Click any cell to show only that pair's conversation. The diagonal cells are each power's own row/column label.</p>
+<table class='pair-grid'>
+<thead><tr><th></th><th>AUS</th><th>ENG</th><th>FRA</th><th>GER</th><th>ITA</th><th>RUS</th><th>TUR</th></tr></thead><tbody>
+<tr><th>AUS</th><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td></tr>
+<tr><th>ENG</th><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td class='diag'>—</td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>FRA</th><td class='diag'>—</td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td class='diag'>—</td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td></tr>
+<tr><th>GER</th><td class='diag'>—</td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>ITA</th><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td class='diag'>—</td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ITALY-RUSSIA'>·</a></td><td><a href='#pair-ITALY-TURKEY'>·</a></td></tr>
+<tr><th>RUS</th><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td class='diag'>—</td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td><a href='#pair-ITALY-RUSSIA'>·</a></td><td class='diag'>—</td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td></tr>
+<tr><th>TUR</th><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ITALY-TURKEY'>·</a></td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td><td class='diag'>—</td></tr>
+</tbody></table>
+<a class='clear' href='#'>Show all pairs</a>
+</div>
+<div class='thread' id='pair-ENGLAND-FRANCE'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R1</span></div><div class='btext'>You're now at 5 centers and holding Belgium — I helped you get there, so I'd like to discuss what comes next. This fall I'll need something concrete in return: either you support me into a center I can take, or we agree on a clear division of targets so I'm not left behind. What are you planning this fall, and what can you offer me?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>We took Belgium cleanly — well done. Now the question is what to do next: Germany still holds Holland with F HOL, and F NTH gives them reach into BEL. If you move F NTH to support me into HOL, or pressure DEN, we can continue squeezing Germany together. What's your plan for this fall?</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R2</span></div><div class='btext'>I'm not going to sit at 4 centers while you hold 5 with BEL — I helped you take it and I need something back. If you want to stay coordinated, offer me a concrete path to a new center this fall, otherwise I'll be moving against BEL. What can you actually deliver for me this turn?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Here's my concrete proposal for this fall: I move A BEL - HOL, and you order F NTH S A BEL - HOL. That's a guaranteed 2-strength attack that takes Holland from Germany. You get Germany weakened and goodwill from me; I get a 6th center. Can you commit to F NTH S A BEL - HOL this turn?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>Final commitment from me: A BEL - HOL, with A BUR S A BEL - HOL as backup if needed. I need F NTH S A BEL - HOL from you — that's a guaranteed 2-strength attack that takes HOL cleanly. If you support me into HOL this turn, I'll back your next move into DEN or wherever you want to push Germany next. Please confirm F NTH S A BEL - HOL.</div></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-GERMANY'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R1</span></div><div class='btext'>I now hold Belgium, which I know is a sore point. I have no interest in pushing further east into RUH or MUN — I want a stable border with you. But I need to know: is F HOL staying put, or are you moving it? If you're willing to let HOL go neutral, I'm open to a deal where we both stabilize our positions and turn attention elsewhere.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>England has F ENG positioned to strike at BRE or PIC, and F NWY threatens your northern flank — I'd watch them carefully this fall. I have no aggressive intentions toward BEL or BUR, but if England moves against you, I'm open to coordinating a response.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R2</span></div><div class='btext'>I want to be direct: I'm considering a push on HOL this fall, since it's the logical next step from BEL. If you're willing to move F HOL out voluntarily — say, to DEN or NTH — I'd rather take it uncontested than force a fight, and we could negotiate something in return. Otherwise I'll need to press the attack. What would it take for you to vacate HOL?</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R2</span></div><div class='btext'>England is pressing me hard to support an attack on BEL this fall — I've been holding them off, but if they move F ENG toward BEL I can't promise I won't be drawn in. Your safest move is to hold BEL firmly and make sure A BUR is positioned to support it; I have no orders moving against you this turn.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R3</span></div><div class='btext'>I'm moving A BEL - HOL this fall — I'd rather take it cleanly than fight over it. If you move F HOL out voluntarily to DEN or NTH, we avoid a direct clash and I'll support your position elsewhere; if F HOL stays, I'll press the attack with English support. Your call.</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-ITALY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R1</span></div><div class='btext'>Serbia is my target this fall with A BUD — I'd like your F ION or A APU to threaten Turkey's southern position to keep A BUL tied down or pushed back. If Turkey moves A BUL toward GRE instead of SER, I need support; can we coordinate F ION to threaten ION/AEG to pressure Turkey's flank?</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>I notice Trieste is currently unoccupied — I want to be transparent that A VEN could move there, but I have no intention of breaking our arrangement if we're genuinely coordinating. What are you planning for Trieste this fall, and can we agree on a concrete joint move against Turkey or Serbia so we're both growing rather than fighting each other?</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R2</span></div><div class='btext'>I'm moving A BUD to Serbia this fall — confirmed. I need F ION to threaten AEG or move toward GRE to keep Turkey's A BUL from attacking me there; even a credible threat from ION keeps BUL pinned. Concrete ask: F ION moves toward AEG or positions to support GRE if Turkey attacks — in return I'll support your Adriatic position and back any Italian move into ALB or ADR next year.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>I'm committing F ION to AEG this fall to pressure Turkey's southern flank — this directly supports your push for Serbia by keeping A BUL pinned or threatened. I want to be transparent: A VEN is staying put or moving toward TRI only if you explicitly invite it; I have no interest in breaking what we've built. Can you confirm A BUD is moving to SER and what F ALB is doing so I can plan around your moves?</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-RUSSIA'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I'm moving A BUD to Serbia this fall to claim that center. I need clarity on your intentions toward RUM — are you pushing there or maintaining your anti-Turkey posture in BLA? If you're pressing Turkey, I'll hold A GAL as a buffer rather than contest RUM, and we can discuss a longer-term division.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>I'm pushing F BLA toward CON or ANK this fall to press Turkey's home centers — this is the moment to capitalize on their weakened position. I need A GAL to stay out of RUM while I'm committed south; in return, I'll support any Austrian move into BUL with F BLA or A UKR. If you push A BUD toward SER and then BUL, we can split Turkey's Balkan position cleanly.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Holding A GAL in place as agreed — no move toward RUM while you're committed south. Concretely: A BUD goes to SER this fall, A GRE holds with F ALB support. If your F BLA can threaten BUL/EC or CON, that helps pin Turkey's A BUL away from GRE — coordinated pressure from both sides keeps Turkey squeezed.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>I'm moving F BLA toward ANK or CON this fall to press Turkey's home centers — this is the moment to act while they're exposed. Please confirm A BUD is going to SER and that A GAL stays out of RUM; if you can also support a push toward BUL, we can split Turkey's position cleanly between us.</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-TURKEY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>A BUL sitting next to both GRE and SER is the central tension right now. I'm taking Serbia with A BUD this fall — if you move A BUL toward GRE, I will respond with full force and coordinate with Italy and Russia against you. Hold BUL and we maintain a stable line; attack GRE and you face a three-power response.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Serbia is still my top priority this fall — if you're not moving there yourself, I'd appreciate support from GRE or BUD to guarantee it falls to me rather than staying neutral. Austria and Turkey both benefit from a clear Balkan division while Russia sits at 6 centers; let's not waste this opportunity by bouncing each other again.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R2</span></div><div class='btext'>A BUD is taking Serbia this fall — that's settled. If A BUL moves toward GRE, I have F ALB supporting and Russia pressing from BLA, so you'd be attacking into a defended position while losing your Black Sea position simultaneously. Hold BUL and we maintain a stable line; attack GRE and you face a coordinated response from three directions.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>I'm taking Serbia this fall — if you move A BUD there we bounce and neither gains while Russia at 6 centers grows unchecked. The rational move for you is to hold BUD and let SER fall to me, then we have a stable line with you holding GRE and TRI while I hold BUL and SER; fighting over SER only weakens us both.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-GERMANY'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R1</span></div><div class='btext'>France is at 5 centers and I'm still at 4 — I helped them take Belgium, which I now regret. I'm interested in coordinating against France this fall: if your F NTH supports my F ENG into BEL, or we find another angle, we can deny France further growth. What's your read on this, and what are you planning with your units?</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>France now sits in Belgium with 5 centers — they're the clear western threat to both of us. I'm pushing A DEN toward Sweden this fall and consolidating HOL; if you move F ENG against France (toward BRE or PIC), I can support from the north. Let's coordinate against France before they pull further ahead.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Concrete proposal: I move F ENG - BEL to attack France's A BEL, and you order F NTH S F ENG - BEL. That's a clean 2-strength attack that takes BEL from France and puts me at 5 centers — I'll then support your position in HOL and DEN going forward. Can you commit to F NTH S F ENG - BEL this fall?</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Here's a concrete proposal: I move A DEN - SWE and F NTH supports that attack, taking Sweden from Russia and giving me 6 centers. That frees you to press F ENG against France toward BRE or MAO — I'll support you diplomatically and can offer F HOL S F ENG - BEL next fall if you take BRE this fall. Does this work for you?</div></div>
+</div></div>
+<div class='thread' id='pair-ITALY-RUSSIA'>
+<div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Russia is at 6 SCs and well-positioned — I want to coordinate rather than cross paths. I'm planning to push into the eastern Mediterranean against Turkey this fall; if you're pressing Turkey from the north via BUL or the Black Sea, we could squeeze them from both sides. Are you moving against Turkey or Austria this fall?</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ITALY<span class='rnd'>R1</span></div><div class='btext'>Turkey is now exposed — F BLA gives me a direct line to CON or ANK this fall, and if you can move F ION toward AEG or EAS to threaten SMY, we can squeeze Turkey from two directions simultaneously. This is the best opportunity either of us will have to dismantle Turkey before they recover. What can you commit to this turn?</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>I'm moving F ION toward AEG this fall to threaten Turkey's southern position — that should coordinate well with your F BLA pressing on CON or ANK. Concrete ask: if you're moving F BLA toward CON, can you confirm so I can time my AEG move to maximize the squeeze rather than give Turkey a free retreat into the gap?</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ITALY<span class='rnd'>R2</span></div><div class='btext'>I'm pushing F BLA toward ANK this fall — if you can move F ION toward AEG or EAS to threaten SMY simultaneously, we can force Turkey to defend on two fronts. Concrete ask: commit F ION to AEG this turn and I'll coordinate my Black Sea attack to maximize the squeeze.</div></div>
+</div></div>
+<div class='thread' id='pair-ITALY-TURKEY'>
+<div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Austria sits at 4 SCs with Greece and an empty Trieste — they're well-positioned to grow fast if unchecked. I can threaten Greece from ION this fall while you press from BUL; if we coordinate a simultaneous attack on Austria's Balkan position, we both gain. What's your concrete plan this fall?</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R1</span></div><div class='btext'>Austria is at 4 centers with armies in GRE and near SER — they're positioned to dominate the Balkans if unchecked. I'm pushing for Serbia this fall; if you can threaten Austria from the south (ION toward GRE or pressure on TRI), we keep them from consolidating and both benefit. What's your plan this fall?</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R2</span></div><div class='btext'>Russia has F BLA pointed at CON or ANK and you have no fleet to stop them — that's your existential threat this fall, not Austria. If you commit F ANK back to BLA to contest Russia's fleet, I'll keep F ION out of AEG and we avoid a two-front crisis for you. What's F CON doing this fall?</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R2</span></div><div class='btext'>I'm moving A BUL - SER this fall regardless — Austria has threatened me with a 3-power response but I think that's bluster. If you move F ION toward GRE this fall, Austria has to defend there instead of contesting Serbia, and we both benefit: I get SER, you threaten GRE. Concrete deal: F ION - GRE, A BUL - SER, and we split Austria's Balkan position.</div></div>
+</div></div>
+<div class='thread' id='pair-RUSSIA-TURKEY'>
+<div class='thread-head'><span style='color:#7d3c98'>RUSSIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>You're now in a very difficult position — F BLA sits adjacent to both CON and ANK, and I intend to use it. I'm open to a negotiated settlement if you're willing to pull A BUL back to CON and keep F ANK in place, which would signal genuine de-escalation; otherwise I will push for your home centers this fall.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>F BLA is now your fleet — I accept that outcome and I'm not planning to attack it directly this fall. I want to focus on Serbia and consolidate my Balkan position; if you hold F BLA defensively and don't push into CON or BUL, I'll stay out of RUM and SEV. Can we agree on a mutual holding pattern in the Black Sea this turn?</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R2</span></div><div class='btext'>F BLA is moving to ANK this fall — I'm pressing your home centers while you're exposed. Your only path to avoiding catastrophic losses is to pull A BUL back to CON to defend and signal genuine de-escalation; otherwise Austria and I will dismantle your Balkan position while I take ANK.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>F BLA threatening my home centers while I'm trying to take Serbia is exactly the kind of two-front pressure that forces me to respond defensively everywhere. If you hold F BLA in place this fall and don't push toward CON or ANK, I will keep A BUL away from RUM and F ANK away from BLA — a mutual hold that costs us nothing and lets us both consolidate.</div></div>
+</div></div>
+<div class='thread' id='pair-GERMANY-RUSSIA'>
+<div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I'm moving A DEN toward Sweden this fall — I'd ask that F SWE not contest it, and in return I'll stay clear of your Baltic and eastern positions. A quiet understanding between us benefits both while the western powers are the real competition.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>I'm moving A DEN toward Sweden this fall — that's my honest intention and I'm asking you to let it go rather than contest it. Sweden is more defensible for you from Finland anyway, and a fight there only benefits England and France while we both have bigger concerns.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R2</span></div><div class='btext'>F SWE is my supply center and I will not be voluntarily ceding it — I'll be defending it this fall. If A DEN moves to SWE, expect F SWE to contest it; I'd rather we both hold our positions and avoid a pointless bounce that benefits neither of us.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-RUSSIA'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>France is pulling ahead at 5 centers and I need to act this fall. I'm considering pressing against France or taking BEL back with German help — what's your situation in the south, and are you in a position to apply any pressure on Austria or Turkey that keeps them occupied while I focus west?</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-ITALY'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R1</span></div><div class='btext'>Quick check-in: I'm consolidating in the west and have no designs on anything near your sphere. Are you making progress in the south? Worth flagging that Russia at 6 centers is the biggest threat on the board right now — if you're not already thinking about how to slow them, now's the time.</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<nav><a href='F1902M.html'>← back to FALL 1902 MOVEMENT (F1902M)</a><a href='index.html'>index</a></nav>
+</body></html>
