@@ -57,8 +57,8 @@ negotiations into success, and who backstabbed whom.
 
 ## A2A highlights from the canonical
 
-Three moments where agent-to-agent negotiation visibly drove
-outcomes (or visibly didn't):
+Two moments where agent-to-agent negotiation visibly drove
+outcomes, and a third that didn't:
 
 - **Anglo-French coordination delivers Belgium** at
   [S1902M](https://joehahn.github.io/diplomacy-A2A/results/canonical/20260601T214429Z/dashboard/S1902M.html).
