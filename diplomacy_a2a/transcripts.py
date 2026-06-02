@@ -534,6 +534,8 @@ nav span.disabled { background: #f5f5f5; color: #bbb; }
 img.map { max-width: 100%; border: 1px solid #ddd; }
 h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
             text-transform: uppercase; letter-spacing: 0.04em; }
+h3.retreats-cap { margin: 14px 0 4px 0; font-size: 0.8em; color: #888;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 .orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
           margin: 12px 0; font-size: 0.9em; }
 .orders .power { margin: 4px 0; }
@@ -1046,33 +1048,58 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     commentary_path = out_dir / "commentary.json"
     commentary = json.loads(commentary_path.read_text()) if commentary_path.exists() else {}
 
+    # Retreat phases are folded into the preceding movement-phase slide as
+    # a small "Retreats" block rather than getting their own slide: the
+    # narration is usually one or two lines and the post-retreat positions
+    # are already shown by the next phase's start-of-phase map.
+    last_movement_slide: dict[str, Any] | None = None
+    movement_slide_by_short: dict[str, int] = {}
+
+    def _as_comm_list(c: Any) -> list[str]:
+        if isinstance(c, list):
+            return c
+        return [c] if c else []
+
     for ph in phases:
+        short = ph["short"]
         valid_orders = {pw: od["valid"] for pw, od in ph["orders"].items()}
-        slides.append(
-            {
-                "file": f"{ph['short']}.html",
-                "short": ph["short"],
-                "title": f"{ph['long']} ({ph['short']})",
-                "heading": f"{ph['long']} <code>({ph['short']})</code>",
-                "orders": ph["orders"],
-                "narration": narrate_phase(valid_orders, results_by_phase.get(ph["short"], {})),
-                "commentary": commentary.get(ph["short"], ""),
-                "strategies": strategies_by_phase.get(ph["short"], {}),
-                "maps": [
-                    ("Orders — start positions, arrows show moves", f"{ph['short']}.svg"),
-                    ("Result — positions after this phase resolved", f"{ph['short']}.result.svg"),
-                ],
-                "dialogue_label": "",
-                "dialogue": [],
-            }
-        )
-    # Attach each movement phase's negotiation to the *same* slide as the
-    # movement phase it produces. slides[mi + 1] is phases[mi]'s slide
-    # because slides[0] is the opening "Initial position" placeholder.
-    for mi, ph in enumerate(phases):
+        narration = narrate_phase(valid_orders, results_by_phase.get(short, {}))
+        if short.endswith("R") and last_movement_slide is not None:
+            last_movement_slide["retreats"] = narration
+            last_movement_slide["commentary"] = (
+                _as_comm_list(last_movement_slide.get("commentary", ""))
+                + _as_comm_list(commentary.get(short, ""))
+            )
+            continue
+        slide = {
+            "file": f"{short}.html",
+            "short": short,
+            "title": f"{ph['long']} ({short})",
+            "heading": f"{ph['long']} <code>({short})</code>",
+            "orders": ph["orders"],
+            "narration": narration,
+            "commentary": commentary.get(short, ""),
+            "strategies": strategies_by_phase.get(short, {}),
+            "maps": [
+                ("Orders — start positions, arrows show moves", f"{short}.svg"),
+                ("Result — positions after this phase resolved", f"{short}.result.svg"),
+            ],
+            "dialogue_label": "",
+            "dialogue": [],
+        }
+        slides.append(slide)
+        if short.endswith("M"):
+            last_movement_slide = slide
+            movement_slide_by_short[short] = len(slides) - 1
+    # Attach each movement phase's negotiation to its own slide. Looked up by
+    # phase-short since the retreat-phase folding above can break a positional
+    # index-based mapping.
+    for ph in phases:
         if ph["short"].endswith("M"):
-            slides[mi + 1]["dialogue"] = dialogue_by_phase.get(ph["short"], [])
-            slides[mi + 1]["dialogue_label"] = ph["long"]
+            idx = movement_slide_by_short.get(ph["short"])
+            if idx is not None:
+                slides[idx]["dialogue"] = dialogue_by_phase.get(ph["short"], [])
+                slides[idx]["dialogue_label"] = ph["long"]
 
     # --- index.html ---
     # Settings table: what the game was actually configured with.
@@ -1228,6 +1255,22 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         if narration_rows:
             recap_html.append("<div class='narr'>" + "".join(narration_rows) + "</div>")
 
+        # Retreats (folded in from a retreat phase that followed this
+        # movement phase). Rendered as a small labelled block right after
+        # the "what happened" narration so it reads as a continuation.
+        retreats_html: list[str] = []
+        retreats = sl.get("retreats") or []
+        if retreats:
+            rret_rows = []
+            for pw, text in retreats:
+                color = POWER_COLORS.get(pw, "#777")
+                body = _colorize_outcomes(_esc(text))
+                rret_rows.append(
+                    f"<div class='nrow'><b style='color:{color}'>{pw}</b> {body}</div>"
+                )
+            retreats_html.append("<h3 class='retreats-cap'>Retreats</h3>")
+            retreats_html.append("<div class='narr'>" + "".join(rret_rows) + "</div>")
+
         # KPI chart (SC counts over time) lives in its own block, rendered
         # after the commentary; movement-phase slides only.
         kpi_html: list[str] = []
@@ -1333,6 +1376,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 *strategies_revised_html,
                 *maps_result_html,
                 *recap_html,
+                *retreats_html,
                 *commentary_html,
                 *kpi_html,
                 nav,
