@@ -55,6 +55,31 @@ LLM-generated summary of the gameplay that describes which nations used
 A2A negotiations to advance their goals, which agents fumbled translating
 negotiations into success, and who backstabbed whom.
 
+## A2A highlights from the canonical
+
+Three moments where agent-to-agent negotiation visibly drove
+outcomes (or visibly didn't):
+
+- **Anglo-French coordination delivers Belgium** at
+  [S1902M](https://joehahn.github.io/diplomacy-A2A/results/canonical/20260601T214429Z/dashboard/S1902M.html).
+  France moved A BUR → BEL while England's F ENG supported the
+  attack, exactly as negotiated, dislodging Germany's F BEL. The
+  Anglo-French partnership delivered its first concrete result.
+
+- **Austria triple-deceives Italy** at
+  [F1909M](https://joehahn.github.io/diplomacy-A2A/results/canonical/20260601T214429Z/dashboard/F1909M.html).
+  Austria promised Italy across three negotiation rounds that A SER
+  would move to RUM (freeing A BUL for Italian capture), then used
+  A SER to support A BUL instead. Italy's F AEG → GRE attack on
+  Greece was repelled exactly as Austria planned.
+
+- **The anti-German alliance breaks under pressure** at
+  [F1906M](https://joehahn.github.io/diplomacy-A2A/results/canonical/20260601T214429Z/dashboard/F1906M.html).
+  France and England coordinated messaging around a joint attack on
+  Germany's Holland, but England moved A LVP → EDI for
+  self-preservation instead of supporting France's A BEL → HOL.
+  France's attack stalled and Germany held HOL.
+
 ## Project goals & deliverables
 
 1. **Built with Claude Code, but reproducible with just an Anthropic key.**
