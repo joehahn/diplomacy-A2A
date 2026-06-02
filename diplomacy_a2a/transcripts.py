@@ -1101,6 +1101,14 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "Final standing",
                 " · ".join(f"{p} {n}" for p, n in standing),
             ))
+        # When the game completed (wall-clock UTC at the run_ended event).
+        ts = run_ended.get("ts", "")
+        if ts:
+            try:
+                ts_display = datetime.fromisoformat(ts).strftime("%Y-%m-%d %H:%M:%S UTC")
+            except (ValueError, TypeError):
+                ts_display = ts
+            settings_rows.append(("Execution timestamp", ts_display))
     else:
         settings_rows.append(("Run state", "<i>incomplete (no run_ended event)</i>"))
 
