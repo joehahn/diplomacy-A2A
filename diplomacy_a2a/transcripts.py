@@ -1075,6 +1075,14 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         settings_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
         elapsed = run_ended.get("elapsed_seconds", 0)
         settings_rows.append(("Wall time", f"{elapsed/60:.1f} min ({elapsed:.0f} s)"))
+        # When the game completed (wall-clock UTC at the run_ended event).
+        ts = run_ended.get("ts", "")
+        if ts:
+            try:
+                ts_display = datetime.fromisoformat(ts).strftime("%Y-%m-%d %H:%M:%S UTC")
+            except (ValueError, TypeError):
+                ts_display = ts
+            settings_rows.append(("Execution timestamp", ts_display))
         settings_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
         # Illegal-orders rate across all movement-phase orders the agents
         # submitted. An illegal order is one the adjudicator rejected as
@@ -1101,14 +1109,6 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "Final standing",
                 " · ".join(f"{p} {n}" for p, n in standing),
             ))
-        # When the game completed (wall-clock UTC at the run_ended event).
-        ts = run_ended.get("ts", "")
-        if ts:
-            try:
-                ts_display = datetime.fromisoformat(ts).strftime("%Y-%m-%d %H:%M:%S UTC")
-            except (ValueError, TypeError):
-                ts_display = ts
-            settings_rows.append(("Execution timestamp", ts_display))
     else:
         settings_rows.append(("Run state", "<i>incomplete (no run_ended event)</i>"))
 

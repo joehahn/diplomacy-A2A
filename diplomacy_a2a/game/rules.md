@@ -147,6 +147,21 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
   slot, which is doubly advantageous to you: you gain an SC and they
   lose a build location.
 
+## Common tactics
+
+- **Reach out to distant powers when locally pressured.** If your nearest
+  neighbors are coordinating against you, seek an ally further away who
+  can open a second front against one of them.
+- **Cut supports by moving into the supporting unit's province.** Even
+  if your move bounces, the support order is cancelled. Useful when an
+  attack against you depends on a single specific supporter.
+- **Use convoy to reach oversea provinces.** An army can be convoyed
+  across one or more friendly fleets in sea provinces from one coast to
+  another, including across multiple sea zones in a chain.
+- **Time your unit placement around Winter builds.** A new build can
+  only appear on a vacant home supply center you own. If you want to
+  build, move existing units off your home SCs by the end of Fall.
+
 ## Common rejected order patterns to avoid
 
 - Don't omit unit type: `PAR - BUR` is invalid, must be `A PAR - BUR`.
