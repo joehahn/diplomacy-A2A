@@ -60,6 +60,34 @@ def render_for_power(state: GameState, power: str, *, memory: int = 1) -> str:
         lines.append(f"- Unowned ({len(unowned)}): {', '.join(unowned)}")
     lines.append("")
 
+    # Home supply centers: surfaced explicitly so the agent can reason about
+    # build availability and home-SC parking without inferring its home set
+    # from training-data map knowledge. Builds at Winter Adjustments only
+    # appear on home centers you own that are vacant.
+    homes = list(getattr(state.game.map, "homes", {}).get(power, []))
+    if homes:
+        unit_at: dict[str, tuple[str, str]] = {}
+        for p in POWERS:
+            for u in state.units(p):
+                unit_at[u.split()[-1].split("/")[0]] = (p, u)
+        owner_of: dict[str, str] = {}
+        for p in POWERS:
+            for c in state.centers(p):
+                owner_of[c] = p
+        lines.append("## Your home supply centers (build locations at Winter Adjustments)")
+        for h in homes:
+            owner = owner_of.get(h)
+            here = unit_at.get(h)
+            if owner != power:
+                lines.append(f"- {h}: held by {owner}" if owner else f"- {h}: uncontrolled")
+            elif here and here[0] == power:
+                lines.append(f"- {h}: occupied by your {here[1]}")
+            elif here:
+                lines.append(f"- {h}: occupied by {here[0]}'s {here[1]}")
+            else:
+                lines.append(f"- {h}: vacant")
+        lines.append("")
+
     legal = state.legal_orders(power)
     if legal:
         lines.append(f"## Your legal orders this phase ({state.short_phase})")
