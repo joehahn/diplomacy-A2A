@@ -581,9 +581,14 @@ body:has(.thread:target) .thread { display: none; }
 body:has(.thread:target) .thread:target { display: block; }
 .kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
            margin: 10px 0; }
-.kpi-svg { flex: 0 1 1008px; width: 100%; max-width: 1080px; height: auto;
+.kpi-svg { flex: 0 1 966px; width: 100%; max-width: 1035px; height: auto;
            background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
-.kpi-svg circle:hover { r: 4.5; cursor: default; }
+.kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
+.kpi-svg .dot-wrap:hover circle:nth-child(2) { r: 4.5; }
+.kpi-svg .dot-tip { opacity: 0; pointer-events: none; }
+.kpi-svg .dot-wrap:hover .dot-tip { opacity: 1; }
+.kpi-svg .dot-tip-bg { fill: #222; fill-opacity: 0.92; }
+.kpi-svg .dot-tip-text { fill: #fff; font: 11px -apple-system, system-ui, sans-serif; }
 .kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
 .kpi-axis { stroke: #bbb; stroke-width: 0.6; }
 .kpi-tick { font-size: 9px; fill: #888; }
@@ -766,11 +771,28 @@ def _kpi_chart(
         )
         for i, v in enumerate(pts):
             v_int = int(v) if abs(v - round(v)) < 1e-6 else v
-            tip = f"{power} at {x_labels[i]}: {v_int} {ylabel}"
+            tip = f"{power} {x_labels[i]}: {v_int} {ylabel}"
+            cx = xs[i]
+            cy = y_for(v, power)
+            # CSS-hover SVG tooltip: the .dot-wrap group catches hover (with an
+            # invisible larger hit-circle around the visible dot), the .dot-tip
+            # group is opacity 0 by default and opacity 1 on group hover. The
+            # native <title> stays as accessibility fallback. Tooltip nudged
+            # left if it would overflow the right edge of the plot.
+            tip_w = max(60, len(tip) * 6 + 10)
+            tip_dx = -tip_w - 10 if cx + tip_w + 14 > width else 8
+            tip_dy = -14 if cy < pad_t + 18 else -22
             parts.append(
-                f"<circle cx='{xs[i]:.1f}' cy='{y_for(v, power):.1f}' r='3.0' "
+                f"<g class='dot-wrap'>"
+                f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='9' class='dot-hit'/>"
+                f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='3.0' "
                 f"fill='{color}' stroke='white' stroke-width='0.8'>"
                 f"<title>{tip}</title></circle>"
+                f"<g class='dot-tip' transform='translate({cx:.1f},{cy:.1f})'>"
+                f"<rect x='{tip_dx}' y='{tip_dy}' width='{tip_w}' height='18' "
+                f"rx='3' class='dot-tip-bg'/>"
+                f"<text x='{tip_dx + 5}' y='{tip_dy + 12}' class='dot-tip-text'>"
+                f"{tip}</text></g></g>"
             )
     parts.append("</svg>")
     return "\n".join(parts)
@@ -815,7 +837,7 @@ def _kpi_charts_for_phase(
     sc_ymax = max(sc_max_obs + 1, 5)
     sc_chart = _kpi_chart(
         "Supply centers", sc_series, ymax=sc_ymax, ylabel="SC", x_labels=phases,
-        width=1008, height=432,
+        width=966, height=414,
     )
     legend = _kpi_legend(powers)
     return f"<div class='kpi-row'>{sc_chart}{legend}</div>"
