@@ -771,7 +771,7 @@ def _kpi_chart(
         )
         for i, v in enumerate(pts):
             v_int = int(v) if abs(v - round(v)) < 1e-6 else v
-            tip = f"{power} {x_labels[i]}: {v_int} {ylabel}"
+            tip = f"{power.title()}: {v_int}"
             cx = xs[i]
             cy = y_for(v, power)
             # CSS-hover SVG tooltip: the .dot-wrap group catches hover (with an
