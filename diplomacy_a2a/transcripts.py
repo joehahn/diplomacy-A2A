@@ -1142,21 +1142,101 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 ts_display = ts
             settings_rows.append(("Execution timestamp", ts_display))
         settings_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
+        # Aggregate gameplay-quality stats. All four scan the event stream
+        # once each below: hold rate (movement-phase orders that are HOLD),
+        # illegal orders subdivided by syntax category (support / convoy /
+        # move / other), bounces and dislodgements from phase_resolved
+        # tokens, and negotiation message volume + conditional-trade rate.
+
+        # Hold rate across all valid movement-phase orders.
+        total_mvmt_orders = total_holds = 0
+        for e in events:
+            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
+                for o in e.get("valid", []):
+                    total_mvmt_orders += 1
+                    if o.endswith(" H") or o.rstrip().endswith(" H"):
+                        total_holds += 1
+        if total_mvmt_orders > 0:
+            settings_rows.append((
+                "Hold rate",
+                f"{total_holds} of {total_mvmt_orders} "
+                f"({100 * total_holds / total_mvmt_orders:.1f}%)",
+            ))
+
         # Illegal-orders rate across all movement-phase orders the agents
-        # submitted. An illegal order is one the adjudicator rejected as
-        # malformed or geometrically impossible (e.g., supporting an attack
-        # into a non-adjacent province). Filtered out before resolution.
+        # submitted, subdivided by order syntax. An illegal order is one
+        # the adjudicator rejected as malformed or geometrically impossible
+        # (e.g., supporting an attack into a non-adjacent province).
+        def _classify_illegal(order: str) -> str:
+            if re.search(r"\bS\b", order):
+                return "support"
+            if re.search(r"\bC\b", order) or order.endswith(" VIA"):
+                return "convoy"
+            if " - " in order:
+                return "move"
+            return "other"
+
+        cats: dict[str, int] = {"support": 0, "convoy": 0, "move": 0, "other": 0}
         total_orders = illegal_orders = 0
         for e in events:
             if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
                 total_orders += len(e.get("valid", [])) + len(e.get("invalid", []))
-                illegal_orders += len(e.get("invalid", []))
+                for inv in e.get("invalid", []):
+                    illegal_orders += 1
+                    cats[_classify_illegal(inv)] += 1
         if total_orders > 0:
             pct = 100 * illegal_orders / total_orders
+            nonzero = [(c, n) for c, n in cats.items() if n > 0]
+            if not nonzero:
+                breakdown = ""
+            elif len(nonzero) == 1:
+                only_cat = nonzero[0][0]
+                breakdown = f", all {only_cat}"
+            else:
+                breakdown = ", " + " · ".join(f"{n} {c}" for c, n in nonzero)
             settings_rows.append((
                 "Illegal orders",
-                f"{illegal_orders} of {total_orders} ({pct:.1f}%)",
+                f"{illegal_orders} of {total_orders} ({pct:.1f}%{breakdown})",
             ))
+
+        # Bounces (move was contested and failed) and dislodgements (unit
+        # forced to retreat) summed across all resolved phases. Sourced
+        # from the per-unit result tokens recorded at phase_resolved.
+        bounces = dislodgements = 0
+        for e in events:
+            if e.get("type") == "phase_resolved":
+                for tokens in (e.get("results", {}) or {}).values():
+                    if any("bounce" in t for t in tokens):
+                        bounces += 1
+                    if any("dislodged" in t for t in tokens):
+                        dislodgements += 1
+        if bounces or dislodgements:
+            settings_rows.append((
+                "Bounces · dislodgements",
+                f"{bounces} · {dislodgements}",
+            ))
+
+        # Negotiation density: total messages exchanged across the game,
+        # plus the share that contain conditional-trade language (a quick
+        # marker of negotiation depth vs flat status updates).
+        total_msgs = 0
+        cond_msgs = 0
+        cond_re = re.compile(
+            r"\b(if you|if I|in exchange|in return|provided that)\b", re.I
+        )
+        for e in events:
+            if e.get("type") == "agent_messages":
+                for _, text in (e.get("messages", {}) or {}).items():
+                    total_msgs += 1
+                    if cond_re.search(text):
+                        cond_msgs += 1
+        if total_msgs > 0:
+            cond_pct = 100 * cond_msgs / total_msgs
+            settings_rows.append((
+                "Negotiation messages",
+                f"{total_msgs} ({cond_pct:.0f}% conditional)",
+            ))
+
         # Final standings ordered by SC count
         final_centers = run_ended.get("final_state", {}).get("centers", {})
         if final_centers:
