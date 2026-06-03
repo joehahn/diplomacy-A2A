@@ -1249,6 +1249,56 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     if cond_re.search(text):
                         cond_msgs += 1
 
+        # Pass 4: candidate betrayals. Heuristic: a message whose speaker
+        # promises non-aggression toward a specific province ('won't /
+        # will not / stay out / no interest in / respect') followed by the
+        # speaker moving a unit into that province in the same phase's
+        # adjudicated orders. Catches false positives (province named in
+        # passing) and misses subtler promises that lack the keyword
+        # markers, so read this as an order-of-magnitude signal rather
+        # than an exact betrayal tally.
+        orders_by_pp_phase: dict[str, dict[str, list[str]]] = {}
+        for e in events:
+            if e.get("type") == "orders_submitted":
+                orders_by_pp_phase.setdefault(e["phase"], {})[e["power"]] = e.get(
+                    "valid", []
+                )
+        promise_re = re.compile(
+            r"(won't|will not|stay out|no interest in|respect)", re.I
+        )
+        # 3-letter ALL-CAPS English words that could appear in messages
+        # and would otherwise be mistaken for province codes.
+        stop_words = {
+            "IF", "AND", "BUT", "THE", "OUR", "ALL", "HAS", "NOT", "NEW",
+            "HOLD", "SC", "YOU", "FOR", "ARE", "WAS", "WHO", "WHY", "HOW",
+            "OUT", "OWN",
+        }
+        seen_betray: set[tuple[str, str, str]] = set()
+        betrayals = 0
+        for e in events:
+            if e.get("type") != "agent_messages":
+                continue
+            phase = e.get("phase", "")
+            speaker = e.get("power", "")
+            speaker_orders = orders_by_pp_phase.get(phase, {}).get(speaker, [])
+            for _, text in (e.get("messages", {}) or {}).items():
+                if not promise_re.search(text):
+                    continue
+                provs = {
+                    p for p in re.findall(r"\b([A-Z]{3})\b", text)
+                    if p not in stop_words
+                }
+                for prov in provs:
+                    key = (phase, speaker, prov)
+                    if key in seen_betray:
+                        continue
+                    for o in speaker_orders:
+                        m = re.match(r"[AF] \S+\s*-\s*(\S+)", o)
+                        if m and m.group(1).split("/")[0] == prov:
+                            betrayals += 1
+                            seen_betray.add(key)
+                            break
+
         # Append in the desired display order.
         outcomes_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
         if total_orders > 0:
@@ -1257,6 +1307,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             outcomes_rows.append(("Negotiation messages", str(total_msgs)))
             cond_pct = 100 * cond_msgs / total_msgs
             outcomes_rows.append(("Quid pro quo", f"{cond_pct:.1f}%"))
+            if betrayals > 0:
+                outcomes_rows.append(("Betrayals", str(betrayals)))
         if bounces or dislodgements:
             outcomes_rows.append(("Bounces", str(bounces)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))
