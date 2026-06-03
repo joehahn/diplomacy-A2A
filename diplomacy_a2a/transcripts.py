@@ -1308,7 +1308,13 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             cond_pct = 100 * cond_msgs / total_msgs
             outcomes_rows.append(("Quid pro quo", f"{cond_pct:.1f}%"))
             if betrayals > 0:
-                outcomes_rows.append(("Betrayals", str(betrayals)))
+                # Betrayal share among messages: each detected betrayal is a
+                # message-rooted broken promise, so messages is the natural
+                # denominator. Dedup means a promise repeated across rounds
+                # counts once, so the rate slightly under-states per-message
+                # density.
+                betrayal_pct = 100 * betrayals / total_msgs
+                outcomes_rows.append(("Betrayals", f"{betrayal_pct:.1f}%"))
         if bounces or dislodgements:
             outcomes_rows.append(("Bounces", str(bounces)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))
