@@ -1235,10 +1235,30 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     if any("dislodged" in t for t in tokens):
                         dislodgements += 1
 
+        # Pass 3: negotiation density. Total messages exchanged across the
+        # game, plus the share that contain conditional-trade language
+        # (a quick marker of negotiation depth vs flat status updates).
+        total_msgs = cond_msgs = 0
+        cond_re = re.compile(
+            r"\b(if you|if I|in exchange|in return|provided that)\b", re.I
+        )
+        for e in events:
+            if e.get("type") == "agent_messages":
+                for _, text in (e.get("messages", {}) or {}).items():
+                    total_msgs += 1
+                    if cond_re.search(text):
+                        cond_msgs += 1
+
         # Append in the desired display order.
         outcomes_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
         if total_orders > 0:
             outcomes_rows.append(("Total number of orders", str(total_orders)))
+        if total_msgs > 0:
+            cond_pct = 100 * cond_msgs / total_msgs
+            outcomes_rows.append((
+                "Negotiation messages",
+                f"{total_msgs} ({cond_pct:.0f}% conditional)",
+            ))
         if bounces or dislodgements:
             outcomes_rows.append(("Bounces", str(bounces)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))
@@ -1250,27 +1270,6 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             outcomes_rows.append(("Convoy orders", _pct(total_convoys)))
             outcomes_rows.append(("Illegal orders", _pct(illegal_orders)))
             outcomes_rows.append(("Adjacency errors", _pct(adjacency_errors)))
-
-        # Negotiation density: total messages exchanged across the game,
-        # plus the share that contain conditional-trade language (a quick
-        # marker of negotiation depth vs flat status updates).
-        total_msgs = 0
-        cond_msgs = 0
-        cond_re = re.compile(
-            r"\b(if you|if I|in exchange|in return|provided that)\b", re.I
-        )
-        for e in events:
-            if e.get("type") == "agent_messages":
-                for _, text in (e.get("messages", {}) or {}).items():
-                    total_msgs += 1
-                    if cond_re.search(text):
-                        cond_msgs += 1
-        if total_msgs > 0:
-            cond_pct = 100 * cond_msgs / total_msgs
-            outcomes_rows.append((
-                "Negotiation messages",
-                f"{total_msgs} ({cond_pct:.0f}% conditional)",
-            ))
 
     else:
         outcomes_rows.append(("Run state", "<i>incomplete (no run_ended event)</i>"))
