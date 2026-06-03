@@ -526,11 +526,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 12
 h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
 h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
 .meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
-.settings-outcomes { display: flex; gap: 36px; flex-wrap: wrap;
+.settings-outcomes { display: flex; gap: 28px; flex-wrap: wrap;
                      align-items: flex-start; margin: 28px 0 20px; }
-.so-col { flex: 1 1 320px; min-width: 0; }
+.so-col { flex: 0 1 auto; min-width: 0; }
+.so-chart-col { flex: 1 1 320px; }
 .so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 700;
               text-transform: uppercase; letter-spacing: 0.04em; color: #333; }
+.standings-svg { width: 100%; max-width: 320px; height: auto; }
+.standings-label { font: 12px -apple-system, system-ui, sans-serif;
+                   font-weight: 600; }
+.standings-count { font: 12px -apple-system, system-ui, sans-serif;
+                   fill: #333; font-weight: 600; }
 table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
 table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
                                        vertical-align: top; }
@@ -1155,26 +1161,47 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 ts_display = datetime.fromisoformat(ts).strftime("%Y-%m-%d %H:%M:%S UTC")
             except (ValueError, TypeError):
                 ts_display = ts
-            settings_rows.append(("Execution timestamp", ts_display))
+            settings_rows.append(("Timestamp", ts_display))
         elapsed = run_ended.get("elapsed_seconds", 0)
         settings_rows.append(("Wall time", f"{elapsed/60:.1f} min ({elapsed:.0f} s)"))
+        # Tokens in/out summed across all models used in the run. Input
+        # includes both fresh tokens and cache creates/reads so the count
+        # reflects the total prompt material the agents processed.
+        tk_by_model = run_ended.get("tokens_by_model", {}) or {}
+        total_in = sum(
+            (b.get("input", 0) + b.get("cache_create", 0) + b.get("cache_read", 0))
+            for b in tk_by_model.values()
+        )
+        total_out = sum(b.get("output", 0) for b in tk_by_model.values())
+
+        def _fmt_tokens(n: int) -> str:
+            if n >= 1_000_000:
+                return f"{n / 1_000_000:.1f}M"
+            if n >= 1_000:
+                return f"{n / 1_000:.0f}K"
+            return str(n)
+
+        if total_in or total_out:
+            settings_rows.append((
+                "Tokens in / out",
+                f"{_fmt_tokens(total_in)} / {_fmt_tokens(total_out)}",
+            ))
         settings_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
 
-        outcomes_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
-        # Aggregate gameplay-quality stats. All four scan the event stream
-        # once each below: hold rate (movement-phase orders that are HOLD),
-        # illegal orders subdivided by syntax category (support / convoy /
-        # move / other), bounces and dislodgements from phase_resolved
-        # tokens, and negotiation message volume + conditional-trade rate.
+        # Compute all gameplay stats first, then append rows in the
+        # reading order the dashboard wants: Phases played, Total orders,
+        # Bounces, Dislodgements, Hold rate, Support orders, Convoy orders,
+        # Illegal orders, Adjacency errors, Negotiation messages.
 
-        # Per-category counts across all valid movement-phase orders
-        # (holds, supports, convoys). Each is reported as "N of TOTAL (P%)"
-        # so the reader can compare order-mix shape across runs at a glance.
-        total_mvmt_orders = total_holds = total_supports = total_convoys = 0
+        # Pass 1: per-category counts across all movement-phase orders.
+        # Total includes invalid so the same denominator covers every
+        # percentage below.
+        total_orders = total_holds = total_supports = total_convoys = 0
+        illegal_orders = adjacency_errors = 0
         for e in events:
             if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
                 for o in e.get("valid", []):
-                    total_mvmt_orders += 1
+                    total_orders += 1
                     stripped = o.rstrip()
                     if stripped.endswith(" H"):
                         total_holds += 1
@@ -1182,56 +1209,23 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                         total_supports += 1
                     elif re.search(r"\bC\b", o) or stripped.endswith(" VIA"):
                         total_convoys += 1
-        if total_mvmt_orders > 0:
-            def _row(label: str, n: int) -> tuple[str, str]:
-                return (
-                    label,
-                    f"{n} of {total_mvmt_orders} "
-                    f"({100 * n / total_mvmt_orders:.1f}%)",
-                )
-            outcomes_rows.append(_row("Hold rate", total_holds))
-            outcomes_rows.append(_row("Support orders", total_supports))
-            outcomes_rows.append(_row("Convoy orders", total_convoys))
-
-        # Illegal-orders rate across all movement-phase orders the agents
-        # submitted, subdivided by order syntax. An illegal order is one
-        # the adjudicator rejected as malformed or geometrically impossible
-        # (e.g., supporting an attack into a non-adjacent province).
-        def _classify_illegal(order: str) -> str:
-            if re.search(r"\bS\b", order):
-                return "support"
-            if re.search(r"\bC\b", order) or order.endswith(" VIA"):
-                return "convoy"
-            if " - " in order:
-                return "move"
-            return "other"
-
-        cats: dict[str, int] = {"support": 0, "convoy": 0, "move": 0, "other": 0}
-        total_orders = illegal_orders = 0
-        for e in events:
-            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
-                total_orders += len(e.get("valid", [])) + len(e.get("invalid", []))
                 for inv in e.get("invalid", []):
+                    total_orders += 1
                     illegal_orders += 1
-                    cats[_classify_illegal(inv)] += 1
-        if total_orders > 0:
-            pct = 100 * illegal_orders / total_orders
-            nonzero = [(c, n) for c, n in cats.items() if n > 0]
-            if not nonzero:
-                breakdown = ""
-            elif len(nonzero) == 1:
-                only_cat = nonzero[0][0]
-                breakdown = f", all {only_cat}"
-            else:
-                breakdown = ", " + " · ".join(f"{n} {c}" for c, n in nonzero)
-            outcomes_rows.append((
-                "Illegal orders",
-                f"{illegal_orders} of {total_orders} ({pct:.1f}%{breakdown})",
-            ))
+                    # An illegal order is treated as adjacency-related if
+                    # its syntax is support or move; in practice almost all
+                    # rejected supports and rejected moves fail because the
+                    # acting unit (or destination) is not adjacent. Convoy
+                    # and other-syntax illegals are excluded.
+                    if re.search(r"\bS\b", inv) or (
+                        " - " in inv
+                        and not re.search(r"\bC\b", inv)
+                        and not inv.endswith(" VIA")
+                    ):
+                        adjacency_errors += 1
 
-        # Bounces (move was contested and failed) and dislodgements (unit
-        # forced to retreat) summed across all resolved phases. Sourced
-        # from the per-unit result tokens recorded at phase_resolved.
+        # Pass 2: bounces and dislodgements from per-unit result tokens at
+        # phase_resolved.
         bounces = dislodgements = 0
         for e in events:
             if e.get("type") == "phase_resolved":
@@ -1240,9 +1234,22 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                         bounces += 1
                     if any("dislodged" in t for t in tokens):
                         dislodgements += 1
+
+        # Append in the desired display order.
+        outcomes_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
+        if total_orders > 0:
+            outcomes_rows.append(("Total number of orders", str(total_orders)))
         if bounces or dislodgements:
             outcomes_rows.append(("Bounces", str(bounces)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))
+        if total_orders > 0:
+            def _pct(n: int) -> str:
+                return f"{100 * n / total_orders:.1f}%"
+            outcomes_rows.append(("Hold rate", _pct(total_holds)))
+            outcomes_rows.append(("Support orders", _pct(total_supports)))
+            outcomes_rows.append(("Convoy orders", _pct(total_convoys)))
+            outcomes_rows.append(("Illegal orders", _pct(illegal_orders)))
+            outcomes_rows.append(("Adjacency errors", str(adjacency_errors)))
 
         # Negotiation density: total messages exchanged across the game,
         # plus the share that contain conditional-trade language (a quick
@@ -1265,24 +1272,63 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 f"{total_msgs} ({cond_pct:.0f}% conditional)",
             ))
 
-        # Final standings ordered by SC count
-        final_centers = run_ended.get("final_state", {}).get("centers", {})
-        if final_centers:
-            standing = sorted(
-                ((p, len(c)) for p, c in final_centers.items()), key=lambda kv: -kv[1]
-            )
-            outcomes_rows.append((
-                "Final standing",
-                " · ".join(f"{p} {n}" for p, n in standing),
-            ))
     else:
         outcomes_rows.append(("Run state", "<i>incomplete (no run_ended event)</i>"))
+
+    # Final standings rendered as a horizontal bar chart in the right
+    # column. Sorted descending by SC count (best on top), bars run
+    # rightward from a left-aligned power label, count shown to the
+    # right of each bar.
+    standings_chart = ""
+    final_centers = (run_ended.get("final_state", {}) or {}).get("centers", {}) if run_ended else {}
+    if final_centers:
+        standing = sorted(
+            ((p, len(c)) for p, c in final_centers.items()), key=lambda kv: -kv[1]
+        )
+        max_sc = max((n for _, n in standing), default=0) or 1
+        bar_h = 22
+        gap = 5
+        label_w = 64
+        bar_max_w = 200
+        count_w = 28
+        width = label_w + bar_max_w + count_w
+        height = len(standing) * (bar_h + gap)
+        parts = [
+            f"<svg viewBox='0 0 {width} {height}' class='standings-svg' "
+            f"xmlns='http://www.w3.org/2000/svg'>",
+        ]
+        for i, (power, n) in enumerate(standing):
+            y = i * (bar_h + gap)
+            color = POWER_COLORS.get(power, "#777")
+            bar_w = (n / max_sc) * bar_max_w if max_sc else 0
+            text_y = y + bar_h * 0.72
+            parts.append(
+                f"<text x='{label_w - 6}' y='{text_y:.1f}' "
+                f"text-anchor='end' class='standings-label' "
+                f"fill='{color}'>{power}</text>"
+            )
+            parts.append(
+                f"<rect x='{label_w}' y='{y}' width='{bar_w:.1f}' "
+                f"height='{bar_h}' fill='{color}' rx='2'/>"
+            )
+            parts.append(
+                f"<text x='{label_w + bar_w + 4:.1f}' y='{text_y:.1f}' "
+                f"class='standings-count'>{n}</text>"
+            )
+        parts.append("</svg>")
+        standings_chart = "\n".join(parts)
 
     def _settings_table(rows: list[tuple[str, str]]) -> str:
         return "<table class='settings'>" + "".join(
             f"<tr><th>{label}</th><td>{value}</td></tr>" for label, value in rows
         ) + "</table>"
 
+    chart_col = (
+        f"<div class='so-col so-chart-col'>"
+        f"<h3 class='so-heading'>Final standing</h3>{standings_chart}"
+        f"</div>"
+        if standings_chart else ""
+    )
     so_html = (
         "<div class='settings-outcomes'>"
         "<div class='so-col'>"
@@ -1291,6 +1337,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         "<div class='so-col'>"
         f"<h3 class='so-heading'>Outcomes</h3>{_settings_table(outcomes_rows)}"
         "</div>"
+        f"{chart_col}"
         "</div>"
     )
 
