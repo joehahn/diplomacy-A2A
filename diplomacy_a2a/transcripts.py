@@ -532,7 +532,7 @@ h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
 .so-chart-col { flex: 1 1 320px; }
 .so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 700;
               text-transform: uppercase; letter-spacing: 0.04em; color: #333; }
-.standings-svg { width: 100%; max-width: 320px; height: auto; }
+.standings-svg { width: 100%; max-width: 340px; height: auto; }
 .standings-label { font: 12px -apple-system, system-ui, sans-serif;
                    font-weight: 600; }
 .standings-count { font: 12px -apple-system, system-ui, sans-serif;
@@ -1249,7 +1249,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             outcomes_rows.append(("Support orders", _pct(total_supports)))
             outcomes_rows.append(("Convoy orders", _pct(total_convoys)))
             outcomes_rows.append(("Illegal orders", _pct(illegal_orders)))
-            outcomes_rows.append(("Adjacency errors", str(adjacency_errors)))
+            outcomes_rows.append(("Adjacency errors", _pct(adjacency_errors)))
 
         # Negotiation density: total messages exchanged across the game,
         # plus the share that contain conditional-trade language (a quick
@@ -1288,7 +1288,10 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         max_sc = max((n for _, n in standing), default=0) or 1
         bar_h = 22
         gap = 5
-        label_w = 64
+        # label_w 80 gives room for the longest power name (GERMANY at
+        # 12px sans-serif is ~50-55px; 64 was clipping the leading G when
+        # the SVG scaled down).
+        label_w = 80
         bar_max_w = 200
         count_w = 28
         width = label_w + bar_max_w + count_w
@@ -1350,6 +1353,15 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     for sl in slides:
         index_body.append(f"  <li><a href='{sl['file']}'>{sl['title']}</a></li>")
     index_body.append("</ol>")
+    # Full-game SC trajectory at a glance, between the slide list and the
+    # link list. Uses the same _kpi_charts_for_phase helper as per-slide
+    # charts; passing the last phase as the cut-off plots the whole arc.
+    phase_order = [ph["short"] for ph in phases]
+    if phase_order:
+        full_chart = _kpi_charts_for_phase(phase_order, centers_by_phase, phase_order[-1])
+        if full_chart:
+            index_body.append("<h2>Supply center trajectory</h2>")
+            index_body.append(full_chart)
     index_body.append("<h2>Other artifacts</h2>")
     index_body.append("<ul>")
     index_body.append("  <li><a href='report.md'>report.md</a> — full postmortem with reasoning</li>")
@@ -1367,7 +1379,6 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     )
 
     # --- per-slide pages ---
-    phase_order = [ph["short"] for ph in phases]
     n = len(slides)
     for i, sl in enumerate(slides):
         prev_link = (
