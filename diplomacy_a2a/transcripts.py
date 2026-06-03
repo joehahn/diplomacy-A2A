@@ -526,6 +526,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 12
 h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
 h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
 .meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+.settings-outcomes { display: flex; gap: 36px; flex-wrap: wrap;
+                     align-items: flex-start; margin: 12px 0 20px; }
+.so-col { flex: 1 1 320px; min-width: 0; }
+.so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 600;
+              text-transform: uppercase; letter-spacing: 0.04em; color: #555; }
 table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
 table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
                                        vertical-align: top; }
@@ -1110,10 +1115,14 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 slides[idx]["dialogue_label"] = ph["long"]
 
     # --- index.html ---
-    # Settings table: what the game was actually configured with.
+    # Two side-by-side tables on the index page:
+    #   Settings = the run's input configuration (what the user dialed in).
+    #   Outcomes = what happened when those inputs were run (gameplay
+    #              measurements and execution stats).
     default_model = run_started.get("model", "?")
     power_models = run_started.get("power_models") or {}
     settings_rows: list[tuple[str, str]] = []
+    outcomes_rows: list[tuple[str, str]] = []
     # Model line: show overrides if any of the per-power models differ from default
     overrides = sorted(
         (p, m) for p, m in power_models.items() if m != default_model
@@ -1138,10 +1147,9 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         f"on — see <a href='../prompts.md'>prompts.md</a>" if prompts_jsonl.exists() else "off",
     ))
     if run_ended:
-        settings_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
-        elapsed = run_ended.get("elapsed_seconds", 0)
-        settings_rows.append(("Wall time", f"{elapsed/60:.1f} min ({elapsed:.0f} s)"))
         # When the game completed (wall-clock UTC at the run_ended event).
+        # Lives in Settings because it identifies *which* run this is rather
+        # than reporting a gameplay measurement.
         ts = run_ended.get("ts", "")
         if ts:
             try:
@@ -1149,7 +1157,11 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             except (ValueError, TypeError):
                 ts_display = ts
             settings_rows.append(("Execution timestamp", ts_display))
-        settings_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
+
+        outcomes_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
+        elapsed = run_ended.get("elapsed_seconds", 0)
+        outcomes_rows.append(("Wall time", f"{elapsed/60:.1f} min ({elapsed:.0f} s)"))
+        outcomes_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
         # Aggregate gameplay-quality stats. All four scan the event stream
         # once each below: hold rate (movement-phase orders that are HOLD),
         # illegal orders subdivided by syntax category (support / convoy /
@@ -1165,7 +1177,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     if o.endswith(" H") or o.rstrip().endswith(" H"):
                         total_holds += 1
         if total_mvmt_orders > 0:
-            settings_rows.append((
+            outcomes_rows.append((
                 "Hold rate",
                 f"{total_holds} of {total_mvmt_orders} "
                 f"({100 * total_holds / total_mvmt_orders:.1f}%)",
@@ -1202,7 +1214,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 breakdown = f", all {only_cat}"
             else:
                 breakdown = ", " + " · ".join(f"{n} {c}" for c, n in nonzero)
-            settings_rows.append((
+            outcomes_rows.append((
                 "Illegal orders",
                 f"{illegal_orders} of {total_orders} ({pct:.1f}%{breakdown})",
             ))
@@ -1219,7 +1231,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     if any("dislodged" in t for t in tokens):
                         dislodgements += 1
         if bounces or dislodgements:
-            settings_rows.append((
+            outcomes_rows.append((
                 "Bounces · dislodgements",
                 f"{bounces} · {dislodgements}",
             ))
@@ -1240,7 +1252,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                         cond_msgs += 1
         if total_msgs > 0:
             cond_pct = 100 * cond_msgs / total_msgs
-            settings_rows.append((
+            outcomes_rows.append((
                 "Negotiation messages",
                 f"{total_msgs} ({cond_pct:.0f}% conditional)",
             ))
@@ -1251,22 +1263,32 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             standing = sorted(
                 ((p, len(c)) for p, c in final_centers.items()), key=lambda kv: -kv[1]
             )
-            settings_rows.append((
+            outcomes_rows.append((
                 "Final standing",
                 " · ".join(f"{p} {n}" for p, n in standing),
             ))
     else:
-        settings_rows.append(("Run state", "<i>incomplete (no run_ended event)</i>"))
+        outcomes_rows.append(("Run state", "<i>incomplete (no run_ended event)</i>"))
 
-    settings_html = "<table class='settings'>" + "".join(
-        f"<tr><th>{label}</th><td>{value}</td></tr>"
-        for label, value in settings_rows
-    ) + "</table>"
+    def _settings_table(rows: list[tuple[str, str]]) -> str:
+        return "<table class='settings'>" + "".join(
+            f"<tr><th>{label}</th><td>{value}</td></tr>" for label, value in rows
+        ) + "</table>"
+
+    so_html = (
+        "<div class='settings-outcomes'>"
+        "<div class='so-col'>"
+        f"<h3 class='so-heading'>Settings</h3>{_settings_table(settings_rows)}"
+        "</div>"
+        "<div class='so-col'>"
+        f"<h3 class='so-heading'>Outcomes</h3>{_settings_table(outcomes_rows)}"
+        "</div>"
+        "</div>"
+    )
 
     index_body = [
         f"<h1>Diplomacy A2A — Run <code>{run_id}</code></h1>",
-        "<h2>Game settings</h2>",
-        settings_html,
+        so_html,
         "<h2>Slides</h2>",
         "<ol class='phases'>",
     ]
