@@ -538,6 +538,8 @@ h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
 .standings-count { font: 12px -apple-system, system-ui, sans-serif;
                    fill: #333; font-weight: 600; }
 table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
+table.settings tr.subrow th { padding-left: 18px; color: #888; font-weight: 400; }
+table.settings tr.subrow td { color: #555; }
 table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
                                        vertical-align: top; }
 table.settings th { font-weight: 600; color: #555; white-space: nowrap;
@@ -1237,10 +1239,22 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
 
         # Pass 3: negotiation density. Total messages exchanged across the
         # game, plus the share that contain conditional-trade language
-        # (a quick marker of negotiation depth vs flat status updates).
-        total_msgs = cond_msgs = 0
+        # ("quid pro quo") and the share that contain alliance / coalition
+        # vocabulary. Both are quick markers of negotiation character.
+        total_msgs = cond_msgs = alliance_msgs = 0
         cond_re = re.compile(
             r"\b(if you|if I|in exchange|in return|provided that)\b", re.I
+        )
+        alliance_re = re.compile(
+            r"\b("
+            r"alliance|alliances|ally|allies|allied|"
+            r"coalition|coalitions|"
+            r"partner|partners|partnership|"
+            r"pact|pacts|non-aggression|"
+            r"coordinate|coordinated|coordination|"
+            r"cooperate|cooperation"
+            r")\b|work together|together against",
+            re.I,
         )
         for e in events:
             if e.get("type") == "agent_messages":
@@ -1248,6 +1262,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     total_msgs += 1
                     if cond_re.search(text):
                         cond_msgs += 1
+                    if alliance_re.search(text):
+                        alliance_msgs += 1
 
         # Pass 4: candidate betrayals. Heuristic: a message whose speaker
         # promises non-aggression toward a specific province ('won't /
@@ -1305,16 +1321,16 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             outcomes_rows.append(("Total number of orders", str(total_orders)))
         if total_msgs > 0:
             outcomes_rows.append(("Negotiation messages", str(total_msgs)))
+            # Sub-metrics of negotiation behavior, all reported as a share
+            # of total messages. Marked as sub-rows so the index renders
+            # them indented under Negotiation messages.
             cond_pct = 100 * cond_msgs / total_msgs
-            outcomes_rows.append(("Quid pro quo", f"{cond_pct:.1f}%"))
+            outcomes_rows.append(("Quid pro quo", f"{cond_pct:.1f}%", True))
             if betrayals > 0:
-                # Betrayal share among messages: each detected betrayal is a
-                # message-rooted broken promise, so messages is the natural
-                # denominator. Dedup means a promise repeated across rounds
-                # counts once, so the rate slightly under-states per-message
-                # density.
                 betrayal_pct = 100 * betrayals / total_msgs
-                outcomes_rows.append(("Betrayals", f"{betrayal_pct:.1f}%"))
+                outcomes_rows.append(("Betrayals", f"{betrayal_pct:.1f}%", True))
+            alliance_pct = 100 * alliance_msgs / total_msgs
+            outcomes_rows.append(("Alliances", f"{alliance_pct:.1f}%", True))
         if bounces or dislodgements:
             outcomes_rows.append(("Bounces", str(bounces)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))
@@ -1376,10 +1392,17 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         parts.append("</svg>")
         standings_chart = "\n".join(parts)
 
-    def _settings_table(rows: list[tuple[str, str]]) -> str:
-        return "<table class='settings'>" + "".join(
-            f"<tr><th>{label}</th><td>{value}</td></tr>" for label, value in rows
-        ) + "</table>"
+    def _settings_table(rows: list[tuple]) -> str:
+        # Each row is (label, value) or (label, value, is_subrow). Sub-rows
+        # render with a 'subrow' CSS class so the index can indent and mute
+        # them visually under their parent row.
+        parts: list[str] = []
+        for r in rows:
+            label, value = r[0], r[1]
+            is_sub = len(r) > 2 and bool(r[2])
+            tr_open = "<tr class='subrow'>" if is_sub else "<tr>"
+            parts.append(f"{tr_open}<th>{label}</th><td>{value}</td></tr>")
+        return "<table class='settings'>" + "".join(parts) + "</table>"
 
     chart_col = (
         f"<div class='so-col so-chart-col'>"
