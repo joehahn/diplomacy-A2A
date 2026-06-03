@@ -364,13 +364,21 @@ def regenerate_maps(jsonl_path: Path, out_dir: Path) -> None:
 
             for power, orders in orders_by_phase.get(short, {}).items():
                 state.submit(power, orders)
-            (out_dir / f"{short}.svg").write_text(
-                state.game.render(incl_orders=True, incl_abbrev=True)
-            )
+            # Retreat phases still need their orders submitted so the replay
+            # state stays correct, but their SVGs are skipped: the dashboard
+            # folds retreat narration into the preceding movement-phase slide
+            # and the next phase's start map already shows post-retreat
+            # positions, so retreat .svg files would be orphans.
+            skip_svg = short.endswith("R")
+            if not skip_svg:
+                (out_dir / f"{short}.svg").write_text(
+                    state.game.render(incl_orders=True, incl_abbrev=True)
+                )
             state.advance()
-            (out_dir / f"{short}.result.svg").write_text(
-                state.game.render(incl_orders=False, incl_abbrev=True)
-            )
+            if not skip_svg:
+                (out_dir / f"{short}.result.svg").write_text(
+                    state.game.render(incl_orders=False, incl_abbrev=True)
+                )
     finally:
         os.unlink(tmp.name)
 
