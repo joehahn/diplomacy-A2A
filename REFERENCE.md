@@ -777,3 +777,176 @@ pairs the unit could legally support, computed via the same
 hundred tokens per per-phase view but eliminates the most repeated
 illegal-order pattern. No model changes needed; works for both Haiku
 and Sonnet. Roughly 50-100 lines.
+
+### In-game per-year reflection
+
+After each fall (or each game-year), give each agent a small extra
+call that asks it to write a one-or-two-sentence "lesson note": what
+it did this year, what worked, what didn't, what it would do
+differently. The note lands in the agent's strategy log alongside the
+existing initial / revised strategy entries, so it's visible on
+subsequent turns' calls and feeds back into how the agent reasons
+about the next year.
+
+The point is to give each agent a chance to step out of per-phase
+tactics and look at the multi-phase arc. Reflection-on-action prompts
+are well-supported in the agent-systems literature (ReAct-style
+agents, the Voyager Minecraft work, etc.) as a cheap way to nudge
+agents toward better follow-through across turns. This may directly
+help the talk-vs-action gap observed in the canonical: the
+negotiation channel discusses coalition action but revised strategies
+and orders both retreat to defensive holds. A yearly reflection that
+names the gap to the agent itself ("I committed to pressuring
+Germany but parked all my units; I should follow through next year")
+could close it.
+
+Scope kept small on purpose: in-game only, no cross-game lesson pool,
+no curation step. The pooled-lessons-across-games version (a
+separate research direction) has serious problems with experiment
+isolation (axis A-E controlled comparisons break if agents carry
+lessons across runs), prompt bloat (cached prefix grows every game),
+false-lesson amplification (wrong takeaways propagate to all future
+games), and quality control (who curates which lessons land in the
+prompt). Tackle that only after the in-game version is validated.
+
+Implementation: one new LLM call per power per game-year (~7 calls
+× 10 years = 70 calls per canonical, modest cost). New
+`Agent.reflect_on_year(state, ...)` method patterned on the existing
+`state_strategy` / `revise_strategy` methods, with its own short
+instruction. The note appends to `strategies_by_power[power]` as a
+new kind alongside initial / revised so the existing strategy-history
+formatter surfaces it on subsequent turns.
+
+### Localize adjacency in the per-call view
+
+The cached system prefix carries the complete adjacency table for
+the standard map (~2.5K tokens covering all 76 provinces). Most of
+that table is irrelevant to any single agent at any given moment.
+For Turkey at S1901M, France's coast adjacencies are noise; for
+England in F1908M, the Mediterranean coast detail is noise.
+
+Localize by computing, per call, the subset of adjacencies within
+two hops of the agent's current units (and current home centers),
+and surface that subset in the per-call view. Keep the full table
+out of the cached prefix, or keep it there as a fallback while the
+local view carries the relevant slice. Either way the model sees a
+much smaller, more focused geography block per call.
+
+This is the same shape of fix as "Surface legal supports" above:
+precompute and surface the relevant local subset rather than asking
+the agent to derive it from a global table. The two could share
+infrastructure.
+
+Considered and rejected: per-nation unique system prompts (one
+specialized prompt per power, possibly with hand-curated opening
+theory). Three problems: (a) the seven agents currently share a
+cached system prefix and therefore one cache entry, dropping the
+cost of subsequent calls; seven different prefixes break that
+sharing and inflate cost. (b) Goal-3 axis A / B / E experiments rely
+on six baseline-identical agents plus one variant. Per-nation
+prompts blur the baseline. (c) Specialized prompts inject strategic
+bias (a France prompt that mentions the Western Triple makes France
+pursue the Western Triple, which is prompt curation, not agent
+reasoning). The localize-adjacency route captures the geography-load
+benefit without these costs.
+
+### Surface inter-power adjacency in the per-call view
+
+Each agent's per-call view should also include a small block naming
+which other powers are adjacent to its current territory (border
+shared via at least one province) and which powers are not. The
+non-adjacent block is the more interesting half: it surfaces the
+diplomatic option Turkey didn't take in the canonical, where Turkey
+was eliminated by a coordinated three-power coalition (Italy,
+Austria, Russia) and sent zero messages to England, France, or
+Germany across ten game-years despite those being exactly the
+powers who could have opened a second front on Turkey's attackers.
+
+Format would look like:
+
+    ## Power adjacency
+    Adjacent (border shared with you): RUSSIA, AUSTRIA, ITALY
+    Non-adjacent (no shared border this turn): ENGLAND, FRANCE, GERMANY
+
+This is a structural cue, not a strategic instruction. The agent is
+not told to ally with non-adjacent powers, only that they exist as a
+relational category. It complements the negotiation prompt's existing
+nudge to "focus on threats and opportunities involving units and
+powers adjacent to *them*" by giving the agent the data to reason
+about distant-coalition options.
+
+Implementation: roll up province-level adjacency to power level
+based on current unit positions and SC ownership. A power borders
+another if any of its units or SCs is adjacent to any of theirs.
+Recompute per call; the relational structure shifts as the board
+evolves. Adds maybe 20-30 tokens per view. Could share the local-
+adjacency infrastructure described above.
+
+### Cross-game strategic-lesson pool
+
+**Sequenced after the goal-3 axis A-E controlled experiments
+complete.** Before that point this item would break experiment
+isolation, because each game would depend on prior games' pooled
+lessons rather than only on its configured axis variable. After the
+experimental phase is closed, the system is free to evolve.
+
+The mechanic: each game's per-year reflection notes (see "In-game
+per-year reflection" above) are collected into a persistent
+cross-game pool, with the most generalizable lessons surviving into
+every subsequent game's cached system prefix. Over many games the
+prefix accumulates a curated body of strategic knowledge that the
+agents start with rather than rediscover. The agents play measurably
+smarter on later games than on earlier ones, in a way attributable to
+the pool rather than to model improvements.
+
+The central design problem is **curation**, not collection. Without
+a curation pipeline the pool degrades into a noisy mix of correct
+takeaways, wrong takeaways, and run-specific lessons that don't
+generalize. A workable pipeline looks roughly like:
+
+- **Score**: a critic LLM call rates each reflection note on
+  generality (does it apply only to this game's specific board, or
+  to most games?), specificity (does it describe an action with a
+  concrete antecedent?), and recurrence (do similar notes show up
+  across many games and powers?).
+- **Deduplicate**: embedding similarity collapses near-duplicate
+  notes to a single representative.
+- **Retain**: a hard cap (top N by score) bounds the pool's growth.
+  Alternative or complementary: windowed retention (only lessons
+  from the last K games) or weighted (lessons whose application
+  improved subsequent outcomes get higher retention).
+- **Propagate**: surviving lessons are formatted as a "Lessons from
+  prior games" block in the cached system prefix.
+
+A minimal first cut might be just score + dedup + top-20 retention,
+hand-evaluated for a few cycles before automating the pipeline.
+
+What this **doesn't** do is also worth being honest about:
+
+- **It does not fix tactical reasoning.** The canonical's residual
+  illegal-orders rate is concentrated entirely on support-adjacency
+  violations, a tactical reasoning failure that a cross-game pool
+  cannot address. Tactical fixes (localized adjacency in the
+  per-call view, surface-legal-supports) remain orthogonal.
+- **It does not stabilize cost.** Each game's cached prefix grows
+  with the pool, eating into cache budget and context limits. A
+  cap on pool size is required to keep cost bounded across
+  arbitrarily many games.
+- **It does not substitute for axis B (persona) experiments.** A
+  curated lessons pool is not a personality; it's accumulated
+  strategic knowledge that all agents share.
+
+What it offers, if executed: a small system that **demonstrably
+accumulates strategic knowledge across runs**. CICERO did not do
+this; each of its games was a fresh start. A working cross-game
+pool would be a distinctive demonstration of the curation-plus-
+propagation engineering that real-world AI consulting work
+increasingly involves (production agents that need to improve from
+fielded data without operator intervention on every turn).
+
+Implementation scope is genuinely a project, not a commit: maybe
+600-1000 lines counting the critic, embedding store, retention
+logic, and prefix integration. Add roughly one LLM call per
+reflection note for scoring (so ~70 critic calls per game) plus a
+one-off batch dedup pass after each game. Cost overhead is modest;
+engineering overhead is the real cost.
