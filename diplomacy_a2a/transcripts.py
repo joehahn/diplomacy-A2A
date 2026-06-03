@@ -527,10 +527,10 @@ h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
 h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
 .meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
 .settings-outcomes { display: flex; gap: 36px; flex-wrap: wrap;
-                     align-items: flex-start; margin: 12px 0 20px; }
+                     align-items: flex-start; margin: 28px 0 20px; }
 .so-col { flex: 1 1 320px; min-width: 0; }
-.so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 600;
-              text-transform: uppercase; letter-spacing: 0.04em; color: #555; }
+.so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 700;
+              text-transform: uppercase; letter-spacing: 0.04em; color: #333; }
 table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
 table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
                                        vertical-align: top; }
@@ -1147,9 +1147,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         f"on — see <a href='../prompts.md'>prompts.md</a>" if prompts_jsonl.exists() else "off",
     ))
     if run_ended:
-        # When the game completed (wall-clock UTC at the run_ended event).
-        # Lives in Settings because it identifies *which* run this is rather
-        # than reporting a gameplay measurement.
+        # Execution metadata lives in Settings: identifies *which* run this
+        # is and how expensive/long it was, not what the agents produced.
         ts = run_ended.get("ts", "")
         if ts:
             try:
@@ -1157,31 +1156,42 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             except (ValueError, TypeError):
                 ts_display = ts
             settings_rows.append(("Execution timestamp", ts_display))
+        elapsed = run_ended.get("elapsed_seconds", 0)
+        settings_rows.append(("Wall time", f"{elapsed/60:.1f} min ({elapsed:.0f} s)"))
+        settings_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
 
         outcomes_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
-        elapsed = run_ended.get("elapsed_seconds", 0)
-        outcomes_rows.append(("Wall time", f"{elapsed/60:.1f} min ({elapsed:.0f} s)"))
-        outcomes_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
         # Aggregate gameplay-quality stats. All four scan the event stream
         # once each below: hold rate (movement-phase orders that are HOLD),
         # illegal orders subdivided by syntax category (support / convoy /
         # move / other), bounces and dislodgements from phase_resolved
         # tokens, and negotiation message volume + conditional-trade rate.
 
-        # Hold rate across all valid movement-phase orders.
-        total_mvmt_orders = total_holds = 0
+        # Per-category counts across all valid movement-phase orders
+        # (holds, supports, convoys). Each is reported as "N of TOTAL (P%)"
+        # so the reader can compare order-mix shape across runs at a glance.
+        total_mvmt_orders = total_holds = total_supports = total_convoys = 0
         for e in events:
             if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
                 for o in e.get("valid", []):
                     total_mvmt_orders += 1
-                    if o.endswith(" H") or o.rstrip().endswith(" H"):
+                    stripped = o.rstrip()
+                    if stripped.endswith(" H"):
                         total_holds += 1
+                    elif re.search(r"\bS\b", o):
+                        total_supports += 1
+                    elif re.search(r"\bC\b", o) or stripped.endswith(" VIA"):
+                        total_convoys += 1
         if total_mvmt_orders > 0:
-            outcomes_rows.append((
-                "Hold rate",
-                f"{total_holds} of {total_mvmt_orders} "
-                f"({100 * total_holds / total_mvmt_orders:.1f}%)",
-            ))
+            def _row(label: str, n: int) -> tuple[str, str]:
+                return (
+                    label,
+                    f"{n} of {total_mvmt_orders} "
+                    f"({100 * n / total_mvmt_orders:.1f}%)",
+                )
+            outcomes_rows.append(_row("Hold rate", total_holds))
+            outcomes_rows.append(_row("Support orders", total_supports))
+            outcomes_rows.append(_row("Convoy orders", total_convoys))
 
         # Illegal-orders rate across all movement-phase orders the agents
         # submitted, subdivided by order syntax. An illegal order is one
@@ -1231,10 +1241,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     if any("dislodged" in t for t in tokens):
                         dislodgements += 1
         if bounces or dislodgements:
-            outcomes_rows.append((
-                "Bounces · dislodgements",
-                f"{bounces} · {dislodgements}",
-            ))
+            outcomes_rows.append(("Bounces", str(bounces)))
+            outcomes_rows.append(("Dislodgements", str(dislodgements)))
 
         # Negotiation density: total messages exchanged across the game,
         # plus the share that contain conditional-trade language (a quick
