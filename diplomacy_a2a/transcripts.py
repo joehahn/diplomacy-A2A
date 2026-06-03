@@ -1254,11 +1254,9 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         if total_orders > 0:
             outcomes_rows.append(("Total number of orders", str(total_orders)))
         if total_msgs > 0:
+            outcomes_rows.append(("Negotiation messages", str(total_msgs)))
             cond_pct = 100 * cond_msgs / total_msgs
-            outcomes_rows.append((
-                "Negotiation messages",
-                f"{total_msgs} ({cond_pct:.0f}% conditional)",
-            ))
+            outcomes_rows.append(("Quid pro quo", f"{cond_pct:.1f}%"))
         if bounces or dislodgements:
             outcomes_rows.append(("Bounces", str(bounces)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))
