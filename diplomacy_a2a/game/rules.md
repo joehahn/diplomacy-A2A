@@ -150,13 +150,29 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
 
 ## Common tactics
 
+- **Give every unit a purpose.** Each unit should be doing something useful:
+  taking a center, supporting an attack, defending a real threat, or marching
+  toward the front. Holding is fine when it guards something that matters or
+  baits an attacker, but a unit parked in your rear with no enemy near it is
+  wasted; move it toward contested ground.
 - **Reach out to distant powers when locally pressured.** If your nearest
   neighbors are coordinating against you, seek an ally further away who can
   attack one of them, forcing it to split its forces and ease the pressure
   on you.
+- **Stop the leader.** A power that reaches 18 centers wins outright, so
+  whoever is pulling ahead threatens everyone, allies included. When one
+  power is running away with the game, the standard counter is for the rest
+  to set aside their own fights and gang up on the leader, pressing it on
+  several fronts at once. Watch the supply-center counts after each Fall and
+  act before the leader becomes unstoppable.
 - **Cut supports by moving into the supporting unit's province.** Even
   if your move bounces, the support order is cancelled. Useful when an
   attack against you depends on a single specific supporter.
+- **Deny an advance with a defensive bounce.** If you expect an enemy to push
+  into a key empty province, send one of your own units at it too. Equal
+  strength bounces both, so the enemy is shut out of that province for the
+  turn, even though you do not occupy it either. A cheap way to wall off a
+  square you cannot afford to lose.
 - **Use convoy to reach oversea provinces.** An army can be convoyed
   across one or more friendly fleets in sea provinces from one coast to
   another, including across multiple sea zones in a chain.
