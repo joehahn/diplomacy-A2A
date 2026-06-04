@@ -132,6 +132,11 @@ These determine what actually happens when orders resolve simultaneously.
   from, nor to a province where another battle bounced.
 - **You cannot dislodge your own unit.** Self-attacks and self-supports
   to dislodge yourself fail.
+- **Other result labels in the recap.** `(void)` = the order had no legal
+  effect and did nothing (e.g., a support for a move that was never ordered).
+  `(no convoy)` = a convoyed army move had no complete convoy route ordered,
+  so the army stayed put. `(disrupted)` = a convoy was broken because a
+  convoying fleet was dislodged, so the army's move failed.
 
 ## Strategy / context for negotiation
 
