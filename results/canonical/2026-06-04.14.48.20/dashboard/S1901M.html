@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset='utf-8'><title>SPRING 1901 MOVEMENT (S1901M) — 2026-06-04.14.48.20</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px;
+       margin: 0 auto; padding: 20px; color: #222; }
+h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
+h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
+.meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+.settings-outcomes { display: flex; gap: 28px; flex-wrap: wrap;
+                     align-items: flex-start; margin: 28px 0 20px; }
+.so-col { flex: 0 1 auto; min-width: 0; }
+.so-chart-col { flex: 1 1 320px; }
+.so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 700;
+              text-transform: uppercase; letter-spacing: 0.04em; color: #333; }
+.standings-svg { width: 100%; max-width: 340px; height: auto; }
+.standings-label { font: 12px -apple-system, system-ui, sans-serif;
+                   font-weight: 600; }
+.standings-count { font: 12px -apple-system, system-ui, sans-serif;
+                   fill: #333; font-weight: 600; }
+table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
+table.settings tr.subrow th { padding-left: 18px; color: #888; font-weight: 400; }
+table.settings tr.subrow td { color: #555; }
+table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
+                                       vertical-align: top; }
+table.settings th { font-weight: 600; color: #555; white-space: nowrap;
+                    min-width: 160px; }
+table.settings td { color: #222; }
+nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
+      gap: 8px; }
+nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
+                   font-size: 0.95em; }
+nav a { background: #eef; color: #224; }
+nav a:hover { background: #dde; }
+nav span.disabled { background: #f5f5f5; color: #bbb; }
+img.map { max-width: 100%; border: 1px solid #ddd; }
+h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em; }
+h3.retreats-cap { margin: 14px 0 4px 0; font-size: 0.8em; color: #888;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
+          margin: 12px 0; font-size: 0.9em; }
+.orders .power { margin: 4px 0; }
+.orders .power b { display: inline-block; min-width: 80px; }
+.invalid { color: #c33; }
+ol.phases { line-height: 1.8; }
+.legend { font-size: 0.78em; color: #666; margin: 6px 0 10px; }
+.legend .chip { display: inline-block; padding: 1px 8px; margin: 2px 4px 2px 0;
+                border-radius: 10px; color: #fff; font-weight: 600; }
+.thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
+.thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
+.thread-head .arr { color: #aaa; font-weight: 400; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-items: start; }
+.bubble { padding: 7px 11px; border-radius: 12px; border-top-left-radius: 3px;
+          background: #f6f6f8; border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.empty { background: none; border: none; }
+.bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
+                 letter-spacing: 0.02em; }
+.bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
+               margin-left: 6px; font-weight: 700; }
+.bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
+.kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+           margin: 10px 0; }
+.kpi-svg { flex: 0 1 966px; width: 100%; max-width: 1035px; height: auto;
+           background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
+.kpi-svg .dot-wrap:hover circle:nth-child(2) { r: 4.5; }
+.kpi-svg .dot-tip { opacity: 0; pointer-events: none; }
+.kpi-svg .dot-wrap:hover .dot-tip { opacity: 1; }
+.kpi-svg .dot-tip-bg { fill: #222; fill-opacity: 0.92; }
+.kpi-svg .dot-tip-text { fill: #fff; font: 11px -apple-system, system-ui, sans-serif; }
+.kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
+.kpi-axis { stroke: #bbb; stroke-width: 0.6; }
+.kpi-tick { font-size: 9px; fill: #888; }
+.kpi-axis-label { font-size: 9.5px; fill: #666; font-weight: 500; }
+.kpi-legend { flex: 0 0 auto; font-size: 0.78em; line-height: 1.6;
+              padding: 6px 10px; background: #fafafa; border: 1px solid #eee;
+              border-radius: 4px; }
+.kpi-legend .leg-row { display: flex; align-items: center; gap: 6px; }
+.kpi-legend .leg-swatch { display: inline-block; width: 14px; height: 8px;
+                          border-radius: 2px; flex: 0 0 auto; }
+.kpi-legend .leg-label { font-weight: 600; color: #444; }
+.narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
+        margin: 10px 0; font-size: 0.9em; }
+.narr .nrow { margin: 4px 0; line-height: 1.4; }
+.narr .nrow > b:first-child { display: inline-block; min-width: 78px; }
+.orders-link { display: inline-block; margin: 2px 0 12px; padding: 4px 11px; font-size: 0.85em;
+               background: #eef; color: #224; border-radius: 4px; text-decoration: none; }
+.orders-link:hover { background: #dde; }
+.modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; }
+.modal:target { display: block; }
+.modal-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+                  background: rgba(0, 0, 0, 0.45); }
+.modal-card { position: relative; margin: 6vh auto; background: #fff; max-width: 620px;
+              max-height: 82vh; overflow: auto; padding: 14px 22px 20px; border-radius: 8px;
+              box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.modal-card h2 { margin-top: 4px; }
+.modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
+               color: #999; text-decoration: none; }
+.modal-close:hover { color: #333; }
+.commentary { background: #f0f4ff; border-left: 3px solid #7a8fd8; padding: 10px 14px;
+              margin: 14px 0; font-size: 0.92em; line-height: 1.5; font-style: italic;
+              color: #333; }
+.commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
+                      text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
+                      display: block; margin-bottom: 6px; }
+.commentary .clist { margin: 0; padding-left: 20px; }
+.commentary .clist li { margin: 5px 0; }
+.nego-link { display: inline-block; margin: 14px 0; padding: 9px 16px; font-size: 0.95em;
+             font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
+             border-radius: 6px; text-decoration: none; }
+.nego-link:hover { background: #fde0ec; }
+.narr .r-fail { color: #0a8fa8; }
+.narr .r-bad { color: #c0392b; }
+.narr .r-warn { color: #c77a0a; }
+.strategies { background: #fbf6ee; border-left: 3px solid #d8b870; padding: 8px 14px;
+              margin: 14px 0; font-size: 0.92em; }
+.strategies summary { cursor: pointer; }
+.strategies .slist { margin-top: 8px; }
+.strategies .srow { padding: 6px 0; border-top: 1px dotted #e8d8b8; }
+.strategies .srow:first-child { border-top: none; }
+.strategies .srow b { display: inline-block; min-width: 78px; }
+.strategies .sline { margin: 3px 0 3px 80px; line-height: 1.4; }
+.strategies .stag { display: inline-block; font-size: 0.72em; font-weight: 700;
+                    text-transform: uppercase; color: #8a6a2e; min-width: 56px;
+                    margin-right: 6px; letter-spacing: 0.04em; }
+</style>
+</head><body>
+<nav><a href='start.html'>← Initial position</a><a href='index.html'>index (2/31)</a><a href='F1901M.html'>FALL 1901 MOVEMENT (F1901M) →</a></nav>
+<h1>SPRING 1901 MOVEMENT <code>(S1901M)</code></h1>
+<h3 class='mapcap'>Orders — start positions, arrows show moves</h3>
+<img class='map' src='S1901M.svg' alt='Orders — start positions, arrows show moves'>
+<details class='strategies'><summary><b>Initial strategies (pre-negotiation)</b>, each power's self-authored plan before talking.</summary>
+<div class='slist'>
+<div class='srow'><b style='color:#c0392b'>AUSTRIA</b><div class='sline'>My priority is to grab the Balkan supply centers (SER, RUM, GRE) quickly while keeping Italy and Russia at bay — I'll push A BUD to SER, move F TRI to ALB to threaten GRE, and send A VIE to GAL to contest Russia early and signal strength to the east.
+
+MESSAGES:
+{
+  "RUSSIA": "I'm moving A VIE to GAL as a precaution — not a threat to you, just securing my flank. I'd prefer we agree on a division of the Balkans: I take SER and BUL, you take RUM. Let's not fight each other when Turkey is the real threat to us both.",
+  "ITALY": "I'd like to propose a friendly opening — if you stay out of TRI and the Adriatic, I'll stay out of VEN and leave you a free hand in the Mediterranean. We both benefit from coordinating against Turkey rather than fighting each other.",
+  "TURKEY": "I want to open with transparency: I'm moving toward SER and the western Balkans. I have no immediate designs on your home centers. If you're open to it, we could discuss a partition of the Balkans that leaves us both satisfied."
+}</div></div>
+<div class='srow'><b style='color:#2c5fa8'>ENGLAND</b><div class='sline'>I'll open with the standard English aggressive northern play: F EDI to NTH, F LON to ENG, and A LVP to YOR, positioning to grab Norway and Belgium while keeping France nervous about the Channel — then negotiate with Germany and Russia to coordinate against France and secure the north.
+
+MESSAGES:
+{
+  "FRANCE": "Let's avoid a Channel conflict early — I'm moving F LON to ENG purely to contest Belgium, not to threaten Brest. I'd welcome a non-aggression understanding on the Channel while we both expand outward.",
+  "GERMANY": "I'm planning to grab Norway and Belgium in 1901 — happy to coordinate so we don't bounce each other in Belgium. If you support me into BEL from HOL, I'll back your moves elsewhere. What are your plans?",
+  "RUSSIA": "I'm heading north for Norway — no conflict with you there if you're focused south. Let's stay friendly in Scandinavia and both grow at others' expense."
+}</div></div>
+<div class='srow'><b style='color:#1f8aa8'>FRANCE</b><div class='sline'>I'll push A PAR to BUR to pressure Germany while claiming Spain with A MAR, and move F BRE to MAO to set up Portugal and the Atlantic, coordinating with England against Germany if possible while keeping Italy at bay with a PIE threat.</div></div>
+<div class='srow'><b style='color:#555555'>GERMANY</b><div class='sline'>I want to grab Denmark and Holland immediately with F KIE and A MUN via RUH, while pushing A BER to SIL to pressure Russia and position for a Lepanto-style eastern push or an anti-Russian campaign, and I'll seek a deal with England to divide Scandinavia and with France to keep our shared border quiet.</div></div>
+<div class='srow'><b style='color:#2e8b57'>ITALY</b><div class='sline'>I'll push F NAP to ION and A ROM to APU to set up a Tunis grab while A VEN holds or moves to TYR to pressure Austria and signal cooperation — my core goal is to reach 4-5 centers by end of 1901 by taking TUN and positioning for GRE or a Balkan push.</div></div>
+<div class='srow'><b style='color:#7d3c98'>RUSSIA</b><div class='sline'>I'll push north with F STP/SC to BOT and A WAR to LVN to grab Sweden and Norway, move F SEV to RUM to claim that center, and keep A MOS flexible to support or pivot — my opening priority is locking in the northern neutrals and RUM before Turkey or Austria can contest them.
+
+MESSAGES:
+{
+  "AUSTRIA": "Let's coordinate in the Balkans — I'll take RUM, you take SER and BUL, and we keep Turkey bottled up. I have no designs on GAL if you leave it neutral.",
+  "TURKEY": "I'd like to propose a non-aggression pact in the Black Sea — I'll keep F SEV out of BLA if you keep F ANK out as well. Let's both focus on expansion elsewhere.",
+  "GERMANY": "Happy to stay out of each other's way — I'm focused north and southeast. If you want SWE, I won't contest it, but I'd appreciate you staying out of Scandinavia.",
+  "ENGLAND": "I'm heading for NWY and SWE from the north — no conflict with you in those waters if you focus on BEL and the Channel. Let's not step on each other."
+}</div></div>
+<div class='srow'><b style='color:#cc8a00'>TURKEY</b><div class='sline'>My opening priority is to secure Bulgaria with A CON, push F ANK into the Black Sea to contest Russia's naval presence, and use A SMY to support or threaten Armenia — I want to grow fast in the Balkans while keeping Russia off-balance and coordinating with Austria against Russia if possible.
+
+## Negotiation Round 1
+
+What messages do you want to send at the start of SPRING 1901?
+
+MESSAGES:
+{
+  "AUSTRIA": "I'd like to coordinate against Russia from the start — I'll take Bulgaria and push into the Black Sea, which should ease your path into Serbia and Rumania. A Juggernaut is the biggest threat to both of us; let's make sure it doesn't form.",
+  "RUSSIA": "I have no aggressive intentions toward you this year — my fleet is heading to the Black Sea simply as a defensive measure, not an attack. Let's keep the south quiet and focus our energies elsewhere."
+}</div></div>
+</div></details>
+<a class='nego-link' href='S1901M.negotiation.html'>💬 Read the negotiation before SPRING 1901 MOVEMENT →</a>
+<details class='strategies'><summary><b>Revised strategies (post-negotiation)</b>, each power's updated plan after the negotiation above.</summary>
+<div class='slist'>
+<div class='srow'><b style='color:#c0392b'>AUSTRIA</b><div class='sline'>I'll push A BUD to SER, F TRI to ALB to set up a GRE grab in Fall, and A VIE to GAL as planned — honoring my deal with Russia (they take RUM, I take SER) while positioning for the full Balkan sweep, with Turkey's agreement to leave SER alone while they take BUL.
+
+ORDERS:
+A BUD - SER
+F TRI - ALB
+A VIE - GAL</div></div>
+<div class='srow'><b style='color:#2c5fa8'>ENGLAND</b><div class='sline'>I'll move F EDI to NTH and F LON to ENG to position for Norway and Belgium in Fall, while A LVP moves to YOR as a staging piece — honoring my deal with Germany (Norway for me, Denmark for them, Belgium mine) and keeping France comfortable about the Channel since they've confirmed it clear.
+
+ORDERS:
+F EDI - NTH
+F LON - ENG
+A LVP - YOR</div></div>
+<div class='srow'><b style='color:#1f8aa8'>FRANCE</b><div class='sline'>I'll move A PAR to BUR as agreed with Germany (who confirmed MUN stays clear), push A MAR to SPA to claim that supply center, and send F BRE to MAO to set up Portugal next fall — honoring my deal with England to leave the Channel open while positioning France for strong western expansion.
+
+ORDERS:
+A PAR - BUR
+A MAR - SPA
+F BRE - MAO</div></div>
+<div class='srow'><b style='color:#555555'>GERMANY</b><div class='sline'>I'll move F KIE to DEN to grab that neutral center, A BER to SIL for eastern positioning, and A MUN to RUH to set up a move into HOL next fall, keeping BUR clear as promised to France and honoring my Scandinavian split deal with England.
+
+ORDERS:
+F KIE - DEN
+A BER - SIL
+A MUN - RUH</div></div>
+<div class='srow'><b style='color:#2e8b57'>ITALY</b><div class='sline'>I'll move F NAP to ION and A ROM to APU to set up a Tunis grab in Fall, while A VEN holds in place to honor my agreement with Austria and avoid provoking conflict on the northern front. This keeps my deals with Austria and France intact while positioning me for a clean 4-center year.
+
+ORDERS:
+F NAP - ION
+A ROM - APU
+A VEN H</div></div>
+<div class='srow'><b style='color:#7d3c98'>RUSSIA</b><div class='sline'>I'll push F STP/SC to BOT toward Norway, A WAR to LVN to support the northern advance, F SEV to RUM to claim that Balkan center as agreed with Austria, and A MOS to support F STP/SC into LVN — Turkey has taken BLA so I'll leave the Black Sea alone this turn and focus on locking in NWY/SWE and RUM.
+
+ORDERS:
+F STP/SC - BOT
+A WAR - LVN
+F SEV - RUM
+A MOS S A WAR - LVN</div></div>
+<div class='srow'><b style='color:#cc8a00'>TURKEY</b><div class='sline'>I'll move A CON to Bulgaria, F ANK to the Black Sea, and hold A SMY in place — the standard Turkish opening that secures a new supply center and contests the Black Sea as agreed with Austria, while Russia has tacitly accepted my fleet moving to BLA by saying they won't contest it this turn.
+
+ORDERS:
+F ANK - BLA
+A CON - BUL
+A SMY H</div></div>
+</div></details>
+<h3 class='mapcap'>Result — positions after this phase resolved</h3>
+<img class='map' src='S1901M.result.svg' alt='Result — positions after this phase resolved'>
+<h2>What happened this phase</h2>
+<a class='orders-link' href='#orders-modal'>▤ Orders this phase</a>
+<div class='narr'><div class='nrow'><b style='color:#c0392b'>AUSTRIA</b> A BUD → SER; F TRI → ALB; A VIE → GAL</div><div class='nrow'><b style='color:#2c5fa8'>ENGLAND</b> F EDI → NTH; F LON → ENG; A LVP → YOR</div><div class='nrow'><b style='color:#1f8aa8'>FRANCE</b> A PAR → BUR; A MAR → SPA; F BRE → MAO</div><div class='nrow'><b style='color:#555555'>GERMANY</b> F KIE → DEN; A BER → SIL; A MUN → RUH</div><div class='nrow'><b style='color:#2e8b57'>ITALY</b> F NAP → ION; A ROM → APU; A VEN holds</div><div class='nrow'><b style='color:#7d3c98'>RUSSIA</b> F STP/SC → BOT; A WAR → LVN; F SEV → RUM; A MOS <b class='r-fail'>supports</b> A WAR → LVN</div><div class='nrow'><b style='color:#cc8a00'>TURKEY</b> F ANK → BLA; A CON → BUL; A SMY holds</div></div>
+<div class='commentary'><span class='clabel'>Commentary</span><ul class='clist'><li>France told Germany it wanted to avoid conflict over Burgundy and asked Germany to keep Munich out — Germany agreed — yet France moved A PAR straight into BUR anyway, a direct broken promise that puts German home territory under immediate pressure.</li><li>England and France coordinated smoothly: France cleared the Channel as promised (F BRE → MAO), and England moved F LON into ENG uncontested, giving England a strong early position for Belgium and Norway without friction between the two western powers.</li><li>Turkey defied Russia's explicit request for a Black Sea non-aggression pact by moving F ANK → BLA, while Russia simultaneously pushed F SEV toward RUM — these two units are now pointed at each other and the détente is already fraying after one phase.</li><li>Austria and Russia appear to be executing their agreed Balkans partition faithfully: Austria seized SER, Russia is driving toward RUM, and the GAL move is defensively framed — but Germany's A BER → SIL creates a western squeeze on Russia that Austria quietly encouraged, suggesting Austria may be playing both sides.</li><li>Italy held A VEN in place as promised to Austria and committed its forces southward toward Tunis, but this passive northern stance leaves Venice exposed if Austria's goodwill evaporates — Italy is banking heavily on a deal it cannot yet verify.</li></ul></div>
+<nav><a href='start.html'>← Initial position</a><a href='index.html'>index (2/31)</a><a href='F1901M.html'>FALL 1901 MOVEMENT (F1901M) →</a></nav>
+<div id='orders-modal' class='modal'>
+<a class='modal-backdrop' href='#'></a>
+<div class='modal-card'>
+<a class='modal-close' href='#' title='close'>&times;</a>
+<h2>Orders this phase</h2>
+<div class='orders'>
+<div class='power'><b>AUSTRIA</b>: <code>A BUD - SER</code> · <code>F TRI - ALB</code> · <code>A VIE - GAL</code></div>
+<div class='power'><b>ENGLAND</b>: <code>F EDI - NTH</code> · <code>F LON - ENG</code> · <code>A LVP - YOR</code></div>
+<div class='power'><b>FRANCE</b>: <code>A PAR - BUR</code> · <code>A MAR - SPA</code> · <code>F BRE - MAO</code></div>
+<div class='power'><b>GERMANY</b>: <code>F KIE - DEN</code> · <code>A BER - SIL</code> · <code>A MUN - RUH</code></div>
+<div class='power'><b>ITALY</b>: <code>F NAP - ION</code> · <code>A ROM - APU</code> · <code>A VEN H</code></div>
+<div class='power'><b>RUSSIA</b>: <code>F STP/SC - BOT</code> · <code>A WAR - LVN</code> · <code>F SEV - RUM</code> · <code>A MOS S A WAR - LVN</code></div>
+<div class='power'><b>TURKEY</b>: <code>F ANK - BLA</code> · <code>A CON - BUL</code> · <code>A SMY H</code></div>
+</div>
+</div></div>
+</body></html>
