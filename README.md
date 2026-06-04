@@ -161,10 +161,11 @@ cp .env.example .env          # then paste your key into .env
 
 ## Game execution
 
-The CLI does three things: it runs a game and stores game history as a
+The CLI does four things: it runs a game and stores game history as a
 transcript (`run`), it renders the gameplay dashboard from a game transcript
-(`render`), and it adds LLM-composed strategic commentary to that dashboard
-(`commentary`).
+(`render`), it adds LLM-composed strategic commentary to that dashboard
+(`commentary`), and it interrogates any power about its play in a finished
+game (`ask`).
 
 ```bash
 # Execute default game (is Sonnet-powered, lasts 10 years, w/ 3 negotiation rounds per movement phase)
@@ -353,6 +354,20 @@ slide per phase). Each slide contains:
   preceded that phase's orders.
 - **KPI charts**: each player's supply center (SC) counts as well as
   their Sum-of-Squares (SoS) score, where SoS = SC² / Σ(SC²).
+
+## Ask the agent
+
+After a game you can interrogate any power about its own play with the `ask`
+subcommand: it rebuilds that power's view of the finished game from the
+transcript (its strategy notes, orders, results, and private dialogue) and
+puts a free-form question to a fresh instance of the same persona, so the
+answer is grounded in the agent's own recorded reasoning rather than invented
+after the fact. One LLM call, a few cents to ~$0.15.
+
+```bash
+python -m diplomacy_a2a ask results/canonical/2026-06-04.14.48.20 ENGLAND \
+  "Your army sat in York the entire game and never moved. Why?"
+```
 
 ## Summary of Main Findings
 
