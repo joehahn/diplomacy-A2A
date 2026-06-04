@@ -1,4 +1,4 @@
-# publications/
+# communications/
 
 Outward-facing communications about this project: social posts, blog
 articles, and conference materials. Kept in the repo so the writing lives
@@ -17,4 +17,4 @@ Conventions:
 Note: this repo is public (GitHub Pages serves it), so anything committed here
 is visible. That is intended for finished abstracts, slides, and published
 posts. If you want to keep in-progress drafts private until they ship, keep
-them in a gitignored `publications/drafts/` (or local-only) until ready.
+them in a gitignored `communications/drafts/` (or local-only) until ready.
