@@ -1146,7 +1146,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     settings_rows.append(("Game years", str(run_started.get("years_target", "?"))))
     settings_rows.append(("Negotiation rounds", str(run_started.get("negotiation_rounds", "?"))))
     has_strategy = any(e.get("type") == "agent_strategy" for e in events)
-    settings_rows.append(("Strategy log", "on" if has_strategy else "off"))
+    settings_rows.append(("Strategy notes", "on" if has_strategy else "off"))
     # prompts.{jsonl,md} live at the run-dir top level (out_dir.parent in the
     # current layout where dashboard/ is a subfolder of the run dir).
     prompts_jsonl = out_dir.parent / "prompts.jsonl"

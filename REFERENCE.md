@@ -49,11 +49,11 @@ row above).
 | 20260524T031616Z | Sonnet | no negotiation | 7 | – | – | $0.35 |
 | 20260524T034819Z | Sonnet | 1 round, 2 yr | 7 | – | – | $0.88 |
 | 20260527T184246Z | Sonnet | 3 rounds, 2 yr, `--log-prompts` | 8 | 1419s | **≈177** | $2.43 |
-| 20260528T214253Z *(deleted; previous canonical)* | Sonnet | 3 rounds, 2 yr, strategy log, `--log-prompts` | 7 | 1713s | **≈245** | $3.20 |
-| 20260528T213153Z (smoke) | Haiku | 1 round, 1 yr, strategy log | 3 | 214s | **≈71** | $0.85 *(Sonnet-inflated; actual ≈ $0.28)* |
+| 20260528T214253Z *(deleted; previous canonical)* | Sonnet | 3 rounds, 2 yr, strategy notes, `--log-prompts` | 7 | 1713s | **≈245** | $3.20 |
+| 20260528T213153Z (smoke) | Haiku | 1 round, 1 yr, strategy notes | 3 | 214s | **≈71** | $0.85 *(Sonnet-inflated; actual ≈ $0.28)* |
 | 20260527T132540Z (smoke) | Haiku | 1 round, 1 yr | 3 | 180s | **≈60** | $0.46 *(actual ≈ $0.15)* |
-| 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, strategy log, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
-| 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no strategy log | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
+| 20260529T151442Z *(partial, credit-out)* | Haiku | 3 rounds, 5 yr, strategy notes, `--log-prompts-years 5` | 13 of ≈17 | ≈3300s | **≈252** | – |
+| 20260529T191351Z (plain-vanilla baseline) | Haiku | 3 rounds, 5 yr, no strategy notes | 14 | 2030s | **≈145** | **$2.93** (Haiku rates) |
 | *(deleted; previous canonical, 5-yr)* | Sonnet | 3 rounds, 5 yr, strategy on, `--log-prompts`, per-power placeholder personas | 18 | 4479s | **≈249** | **$11.98** + $0.50 commentary |
 | *(deleted; previous 10-yr canonical, serial)* | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, uniform baseline persona | 36 | 9434s | **≈262** | **$24.69** + commentary |
 | *(deleted; parallel-fan-out Haiku measurement)* | Haiku | 3 rounds, 5 yr, strategy on, `--with-commentary`, uniform baseline | 17 | 588s | **≈35** | **$3.43** (Haiku rates) |
@@ -63,8 +63,8 @@ row above).
 | 2026-06-04.14.48.20 **(canonical, 10-yr, parallel)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, `--with-commentary`, aggression-rebalanced prompt (persona "playing to win" + "holding still is losing" + "stab to win") | 41 | 2043s | **≈50** | **$25.62** + commentary |
 
 **Headline (serial regime):** Haiku is ≈3-4× faster than Sonnet *per
-phase on simple workloads* (1 round, no strategy log). On the
-canonical workload (3 rounds × strategy log, the default) the
+phase on simple workloads* (1 round, no strategy notes). On the
+canonical workload (3 rounds × strategy notes, the default) the
 per-phase advantage collapses to roughly parity because per-phase
 call count dominates: Haiku doesn't make fewer calls than Sonnet, and
 the strategy + 3-round combo is call-heavy. Cost is still ≈1/3
@@ -157,12 +157,12 @@ behavior the goal-2 deliverable wants the demo to make visible.
 - **Verbose strategy notes** — 4–6 sentences, often re-stating prior context
   in markdown ("**F1903M Strategy:**"). Reasonable substance, but flatter
   and less quotable than Sonnet's.
-- **Pulled toward mutual-defensive stalemates with the strategy log on** (the
+- **Pulled toward mutual-defensive stalemates with the strategy notes on** (the
   current default). In the partial 5-year run (`20260529T151442Z`), every
   power's SC count stayed at 3–5 from F1901M through F1903M — basically
-  nothing happened for ≈2.5 game years. The strategy log seems to reinforce
+  nothing happened for ≈2.5 game years. The strategy notes seem to reinforce
   a "consolidate, don't antagonize" stance across the Haiku table.
-- **Without the strategy log, Haiku plays a noticeably more dynamic game** — the
+- **Without the strategy notes, Haiku plays a noticeably more dynamic game** — the
   plain-vanilla 5-year baseline `20260529T191351Z` ended at
   `RUS 6 / AUS 5 / ENG 5 / FRA 4 / TUR 4 / GER 3 / ITA 3`, with real growth
   and contraction (Germany and Italy actually shrank). Useful negative
@@ -650,7 +650,7 @@ Italy, back to England) plus a Germany/Turkey swap:
 Because every power plays both Opus and Haiku across the set, the headline
 signal is a within-power paired delta, `centers(power as Opus) - centers(power
 as Haiku)`, which differences out each power's positional baseline without a
-separate control game. 3 negotiation rounds per movement phase, strategy log
+separate control game. 3 negotiation rounds per movement phase, strategy notes
 on, 10 game-years each; same shape as the canonical configuration, so the only
 things varying are the two upgraded/downgraded powers.
 
@@ -933,7 +933,7 @@ and Sonnet. Roughly 50-100 lines.
 After each fall (or each game-year), give each agent a small extra
 call that asks it to write a one-or-two-sentence "lesson note": what
 it did this year, what worked, what didn't, what it would do
-differently. The note lands in the agent's strategy log alongside the
+differently. The note lands in the agent's strategy notes alongside the
 existing initial / revised strategy entries, so it's visible on
 subsequent turns' calls and feeds back into how the agent reasons
 about the next year.

@@ -197,7 +197,7 @@ class Agent:
     ) -> StrategyResult:
         view = render_for_power(state, self.power, memory=self.memory)
         sh = format_strategy_history(strategy_history or [], recent_movements=self.memory)
-        body = f"{view}\n\n## Your strategy history (private to you)\n{sh}\n\n"
+        body = f"{view}\n\n## Your strategy notes (private to you, your running plan)\n{sh}\n\n"
         if dialogue:
             db = format_dialogue_for_agent(dialogue, self.power, recent_movements=self.memory)
             body += f"## Dialogue history (private to you)\n{db}\n\n"
@@ -208,12 +208,12 @@ class Agent:
                 "syntax (e.g. `A PAR - BUR`); orders are issued via a "
                 "separate call later this phase. "
                 f"It is the start of {state.phase}. Before negotiation "
-                "begins, state your plan in 2-3 sentences: your goals for "
-                "this turn and where you intend to be a turn or two from now. "
-                "Your earlier strategy notes above are your standing plan; say "
-                "whether you are still advancing it or changing course, and "
-                "why. Be concrete (name powers and provinces), and don't "
-                "hedge. No markdown headers, no "
+                "begins, write your current plan in 2-3 sentences: your goals "
+                "for this turn and where you intend to be a turn or two from "
+                "now. The strategy notes above are your running plan; adapt it "
+                "freely as the board changes, and keep this note as your "
+                "up-to-date plan. Be concrete (name powers and provinces), and "
+                "don't hedge. No markdown headers, no "
                 "bold, no bullet lists, no `**Strategy:**` or "
                 "`Acknowledgements:` sections, no preamble. "
                 "Example of a good response: \"I'll push A PAR to BUR to "
@@ -229,10 +229,10 @@ class Agent:
                 "syntax (e.g. `A BUR - BEL`); orders are issued via a "
                 "separate call right after this one. "
                 f"Negotiation for {state.phase} is complete. In 2-3 sentences, "
-                "state the orders you are about to submit and how they advance "
-                "your plan. Acknowledge any change the negotiation forced "
-                "(deals made, broken, or refused) and whether it shifts your "
-                "plan for the next turn or two. No markdown "
+                "state the orders you are about to submit and your updated "
+                "plan for the coming turns. Adjust the plan freely if the "
+                "negotiation changed your hand (deals made, broken, or "
+                "refused). No markdown "
                 "headers, no bold, no bullet lists, no "
                 "`**Strategy Restatement:**` or `Acknowledgements:` "
                 "sections, no preamble. "
@@ -327,7 +327,7 @@ class Agent:
             )
         user_msg = (
             f"{view}\n\n"
-            f"## Your strategy history (private to you)\n{strategy_block}\n\n"
+            f"## Your strategy notes (private to you, your running plan)\n{strategy_block}\n\n"
             f"## Dialogue history (private to you)\n{dialogue_block}\n\n"
             f"{round_note}"
             f"Send private messages to any subset of the other powers (or none). "
@@ -364,7 +364,7 @@ class Agent:
         user_msg = view
         if strategy_history:
             sh = format_strategy_history(strategy_history, recent_movements=self.memory)
-            user_msg += f"\n\n## Your strategy history (private to you)\n{sh}"
+            user_msg += f"\n\n## Your strategy notes (private to you, your running plan)\n{sh}"
         if dialogue:
             dialogue_block = format_dialogue_for_agent(
                 dialogue, self.power, recent_movements=self.memory

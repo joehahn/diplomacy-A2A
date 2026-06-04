@@ -311,23 +311,24 @@ openers.
 ## Agent strategy & memory
 
 Beyond the dialogue history and the deterministic narration recap, each
-agent also carries a self-authored **strategy log**, which is a private
-record of what *it* thought it was doing each turn. On every movement phase each
-agent writes a 2-3 sentence note, *twice*:
+agent also keeps self-authored **strategy notes**, a private running plan of
+what *it* intends to do. On every movement phase each agent writes a 2-3
+sentence note, *twice*:
 
-- **Before negotiation** — *initial strategy*: its plan for this turn and a
+- **Before negotiation** (*initial strategy*): its plan for this turn and a
   turn or two ahead (e.g., *"I'll court Austria with vague promises while
-  positioning to stab if opportunity arises"*), informed by the board and the
-  agent's own strategy history. The agent is asked to treat that history as a
-  standing plan and say whether it is advancing it or changing course.
-- **After the final round, before orders** — *revised strategy*: an
-  updated stance reflecting what the negotiation actually produced.
+  positioning to stab if opportunity arises"*), informed by the board and its
+  earlier notes. Those earlier notes are its running plan, which it adapts
+  freely as the board evolves, keeping the note current.
+- **After the final round, before orders** (*revised strategy*): the orders it
+  is about to submit and its updated plan, adjusted for what the negotiation
+  produced.
 
-Each agent is then given its strategy log history during subsequent
-negotiations and moves, capped to the last `2 × --memory` entries, so
-agents carry an explicit memory of their stated plans. Notes are
-**private to each agent**, mirroring how Diplomacy works at a table, and
-they are visible in the dashboard.
+Each agent is then shown its earlier strategy notes during subsequent
+negotiations and moves, capped to the last `2 × --memory` entries, so agents
+carry an explicit, evolving plan across turns. The notes are **private to each
+agent**, mirroring how Diplomacy works at a table, and are visible in the
+dashboard.
 
 ## Ask the agent
 
@@ -379,7 +380,7 @@ A run executed with `--log-prompts` (like the canonical) also commits
 **[`prompts.md`](https://github.com/joehahn/diplomacy-A2A/blob/main/results/canonical/2026-06-04.14.48.20/prompts.md)**:
 the exact prompt and full response for every agent call in the first
 game-year. It shows precisely what each agent was shown (the system rules,
-its board view, the dialogue, its strategy history) and what it replied, the
+its board view, the dialogue, its strategy notes) and what it replied, the
 ground truth behind everything in the dashboard.
 
 ## Summary of Main Findings
