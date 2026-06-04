@@ -82,8 +82,8 @@ These are the only forms accepted. Anything else is rejected.
 | Move | `<U> - <PROV>` | `A PAR - BUR` |
 | Support a holding unit | `<U> S <U2>` | `A PAR S F BRE` |
 | Support a moving unit | `<U> S <U2> - <PROV>` | `A PAR S F BRE - PIC` |
-| Convoy an army by sea | `<F> C <A> - <PROV>` | `F MAO C A SPA - GAS` |
-| Move an army via convoy | `<A> - <PROV> VIA` | `A APU - TUN VIA` |
+| Fleet convoys an army by sea | `<F> C <A> - <PROV>` | `F MAO C A SPA - GAS` |
+| Army moves via convoy | `<A> - <PROV> VIA` | `A APU - TUN VIA` |
 
 Where `<U>` and `<U2>` are full unit identifiers (`A PAR`, `F BRE`).
 
