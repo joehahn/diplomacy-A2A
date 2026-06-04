@@ -58,7 +58,8 @@ row above).
 | *(deleted; previous 10-yr canonical, serial)* | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, uniform baseline persona | 36 | 9434s | **≈262** | **$24.69** + commentary |
 | *(deleted; parallel-fan-out Haiku measurement)* | Haiku | 3 rounds, 5 yr, strategy on, `--with-commentary`, uniform baseline | 17 | 588s | **≈35** | **$3.43** (Haiku rates) |
 | *(deleted; previous canonical, 10-yr, parallel)* | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, `--with-commentary`, uniform baseline persona, all 2026-06-01 prompt improvements | 33 | 1873s | **≈57** | **$24.03** + commentary |
-| 2026-06-04.01.23.15 **(canonical, 10-yr, parallel)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, `--with-commentary`, uniform baseline persona, + power-adjacency block | 35 | 2043s | **≈58** | **$25.23** + commentary |
+| 2026-06-04.01.23.15 *(previous canonical, 10-yr)* | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, `--with-commentary`, uniform baseline persona, + per-power adjacency block | 35 | 2043s | **≈58** | **$25.23** + commentary |
+| 2026-06-04.04.00.49 **(canonical, 10-yr, parallel)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, `--with-commentary`, full prompt revision: full power-adjacency matrix + expanded tactics + succinct support/convoy rules | 36 | 1962s | **≈55** | **$24.31** + commentary |
 
 **Headline (serial regime):** Haiku is ≈3-4× faster than Sonnet *per
 phase on simple workloads* (1 round, no strategy log). On the
@@ -71,10 +72,46 @@ across the board.
 **Parallel fan-out effect:** the deleted Haiku measurement row shows
 ≈35 s/phase on Haiku canonical workload, vs ≈145 s/phase on the same
 model under the serial plain-vanilla baseline, a 4.2× per-phase
-speedup. The current Sonnet 10-yr canonical (`2026-06-04.01.23.15`,
-last row) lands at ≈58 s/phase parallel vs ≈262 s/phase on the earlier
-serial Sonnet canonical, a 4.5× speedup, for a 34-minute wall-time
-total across 35 phases.
+speedup. The current Sonnet 10-yr canonical (`2026-06-04.04.00.49`,
+last row) lands at ≈55 s/phase parallel vs ≈262 s/phase on the earlier
+serial Sonnet canonical, a 4.8× speedup, for a 33-minute wall-time
+total across 36 phases.
+
+---
+
+## Canonical prompt-revision comparison (older vs newer)
+
+The two committed 10-yr Sonnet canonicals bracket a batch of prompt
+revisions: the full power-adjacency matrix shown to every agent (vs a
+per-power row before), an expanded 12-item tactics list, succinct support
+rules, documented convoy orders (the army-side `VIA` move), and explicit
+`bounce` / result-label definitions. Both runs use the identical
+configuration, so the deltas isolate the prompt changes. Single game each,
+so read these as directional, not statistically significant.
+
+| KPI (index Outcomes) | older `2026-06-04.01.23.15` | newer `2026-06-04.04.00.49` |
+|---|---:|---:|
+| Negotiation messages | 914 | 1036 |
+| Messages to non-adjacent powers | 13.6% | 20.2% |
+| Quid pro quo | 46.4% | 50.4% |
+| Hold rate | 59.2% | 57.5% |
+| Support orders | 11.7% | 12.3% |
+| Illegal orders | 4.4% | 2.2% |
+| Adjacency errors | 4.4% | 2.2% |
+| Convoy orders | 0.0% | 0.0% |
+| Betrayals | 4.6% | 2.3% |
+
+**Moved as intended:** illegal orders and adjacency errors halved (clearer
+support/order rules), and cross-board diplomacy rose sharply (negotiation
+volume +13%, messages to non-adjacent powers 13.6% → 20.2%), consistent with
+giving every agent the full power-adjacency matrix to reason about
+third-party borders. The newer game was also more decisive (England led at
+8, Germany eliminated) vs the older game's three-way tie at 6.
+
+**Did not move:** convoys stayed at zero despite the new convoy docs, and the
+hold rate barely changed, so the anti-passivity and convoy guidance did not
+visibly take in this single game. n=1, so a few more runs would be needed to
+separate signal from variance.
 
 ---
 

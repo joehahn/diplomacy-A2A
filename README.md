@@ -43,7 +43,7 @@ well-prompted frontier LLM, and with all players represented by AI agents.
 
 ## Visual dive into a representative game
 
-You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.01.23.15/dashboard/index.html)**,
+You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.04.00.49/dashboard/index.html)**,
 which uses Sonnet to power seven AI agents across 10 game-years. A game
 year has five phases (Spring Movement & Retreats, Fall Movement &
 Retreats, Winter Adjustments), so the canonical contains 20 movement
@@ -59,31 +59,31 @@ negotiations into success, and who backstabbed whom.
 
 Two moments where agent-to-agent negotiation visibly drove
 outcomes (one cooperative, one a betrayal), and a third where
-coordination broke down in execution:
+coordination was honored to the letter and still failed:
 
-- **Russia and Austria strip Turkey of Bulgaria** at
-  [F1909M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.01.23.15/dashboard/F1909M.html).
-  Russia promised Austria it would throw both adjacent fleets behind
-  the attack ("F RUM S A SER - BUL ... strength 2 guaranteed"), then
-  delivered exactly that with F RUM and F CON. Austria's A SER → BUL
-  dislodged Turkey's defending army and captured Bulgaria, dropping
-  Turkey to three centers.
+- **Austria and Italy take Bulgaria from Turkey** at
+  [S1906M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.04.00.49/dashboard/S1906M.html).
+  Italy promised to back the attack ("F GRE S A RUM - BUL ... that gives
+  you BUL at 2 strength against unsupported A BUL"), and delivered it.
+  Austria's A RUM → BUL, supported by Italy's fleet, dislodged Turkey's
+  defending army, and Austria captured the Bulgaria center the next Fall.
 
-- **Russia betrays Austria over that same province** at
-  [S1904M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.01.23.15/dashboard/S1904M.html).
-  Five years earlier, Russia twice promised Austria "no hostile
-  orders toward you this spring" and that its F RUM would hold while
-  Austria contested Bulgaria. Instead Russia pointed F RUM at Austria's
-  own unit in support of Turkey; Austria's A BUL was dislodged and
-  Turkey reclaimed the center.
+- **France lies to Russia about its target** at
+  [F1909M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.04.00.49/dashboard/F1909M.html).
+  France told Russia it was moving "A KIE → DEN this fall ... purely
+  anti-Russia," and told England the same. Instead it threw a supported
+  assault at Russia's Berlin (A KIE → BER with A MUN support). The lie
+  was real, but Russia had pre-committed F BAL to defend Berlin, so the
+  attack bounced and the stab drew no blood.
 
-- **The Anglo-French attack on Germany collapses in execution** at
-  [F1909M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.01.23.15/dashboard/F1909M.html).
-  England and France "locked in" a two-front assault to break Germany.
-  France executed its half (A RUH → MUN with A BUR support), but
-  England's key support order (F DEN S F NTH - HOL) was geometrically
-  illegal and rejected, so its attack went in at half strength. Both
-  attacks bounced and Germany held all four of its centers.
+- **An honored Anglo-French attack on Berlin still bounces** at
+  [F1905M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.04.00.49/dashboard/F1905M.html).
+  England and France negotiated a supported strike across three rounds
+  ("execute A SIL → BER and we take it at strength 2") and both submitted
+  exactly the agreed orders, no defection. It failed anyway: Russia had
+  anticipated it and pre-ordered F BAL to support Berlin's defense, so the
+  attack bounced at equal strength. Faithful talk, sound execution, beaten
+  by a better-prepared defender.
 
 ## Project goals & deliverables
 
@@ -188,13 +188,13 @@ python -m diplomacy_a2a run --power-memory TURKEY=5
 python -m diplomacy_a2a run --category axis_a --power-model TURKEY=claude-opus-4-7
 
 # Render a finished game, this step does not use any LLM
-python -m diplomacy_a2a render results/canonical/2026-06-04.01.23.15/
+python -m diplomacy_a2a render results/canonical/2026-06-04.04.00.49/
 
 # Add or refresh LLM commentary on a finished run, then render
-python -m diplomacy_a2a render results/canonical/2026-06-04.01.23.15/ --with-commentary
+python -m diplomacy_a2a render results/canonical/2026-06-04.04.00.49/ --with-commentary
 
 # Generate commentary only, no render (useful in scripts)
-python -m diplomacy_a2a commentary results/canonical/2026-06-04.01.23.15/
+python -m diplomacy_a2a commentary results/canonical/2026-06-04.04.00.49/
 
 python -m diplomacy_a2a --help                # subcommand list
 python -m diplomacy_a2a run --help            # game-execution options
@@ -358,11 +358,11 @@ pre-game collusion, information asymmetry), the success-vs-spend chart
 described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
-Cost to execute the canonical game is about **$25 when using Sonnet**,
-which processes **10.6M input tokens** (of which about **42% is
-cached and served at 10% of full price**) and **365K output tokens**
-across **about 880 LLM calls**, with the game executing in about
-**34 minutes** of wall time.
+Cost to execute the canonical game is about **$24 when using Sonnet**,
+which processes **11.3M input tokens** (of which about **48% is
+cached and served at 10% of full price**) and **330K output tokens**
+across **about 860 LLM calls**, with the game executing in about
+**33 minutes** of wall time.
 
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).
