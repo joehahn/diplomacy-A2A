@@ -26,10 +26,10 @@ FULL_PRESS_RULES = [
 
 POWERS = ("AUSTRIA", "ENGLAND", "FRANCE", "GERMANY", "ITALY", "RUSSIA", "TURKEY")
 
-# Canonical great-power adjacency on the standard map: whose home regions
-# border whose. Static (these structural relationships hold all game) and
-# symmetric. Gives each agent a stable read on its natural rivals (adjacent)
-# versus the distant powers it can court for a second front (non-adjacent).
+# Great-power adjacency on the standard map at the start of the game: whose
+# home regions border whose. Symmetric. Formatted into the full matrix every
+# agent sees (see adjacency.generate_power_adjacency_table); the prompt notes
+# that real adjacency evolves as units advance and territory changes hands.
 POWER_ADJACENCY: dict[str, tuple[str, ...]] = {
     "AUSTRIA": ("GERMANY", "ITALY", "RUSSIA", "TURKEY"),
     "ENGLAND": ("FRANCE", "GERMANY", "RUSSIA"),

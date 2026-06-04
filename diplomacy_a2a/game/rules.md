@@ -147,8 +147,9 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
 ## Common tactics
 
 - **Reach out to distant powers when locally pressured.** If your nearest
-  neighbors are coordinating against you, seek an ally further away who
-  can open a second front against one of them.
+  neighbors are coordinating against you, seek an ally further away who can
+  attack one of them, forcing it to split its forces and ease the pressure
+  on you.
 - **Cut supports by moving into the supporting unit's province.** Even
   if your move bounces, the support order is cancelled. Useful when an
   attack against you depends on a single specific supporter.
