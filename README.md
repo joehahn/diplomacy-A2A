@@ -313,12 +313,13 @@ openers.
 Beyond the dialogue history and the deterministic narration recap, each
 agent also carries a self-authored **strategy log**, which is a private
 record of what *it* thought it was doing each turn. On every movement phase each
-agent writes a 1–2 sentence note, *twice*:
+agent writes a 2-3 sentence note, *twice*:
 
-- **Before negotiation** — *initial strategy*: goals for the turn
-  (e.g., *"I'll court Austria with vague promises while positioning to
-  stab if opportunity arises"*), that are informed by the board and the
-  agent's own strategy history from prior turns.
+- **Before negotiation** — *initial strategy*: its plan for this turn and a
+  turn or two ahead (e.g., *"I'll court Austria with vague promises while
+  positioning to stab if opportunity arises"*), informed by the board and the
+  agent's own strategy history. The agent is asked to treat that history as a
+  standing plan and say whether it is advancing it or changing course.
 - **After the final round, before orders** — *revised strategy*: an
   updated stance reflecting what the negotiation actually produced.
 
