@@ -20,6 +20,7 @@ from the recorded orders + dialogue.
 |---|---:|---:|---:|---:|
 | `claude-sonnet-4-6` | $3.00 | $15.00 | $3.75 | $0.30 |
 | `claude-opus-4-7`   | $15.00 | $75.00 | $18.75 | $1.50 |
+| `claude-opus-4-8`   | $15.00 | $75.00 | $18.75 | $1.50 |
 | `claude-haiku-4-5`  | $1.00 | $5.00 | $1.25 | $0.10 |
 
 Anything that doesn't prefix-match falls back to the Sonnet row — so unknown
@@ -506,6 +507,51 @@ encode further acquisitiveness or restraint on top of this baseline.
 
 ---
 
+## Agent prompt: power adjacency
+
+The per-power view ([`game/view.py::render_for_power`](diplomacy_a2a/game/view.py))
+includes a `## Power adjacency` block naming which other powers border the
+addressee and which do not:
+
+```
+## Power adjacency (standard-map home regions)
+- Adjacent (your natural neighbors): AUSTRIA, RUSSIA
+- Non-adjacent (no shared border, reachable for distant diplomacy): ENGLAND, FRANCE, GERMANY, ITALY
+```
+
+The non-adjacent list is the diplomatically interesting half: those are the
+powers an agent can court for a distant second front without an immediate
+border threat. It targets the canonical failure mode where Turkey, eliminated
+by an Italy/Austria/Russia coalition, sent zero messages across ten game-years
+to England, France, and Germany, the exact powers who could have opened a
+second front on its attackers. This is a structural cue, not a strategic
+instruction: the agent is told the relational category exists, not to act on
+it.
+
+**Definition.** The block draws from the static `POWER_ADJACENCY` graph in
+[`game/state.py`](diplomacy_a2a/game/state.py), the standard-map home-region
+adjacency of the seven powers (symmetric; each power's row is mirrored in its
+neighbors' rows):
+
+| Power | Adjacent (natural neighbors) |
+|---|---|
+| Austria | Germany, Italy, Russia, Turkey |
+| England | France, Germany, Russia |
+| France | England, Germany, Italy |
+| Germany | Austria, England, France, Italy, Russia |
+| Italy | Austria, France, Germany |
+| Russia | Austria, England, Germany, Turkey |
+| Turkey | Austria, Russia |
+
+The graph is static rather than recomputed from current unit positions: it
+gives each agent a stable read on its structural rivals and its distant
+courtship targets that holds all game, and it sidesteps the opening problem
+where a per-turn footprint computation shows nearly every power as
+non-adjacent (home centers sit behind neutral buffers until units advance into
+contact). Cost is ≈30 tokens per per-call view.
+
+---
+
 ## Controlled-variation experiments
 
 Goal 3 in the README is N-1-identical / 1-varied A/B comparisons across four
@@ -514,22 +560,50 @@ runs, with method + per-power results table + verdict.
 
 ### Axis A — model capability (one stronger model in a homogeneous table)
 
-**Method:** 6 Sonnets + 1 Opus (rotating which power is the upgraded one,
-across seeds), paired with an all-Sonnet baseline at identical settings.
-3 rounds of negotiation per movement phase, strategy log on (hardwired in
-the current default), 10 game-years each — same shape as the canonical
-configuration so the only thing varying is the upgraded power.
+**Method:** 7 games, each with one Opus "champion" seat and one Haiku
+"underdog" seat; the other five seats stay Sonnet (the field default). The
+Opus and Haiku powers sit as far apart on the board as possible (opposite
+corners) so the two test subjects never directly duel, and each one's result
+reflects its model against the surrounding Sonnet field. Across the 7 games
+every power serves as the Opus champion exactly once and the Haiku underdog
+exactly once, following a single 5-cycle (England, Austria, France, Russia,
+Italy, back to England) plus a Germany/Turkey swap:
 
-Invocation:
+| Game | Opus champion | Haiku underdog |
+|------|---------------|----------------|
+| 1 | England | Austria |
+| 2 | Austria | France |
+| 3 | France | Russia |
+| 4 | Russia | Italy |
+| 5 | Italy | England |
+| 6 | Germany | Turkey |
+| 7 | Turkey | Germany |
+
+Because every power plays both Opus and Haiku across the set, the headline
+signal is a within-power paired delta, `centers(power as Opus) - centers(power
+as Haiku)`, which differences out each power's positional baseline without a
+separate control game. 3 negotiation rounds per movement phase, strategy log
+on, 10 game-years each; same shape as the canonical configuration, so the only
+things varying are the two upgraded/downgraded powers.
+
+Each run is self-describing: the `run_started` transcript record stores
+`power_models`, so analysis recovers which power was Opus or Haiku directly
+from the transcript (the timestamp run-id need not encode the condition).
+
+Invocation (per game; the field stays Sonnet because `--model` is omitted):
 ```bash
-python -m diplomacy_a2a run --power-model TURKEY=claude-opus-4-7 --log-prompts
+python -m diplomacy_a2a run \
+  --power-model ENGLAND=claude-opus-4-8 \
+  --power-model AUSTRIA=claude-haiku-4-5-20251001 \
+  --category model-capability
 ```
 
 **Status:** *Plumbing landed in commit `7358cdd` (run_game `power_clients`
-+ `--power-model POWER=MODEL` CLI flag + model-aware cost estimator). First
-runs pending.*
++ `--power-model POWER=MODEL` CLI flag + model-aware cost estimator). Design
+finalized to the 1-Opus / 1-Haiku / 5-Sonnet rotation above; first runs
+pending.*
 
-Results will land here when complete.
+Results will land under `results/model-capability/` when complete.
 
 ### Axis B — personality trait (one aggressive / untruthful / backstabbing / crazy)
 
@@ -849,38 +923,6 @@ bias (a France prompt that mentions the Western Triple makes France
 pursue the Western Triple, which is prompt curation, not agent
 reasoning). The localize-adjacency route captures the geography-load
 benefit without these costs.
-
-### Surface inter-power adjacency in the per-call view
-
-Each agent's per-call view should also include a small block naming
-which other powers are adjacent to its current territory (border
-shared via at least one province) and which powers are not. The
-non-adjacent block is the more interesting half: it surfaces the
-diplomatic option Turkey didn't take in the canonical, where Turkey
-was eliminated by a coordinated three-power coalition (Italy,
-Austria, Russia) and sent zero messages to England, France, or
-Germany across ten game-years despite those being exactly the
-powers who could have opened a second front on Turkey's attackers.
-
-Format would look like:
-
-    ## Power adjacency
-    Adjacent (border shared with you): RUSSIA, AUSTRIA, ITALY
-    Non-adjacent (no shared border this turn): ENGLAND, FRANCE, GERMANY
-
-This is a structural cue, not a strategic instruction. The agent is
-not told to ally with non-adjacent powers, only that they exist as a
-relational category. It complements the negotiation prompt's existing
-nudge to "focus on threats and opportunities involving units and
-powers adjacent to *them*" by giving the agent the data to reason
-about distant-coalition options.
-
-Implementation: roll up province-level adjacency to power level
-based on current unit positions and SC ownership. A power borders
-another if any of its units or SCs is adjacent to any of theirs.
-Recompute per call; the relational structure shifts as the board
-evolves. Adds maybe 20-30 tokens per view. Could share the local-
-adjacency infrastructure described above.
 
 ### Cross-game strategic-lesson pool
 

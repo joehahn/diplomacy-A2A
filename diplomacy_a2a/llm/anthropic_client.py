@@ -65,6 +65,20 @@ _RETRYABLE_TYPES: tuple[type[Exception], ...] = (
     APITimeoutError,
 )
 
+# Newer model tiers deprecate an explicit `temperature` and run only at the
+# provider default; older Sonnet/Haiku still accept it. The parameter is
+# omitted for known tiers proactively, and chat() self-heals if any other
+# model rejects it with a 400.
+_OMIT_TEMPERATURE_PREFIXES: tuple[str, ...] = ("claude-opus-4-8",)
+
+
+def _omits_temperature(model: str) -> bool:
+    return any(model.startswith(p) for p in _OMIT_TEMPERATURE_PREFIXES)
+
+
+def _is_temperature_rejection(e: Exception) -> bool:
+    return isinstance(e, BadRequestError) and "temperature" in str(e).lower()
+
 
 def _categorize(e: Exception) -> str:
     if isinstance(e, RateLimitError):
@@ -153,12 +167,12 @@ class AnthropicClient(LLMClient):
         max_tokens: int,
         temperature: float,
     ) -> ChatResult:
+        include_temperature = not _omits_temperature(self.model)
         for attempt in range(1, self._max_retries + 2):  # one final attempt past max
             try:
-                response = self._client.messages.create(
+                kwargs = dict(
                     model=self.model,
                     max_tokens=max_tokens,
-                    temperature=temperature,
                     system=[
                         {
                             "type": "text",
@@ -168,7 +182,15 @@ class AnthropicClient(LLMClient):
                     ],
                     messages=[{"role": m.role, "content": m.content} for m in messages],
                 )
+                if include_temperature:
+                    kwargs["temperature"] = temperature
+                response = self._client.messages.create(**kwargs)
             except _FATAL_TYPES as e:
+                # A model that deprecates an explicit temperature rejects it
+                # with a 400. Drop the parameter and retry rather than aborting.
+                if include_temperature and _is_temperature_rejection(e):
+                    include_temperature = False
+                    continue
                 self._log_error(attempt, e, fatal=True)
                 raise _friendly_fatal(e) from e
             except _RETRYABLE_TYPES as e:

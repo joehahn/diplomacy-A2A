@@ -51,6 +51,7 @@ from diplomacy_a2a.transcripts import (
 _RATE_TABLE = {
     "claude-sonnet-4-6": {"input": 3.0, "output": 15.0, "cache_create": 3.75, "cache_read": 0.30},
     "claude-opus-4-7":   {"input": 15.0, "output": 75.0, "cache_create": 18.75, "cache_read": 1.50},
+    "claude-opus-4-8":   {"input": 15.0, "output": 75.0, "cache_create": 18.75, "cache_read": 1.50},
     "claude-haiku-4-5":  {"input": 1.0, "output": 5.0, "cache_create": 1.25, "cache_read": 0.10},
 }
 

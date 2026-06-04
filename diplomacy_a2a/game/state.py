@@ -26,6 +26,20 @@ FULL_PRESS_RULES = [
 
 POWERS = ("AUSTRIA", "ENGLAND", "FRANCE", "GERMANY", "ITALY", "RUSSIA", "TURKEY")
 
+# Canonical great-power adjacency on the standard map: whose home regions
+# border whose. Static (these structural relationships hold all game) and
+# symmetric. Gives each agent a stable read on its natural rivals (adjacent)
+# versus the distant powers it can court for a second front (non-adjacent).
+POWER_ADJACENCY: dict[str, tuple[str, ...]] = {
+    "AUSTRIA": ("GERMANY", "ITALY", "RUSSIA", "TURKEY"),
+    "ENGLAND": ("FRANCE", "GERMANY", "RUSSIA"),
+    "FRANCE": ("ENGLAND", "GERMANY", "ITALY"),
+    "GERMANY": ("AUSTRIA", "ENGLAND", "FRANCE", "ITALY", "RUSSIA"),
+    "ITALY": ("AUSTRIA", "FRANCE", "GERMANY"),
+    "RUSSIA": ("AUSTRIA", "ENGLAND", "GERMANY", "TURKEY"),
+    "TURKEY": ("AUSTRIA", "RUSSIA"),
+}
+
 
 @dataclass
 class GameState:
@@ -71,6 +85,17 @@ class GameState:
         """{location: [legal_order_strings]} filtered to this power's orderables."""
         all_possible = self.game.get_all_possible_orders()
         return {loc: list(all_possible.get(loc, [])) for loc in self.game.get_orderable_locations(power)}
+
+    def power_adjacency(self, power: str) -> tuple[list[str], list[str]]:
+        """Canonical (adjacent, non_adjacent) power lists for `power`.
+
+        Drawn from the static `POWER_ADJACENCY` home-region graph, so it is the
+        same every turn. Each list is sorted and excludes `power` itself.
+        """
+        adjacent = sorted(POWER_ADJACENCY[power])
+        adj = set(adjacent)
+        non_adjacent = [p for p in sorted(POWERS) if p != power and p not in adj]
+        return adjacent, non_adjacent
 
     def submit(self, power: str, orders: list[str]) -> None:
         self.game.set_orders(power, orders)
