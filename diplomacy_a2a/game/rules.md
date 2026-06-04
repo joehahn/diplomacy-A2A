@@ -173,6 +173,12 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
   to set aside their own fights and gang up on the leader, pressing it on
   several fronts at once. Watch the supply-center counts after each Fall and
   act before the leader becomes unstoppable.
+- **Time your stabs.** Betraying an ally (a "stab") can be decisive, but only
+  stab when you can seize centers faster than they can retaliate; a stab with
+  no payoff just leaves you weaker and distrusted.
+- **Offer a demilitarized zone to build trust.** Agreeing to leave a shared
+  border province empty reassures a neighbor and frees both of you to commit
+  units elsewhere.
 - **Cut supports by moving into the supporting unit's province.** Even
   if your move bounces, the support order is cancelled. Useful when an
   attack against you depends on a single specific supporter.
@@ -181,6 +187,13 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
   strength bounces both, so the enemy is shut out of that province for the
   turn, even though you do not occupy it either. A cheap way to wall off a
   square you cannot afford to lose.
+- **Defend a key province by supporting the hold.** A unit ordered to support
+  another unit's hold (`<U> S <U2>`) adds one to that province's defensive
+  strength, so an attacker needs that many more units to take it.
+- **Self-standoff.** Order two of your own units to bounce into the same empty
+  province: neither moves, so you hold both your current positions while
+  denying that province to everyone, and you can keep a home center vacant for
+  a Winter build.
 - **Use convoy to reach oversea provinces.** An army can be convoyed
   across one or more friendly fleets in sea provinces from one coast to
   another, including across multiple sea zones in a chain.
