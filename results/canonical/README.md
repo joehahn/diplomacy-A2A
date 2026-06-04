@@ -43,7 +43,3 @@ Austria, France, and Russia.
 [**View this run's turn-by-turn dashboard**](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.01.23.15/dashboard/index.html)
 (GitHub Pages) to flip through the maps, narration, commentary, agent
 strategies, and dialogue.
-
-The previous 10-year canonical (`20260601T214429Z/`) is retained alongside
-this one; REFERENCE.md cites its measurements in the wall-time and findings
-sections.
