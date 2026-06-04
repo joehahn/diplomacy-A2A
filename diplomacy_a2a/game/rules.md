@@ -158,6 +158,10 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
 
 ## Common tactics
 
+- **Holding still is losing.** You win only by taking supply centers; a
+  stable, peaceful position is a slow loss, because while you sit, someone
+  else grows toward 18. Treat a quiet front as an opportunity to break, not a
+  comfort to keep. Every year you do not gain ground, you fall behind.
 - **Give every unit a purpose.** Each unit should be doing something useful:
   taking a center, supporting an attack, defending a real threat, or marching
   toward the front. Holding is fine when it guards something that matters or
@@ -173,16 +177,19 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
   to set aside their own fights and gang up on the leader, pressing it on
   several fronts at once. Watch the supply-center counts after each Fall and
   act before the leader becomes unstoppable.
-- **Time your stabs.** Betraying an ally (a "stab") can be decisive, but only
-  stab when you can seize centers faster than they can retaliate; a stab with
-  no payoff just leaves you weaker and distrusted.
+- **Stab to win.** No one reaches 18 centers without betraying allies;
+  alliances are temporary by nature. Stab when it takes centers your ally
+  would otherwise block, timing it so you gain more than they can take back.
+  The mistake is not stabbing; it is stabbing with no payoff, or clinging to
+  an alliance that has stopped advancing you.
 - **Peel away a rival's ally.** If a dangerous power leans on a strong ally,
   offer that ally something concrete (a supply center, support into a better
   position, a free hand elsewhere) in exchange for turning on the rival.
   Splitting a partnership is often easier than beating it head-on.
-- **Offer a demilitarized zone to build trust.** Agreeing to leave a shared
-  border province empty reassures a neighbor and frees both of you to commit
-  units elsewhere.
+- **Use demilitarized zones tactically.** Agreeing to leave a shared border
+  province empty can free both sides to commit force on other fronts, but
+  treat it as a temporary convenience, not a friendship: break it the moment
+  pushing through it gains you more than it costs.
 - **Cut supports by moving into the supporting unit's province.** Even
   if your move bounces, the support order is cancelled. Useful when an
   attack against you depends on a single specific supporter.
