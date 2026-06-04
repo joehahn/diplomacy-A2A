@@ -60,22 +60,6 @@ def render_for_power(state: GameState, power: str, *, memory: int = 1) -> str:
         lines.append(f"- Unowned ({len(unowned)}): {', '.join(unowned)}")
     lines.append("")
 
-    # The standard-map home-region adjacency of the powers, so the agent can
-    # see at a glance who its natural neighbors are and who it does not border.
-    # The non-adjacent list is the diplomatically interesting half: those are
-    # the distant powers an agent can court for a second front without an
-    # immediate border threat. A structural cue, not a strategic instruction.
-    adjacent, non_adjacent = state.power_adjacency(power)
-    lines.append("## Power adjacency (standard-map home regions)")
-    lines.append(
-        f"- Adjacent (your natural neighbors): {', '.join(adjacent) if adjacent else '(none)'}"
-    )
-    lines.append(
-        f"- Non-adjacent (no shared border, reachable for distant diplomacy): "
-        f"{', '.join(non_adjacent) if non_adjacent else '(none)'}"
-    )
-    lines.append("")
-
     # Home supply centers: surfaced explicitly so the agent can reason about
     # build availability and home-SC parking without inferring its home set
     # from training-data map knowledge. Builds at Winter Adjustments only

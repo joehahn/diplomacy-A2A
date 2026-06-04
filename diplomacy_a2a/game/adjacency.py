@@ -14,6 +14,8 @@ from __future__ import annotations
 from functools import lru_cache
 from diplomacy import Game
 
+from diplomacy_a2a.game.state import POWERS, POWER_ADJACENCY
+
 # Multi-coast provinces on the standard map: armies move between any of
 # their land-side neighbors regardless of coast, while fleets must specify
 # a coast and follow only that coast's sea adjacencies.
@@ -116,4 +118,25 @@ def generate_adjacency_table() -> str:
         nb_str = ", ".join(neighbors) if neighbors else "(none)"
         lines.append(f"- `{key}` ({label}): {nb_str}")
 
+    return "\n".join(lines)
+
+
+def generate_power_adjacency_table(power: str) -> str:
+    """Format the full standard-map power-adjacency matrix for the prompt.
+
+    Every agent sees every power's row, not just its own, so it can reason
+    about third-party borders: which powers are positioned to open a second
+    front on a rival that is pressuring it. The addressee's own row is marked
+    `(you)`. Static and symmetric, so it lives in the cached system prefix.
+    """
+    lines = [
+        "Which powers border which on the standard map (home regions).",
+        "Adjacency is symmetric and fixed for the whole game. Beyond your own",
+        "neighbors, use this to see who borders any other power, e.g. which",
+        "powers are positioned to open a second front on a rival pressuring you.",
+        "",
+    ]
+    for p in POWERS:
+        you = " (you)" if p == power else ""
+        lines.append(f"- {p}{you}: {', '.join(POWER_ADJACENCY[p])}")
     return "\n".join(lines)

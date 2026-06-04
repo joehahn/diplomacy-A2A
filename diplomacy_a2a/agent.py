@@ -107,9 +107,14 @@ class Agent:
         other_powers = ", ".join(p for p in POWERS if p != self.power)
         rules = self.rules
         if self.adjacency_table:
-            from diplomacy_a2a.game.adjacency import generate_adjacency_table
+            from diplomacy_a2a.game.adjacency import (
+                generate_adjacency_table,
+                generate_power_adjacency_table,
+            )
             table_section = (
                 "## Adjacency table\n\n" + generate_adjacency_table()
+                + "\n\n## Power adjacency (standard-map home regions)\n\n"
+                + generate_power_adjacency_table(self.power)
             )
         else:
             table_section = (

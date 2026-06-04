@@ -86,17 +86,6 @@ class GameState:
         all_possible = self.game.get_all_possible_orders()
         return {loc: list(all_possible.get(loc, [])) for loc in self.game.get_orderable_locations(power)}
 
-    def power_adjacency(self, power: str) -> tuple[list[str], list[str]]:
-        """Canonical (adjacent, non_adjacent) power lists for `power`.
-
-        Drawn from the static `POWER_ADJACENCY` home-region graph, so it is the
-        same every turn. Each list is sorted and excludes `power` itself.
-        """
-        adjacent = sorted(POWER_ADJACENCY[power])
-        adj = set(adjacent)
-        non_adjacent = [p for p in sorted(POWERS) if p != power and p not in adj]
-        return adjacent, non_adjacent
-
     def submit(self, power: str, orders: list[str]) -> None:
         self.game.set_orders(power, orders)
 

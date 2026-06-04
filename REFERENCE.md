@@ -510,46 +510,50 @@ encode further acquisitiveness or restraint on top of this baseline.
 
 ## Agent prompt: power adjacency
 
-The per-power view ([`game/view.py::render_for_power`](diplomacy_a2a/game/view.py))
-includes a `## Power adjacency` block naming which other powers border the
-addressee and which do not:
+The cached system prefix includes a `## Power adjacency` block giving **every
+agent the full standard-map adjacency matrix for all seven powers**, not just
+its own row. The addressee's row is marked `(you)`:
 
 ```
 ## Power adjacency (standard-map home regions)
-- Adjacent (your natural neighbors): AUSTRIA, RUSSIA
-- Non-adjacent (no shared border, reachable for distant diplomacy): ENGLAND, FRANCE, GERMANY, ITALY
+Which powers border which on the standard map (home regions).
+Adjacency is symmetric and fixed for the whole game. Beyond your own
+neighbors, use this to see who borders any other power, e.g. which
+powers are positioned to open a second front on a rival pressuring you.
+
+- AUSTRIA: GERMANY, ITALY, RUSSIA, TURKEY
+- ENGLAND: FRANCE, GERMANY, RUSSIA
+- FRANCE: ENGLAND, GERMANY, ITALY
+- GERMANY: AUSTRIA, ENGLAND, FRANCE, ITALY, RUSSIA
+- ITALY: AUSTRIA, FRANCE, GERMANY
+- RUSSIA: AUSTRIA, ENGLAND, GERMANY, TURKEY
+- TURKEY (you): AUSTRIA, RUSSIA
 ```
 
-The non-adjacent list is the diplomatically interesting half: those are the
-powers an agent can court for a distant second front without an immediate
-border threat. It targets the canonical failure mode where Turkey, eliminated
-by an Italy/Austria/Russia coalition, sent zero messages across ten game-years
-to England, France, and Germany, the exact powers who could have opened a
-second front on its attackers. This is a structural cue, not a strategic
-instruction: the agent is told the relational category exists, not to act on
-it.
+**Why the full matrix, not just the addressee's row.** Coalition-building
+turns on *third-party* adjacency, not your own. When Turkey is harried by
+Russia, the useful question is "who borders Russia?" (England, Germany,
+Austria), because those are the powers that can open a second front on
+Turkey's attacker; France and Italy border neither and are poor military
+allies against Russia. A single-row view can only tell an agent its own
+neighbors, which cannot answer that. The full matrix can. This targets the
+canonical failure mode where Turkey, ground down by an Italy/Austria/Russia
+coalition, sent zero messages across ten game-years to England, France, and
+Germany. It is a structural cue, not a strategic instruction: the agent is
+given the relational data, not told whom to ally with.
 
-**Definition.** The block draws from the static `POWER_ADJACENCY` graph in
-[`game/state.py`](diplomacy_a2a/game/state.py), the standard-map home-region
-adjacency of the seven powers (symmetric; each power's row is mirrored in its
-neighbors' rows):
-
-| Power | Adjacent (natural neighbors) |
-|---|---|
-| Austria | Germany, Italy, Russia, Turkey |
-| England | France, Germany, Russia |
-| France | England, Germany, Italy |
-| Germany | Austria, England, France, Italy, Russia |
-| Italy | Austria, France, Germany |
-| Russia | Austria, England, Germany, Turkey |
-| Turkey | Austria, Russia |
-
-The graph is static rather than recomputed from current unit positions: it
-gives each agent a stable read on its structural rivals and its distant
-courtship targets that holds all game, and it sidesteps the opening problem
-where a per-turn footprint computation shows nearly every power as
-non-adjacent (home centers sit behind neutral buffers until units advance into
-contact). Cost is ≈30 tokens per per-call view.
+**Definition.** The matrix is the static `POWER_ADJACENCY` graph in
+[`game/state.py`](diplomacy_a2a/game/state.py), formatted for the prompt by
+`generate_power_adjacency_table` in
+[`game/adjacency.py`](diplomacy_a2a/game/adjacency.py). It is symmetric (each
+power's row is mirrored in its neighbors' rows) and static rather than
+recomputed from current unit positions, so it holds all game and sidesteps the
+opening problem where a per-turn footprint computation shows nearly every
+power as non-adjacent (home centers sit behind neutral buffers until units
+advance into contact). It lives in the cached system prefix (served at
+cache-read rates after the first write), gated on the same `--adjacency-table`
+flag as the province table so the axis-E information-asymmetry experiment can
+withhold both. Cost is ≈100 tokens, added once per power's cached prefix.
 
 ---
 
