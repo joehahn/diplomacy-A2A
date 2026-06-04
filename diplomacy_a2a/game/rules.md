@@ -201,6 +201,15 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
 - **Defend a key province by supporting the hold.** A unit ordered to support
   another unit's hold (`<U> S <U2>`) adds one to that province's defensive
   strength, so an attacker needs that many more units to take it.
+- **Do not waste supports.** A support only helps a move that something could
+  contest or bounce. Supporting a move into an empty province no enemy unit
+  can reach does nothing; send that unit to take ground of its own instead.
+  Keep supports for contested attacks and real defenses.
+- **Chain moves to bring rear units forward.** A unit can move into a province
+  that another of your own units is leaving the same turn: order both, e.g.
+  `A BUD - SER` and `A VIE - BUD`, and both succeed. This is not a bounce (the
+  square is vacated, not contested), so a unit stuck behind the front can
+  follow the one ahead of it instead of idling.
 - **Self-standoff.** Order two of your own units to bounce into the same empty
   province: neither moves, so you hold both your current positions while
   denying that province to everyone, and you can keep a home center vacant for
