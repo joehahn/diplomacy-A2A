@@ -82,11 +82,13 @@ total across 41 phases.
 
 ## Canonical prompt-revision comparison
 
-Three 10-yr Sonnet canonicals tracked two batches of prompt work, all at
-identical configuration so the deltas isolate the prompt changes (single game
-each, so read as directional, not statistically significant). Only the latest
-(`2026-06-04.14.48.20`) is retained as a committed run; the numbers for the
-first two are preserved here:
+Four 10-yr canonicals: three Sonnet runs tracking two batches of prompt work,
+plus a Haiku run on the final prompt for a model-capability snapshot. All at
+identical configuration so the deltas isolate one variable at a time (single
+game each, so read as directional, not statistically significant). Only the
+Sonnet aggression-rebalance run (`2026-06-04.14.48.20`) is retained as a
+committed run (the showcased canonical); the other three are one-off
+measurements whose numbers are preserved here:
 
 1. **`2026-06-04.01.23.15`** (per-power adjacency): per-power "your neighbors"
    row, original tactics.
@@ -97,21 +99,24 @@ first two are preserved here:
    "playing to win, not to survive," new lead tactic "Holding still is
    losing," "Stab to win" (vs "time your stabs"), demilitarized zones reframed
    as temporary tools.
+4. **`2026-06-04.17.36.33`** (Haiku, same prompt): run 3's rebalanced prompt
+   with all seven powers on Haiku 4.5 instead of Sonnet 4.6, a model swap at
+   about one-third the cost.
 
-| KPI (index Outcomes) | per-power adj | full revision | aggression rebalance |
-|---|---:|---:|---:|
-| Negotiation messages | 914 | 1036 | 1034 |
-| Messages to non-adjacent powers | 13.6% | 20.2% | 19% |
-| Conditional bargaining | 46.4% | 50.4% | 55.2% |
-| Betrayals | 4.6% | 2.3% | 4.5% |
-| Hold rate | 59.2% | 57.5% | 49.4% |
-| Support orders | 11.7% | 12.3% | 14.5% |
-| Bounces | 73 | 74 | 88 |
-| Dislodgements | 12 | 11 | 17 |
-| Convoy orders | 0.0% | 0.0% | 0.3% |
-| Illegal orders | 4.4% | 2.2% | 3.1% |
-| Adjacency errors | 4.4% | 2.2% | 3.1% |
-| Phases played | 35 | 36 | 41 |
+| KPI (index Outcomes) | per-power adj (Son) | full revision (Son) | rebalance (Son) | same prompt (Haiku) |
+|---|---:|---:|---:|---:|
+| Negotiation messages | 914 | 1036 | 1034 | 981 |
+| Messages to non-adjacent powers | 13.6% | 20.2% | 19% | 23% |
+| Conditional bargaining | 46.4% | 50.4% | 55.2% | 31.7% |
+| Betrayals | 4.6% | 2.3% | 4.5% | 0.5% |
+| Hold rate | 59.2% | 57.5% | 49.4% | 48.1% |
+| Support orders | 11.7% | 12.3% | 14.5% | 6.9% |
+| Bounces | 73 | 74 | 88 | 83 |
+| Dislodgements | 12 | 11 | 17 | 5 |
+| Convoy orders | 0.0% | 0.0% | 0.3% | 1.6% |
+| Illegal orders | 4.4% | 2.2% | 3.1% | 11.0% |
+| Adjacency errors | 4.4% | 2.2% | 3.1% | 10.8% |
+| Phases played | 35 | 36 | 41 | 32 |
 
 **Full revision (1 → 2):** illegal orders and adjacency errors halved (clearer
 support/order rules), and cross-board diplomacy rose sharply (negotiation
@@ -128,6 +133,16 @@ game ran longer (41 phases, more retreats and builds). The only cost was a
 small illegal-order uptick (2.2% → 3.1%, still well below the 4.4% baseline),
 the expected price of more boundary-pushing moves. n=1, so a few more runs
 would be needed to separate signal from variance, but the direction is clear.
+
+**Sonnet vs Haiku, same prompt (3 → 4):** on the identical rebalanced prompt,
+Haiku is comparably *active* (hold rate 48% vs 49%, similar message volume and
+cross-board outreach), so the anti-passivity framing lands on the weaker model
+too. The gap is *competence*, not activity: Haiku's illegal-order and
+adjacency-error rates run ~3.5x higher (11% vs 3%), it coordinates far less
+(support orders 7% vs 15%, dislodgements 5 vs 17), and its negotiation is
+thinner (conditional bargaining 32% vs 55%) with betrayals almost never
+executed (0.5% vs 4.5%), a wider talk-vs-action gap. The board stayed even
+(top power at 6, no runaway) where Sonnet produced a clear leader, at $8 vs $25.
 
 ---
 
