@@ -27,6 +27,13 @@ _SEASON = {"S": 0, "F": 1, "W": 2}
 _PTYPE = {"M": 0, "R": 1, "A": 2}
 
 
+def _is_short_phase(ph: object) -> bool:
+    """True for compact phase codes like `S1901M` / `W1903A` (not long forms
+    like `SPRING 1901 MOVEMENT` that some records carry)."""
+    return (isinstance(ph, str) and len(ph) == 6 and ph[0] in _SEASON
+            and ph[1:5].isdigit() and ph[5] in _PTYPE)
+
+
 def _phase_key(phase: str) -> tuple[int, int, int]:
     """Chronological sort key for a short phase code like `S1901M` / `W1903A`."""
     return (int(phase[1:5]), _SEASON[phase[0]], _PTYPE[phase[5]])
@@ -58,6 +65,8 @@ def build_power_log(records: list[dict], power: str, *, upto: str | None = None,
     notes, orders, the adjudicated results for its units, the standings
     trajectory, and (optionally) its private dialogue, phase by phase.
     """
+    if upto and not _is_short_phase(upto):
+        raise SystemExit(f"--phase expects a short phase code like F1905M, got {upto!r}")
     cutoff = _phase_key(upto) if upto else None
     strat: dict[str, list[tuple[str, str]]] = collections.defaultdict(list)
     orders: dict[str, tuple[list[str], list[str]]] = {}
@@ -69,7 +78,7 @@ def build_power_log(records: list[dict], power: str, *, upto: str | None = None,
     for r in records:
         t = r.get("type")
         ph = r.get("phase") or r.get("resolved_phase")
-        if not ph or ph[0] not in _SEASON:
+        if not _is_short_phase(ph):
             continue
         if cutoff and _phase_key(ph) > cutoff:
             continue
