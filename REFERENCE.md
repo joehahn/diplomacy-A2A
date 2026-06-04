@@ -515,11 +515,19 @@ agent the full standard-map adjacency matrix for all seven powers**, not just
 its own row. The addressee's row is marked `(you)`:
 
 ```
-## Power adjacency (standard-map home regions)
-Which powers border which on the standard map (home regions).
-Adjacency is symmetric and fixed for the whole game. Beyond your own
-neighbors, use this to see who borders any other power, e.g. which
-powers are positioned to open a second front on a rival pressuring you.
+## Power adjacency (starting borders between powers)
+These are the powers whose home territories border each other at the
+start of the game. Adjacency is not fixed for the whole game: as units
+advance across the board and powers gain or lose territory, powers that
+did not start next to each other can come into contact, and some
+starting borders fall away. Treat this as the opening picture, then
+update it from the current board.
+
+How to use it: if a power is pressuring you, look up that attacker's
+row to see which powers border it. Those powers can attack it too,
+which forces it to split its forces and defend elsewhere, easing the
+pressure on you. A power that borders neither you nor your attacker is
+less able to help you militarily right now.
 
 - AUSTRIA: GERMANY, ITALY, RUSSIA, TURKEY
 - ENGLAND: FRANCE, GERMANY, RUSSIA
@@ -545,12 +553,16 @@ given the relational data, not told whom to ally with.
 **Definition.** The matrix is the static `POWER_ADJACENCY` graph in
 [`game/state.py`](diplomacy_a2a/game/state.py), formatted for the prompt by
 `generate_power_adjacency_table` in
-[`game/adjacency.py`](diplomacy_a2a/game/adjacency.py). It is symmetric (each
-power's row is mirrored in its neighbors' rows) and static rather than
-recomputed from current unit positions, so it holds all game and sidesteps the
-opening problem where a per-turn footprint computation shows nearly every
-power as non-adjacent (home centers sit behind neutral buffers until units
-advance into contact). It lives in the cached system prefix (served at
+[`game/adjacency.py`](diplomacy_a2a/game/adjacency.py). It is the symmetric
+start-of-game home-region graph (each power's row is mirrored in its neighbors'
+rows), kept static rather than recomputed per turn. The prompt is explicit that
+this is the opening picture and that real adjacency shifts as units advance and
+territory changes hands, so the agent is told to update it from the current
+board rather than treat it as fixed. Keeping the table itself static (rather
+than a per-turn footprint computation) avoids the opening problem where nearly
+every power reads as non-adjacent while units still sit in home centers behind
+neutral buffers, and gives a stable shared reference. It lives in the cached
+system prefix (served at
 cache-read rates after the first write), gated on the same `--adjacency-table`
 flag as the province table so the axis-E information-asymmetry experiment can
 withhold both. Cost is ≈100 tokens, added once per power's cached prefix.

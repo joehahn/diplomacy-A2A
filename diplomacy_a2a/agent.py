@@ -113,7 +113,7 @@ class Agent:
             )
             table_section = (
                 "## Adjacency table\n\n" + generate_adjacency_table()
-                + "\n\n## Power adjacency (standard-map home regions)\n\n"
+                + "\n\n## Power adjacency (starting borders between powers)\n\n"
                 + generate_power_adjacency_table(self.power)
             )
         else:

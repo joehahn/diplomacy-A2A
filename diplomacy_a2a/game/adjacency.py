@@ -130,10 +130,18 @@ def generate_power_adjacency_table(power: str) -> str:
     `(you)`. Static and symmetric, so it lives in the cached system prefix.
     """
     lines = [
-        "Which powers border which on the standard map (home regions).",
-        "Adjacency is symmetric and fixed for the whole game. Beyond your own",
-        "neighbors, use this to see who borders any other power, e.g. which",
-        "powers are positioned to open a second front on a rival pressuring you.",
+        "These are the powers whose home territories border each other at the",
+        "start of the game. Adjacency is not fixed for the whole game: as units",
+        "advance across the board and powers gain or lose territory, powers that",
+        "did not start next to each other can come into contact, and some",
+        "starting borders fall away. Treat this as the opening picture, then",
+        "update it from the current board.",
+        "",
+        "How to use it: if a power is pressuring you, look up that attacker's",
+        "row to see which powers border it. Those powers can attack it too,",
+        "which forces it to split its forces and defend elsewhere, easing the",
+        "pressure on you. A power that borders neither you nor your attacker is",
+        "less able to help you militarily right now.",
         "",
     ]
     for p in POWERS:
