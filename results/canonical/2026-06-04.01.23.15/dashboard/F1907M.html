@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset='utf-8'><title>FALL 1907 MOVEMENT (F1907M) — 2026-06-04.01.23.15</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px;
+       margin: 0 auto; padding: 20px; color: #222; }
+h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
+h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
+.meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+.settings-outcomes { display: flex; gap: 28px; flex-wrap: wrap;
+                     align-items: flex-start; margin: 28px 0 20px; }
+.so-col { flex: 0 1 auto; min-width: 0; }
+.so-chart-col { flex: 1 1 320px; }
+.so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 700;
+              text-transform: uppercase; letter-spacing: 0.04em; color: #333; }
+.standings-svg { width: 100%; max-width: 340px; height: auto; }
+.standings-label { font: 12px -apple-system, system-ui, sans-serif;
+                   font-weight: 600; }
+.standings-count { font: 12px -apple-system, system-ui, sans-serif;
+                   fill: #333; font-weight: 600; }
+table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
+table.settings tr.subrow th { padding-left: 18px; color: #888; font-weight: 400; }
+table.settings tr.subrow td { color: #555; }
+table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
+                                       vertical-align: top; }
+table.settings th { font-weight: 600; color: #555; white-space: nowrap;
+                    min-width: 160px; }
+table.settings td { color: #222; }
+nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
+      gap: 8px; }
+nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
+                   font-size: 0.95em; }
+nav a { background: #eef; color: #224; }
+nav a:hover { background: #dde; }
+nav span.disabled { background: #f5f5f5; color: #bbb; }
+img.map { max-width: 100%; border: 1px solid #ddd; }
+h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em; }
+h3.retreats-cap { margin: 14px 0 4px 0; font-size: 0.8em; color: #888;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
+          margin: 12px 0; font-size: 0.9em; }
+.orders .power { margin: 4px 0; }
+.orders .power b { display: inline-block; min-width: 80px; }
+.invalid { color: #c33; }
+ol.phases { line-height: 1.8; }
+.legend { font-size: 0.78em; color: #666; margin: 6px 0 10px; }
+.legend .chip { display: inline-block; padding: 1px 8px; margin: 2px 4px 2px 0;
+                border-radius: 10px; color: #fff; font-weight: 600; }
+.thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
+.thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
+.thread-head .arr { color: #aaa; font-weight: 400; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-items: start; }
+.bubble { padding: 7px 11px; border-radius: 12px; border-top-left-radius: 3px;
+          background: #f6f6f8; border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.empty { background: none; border: none; }
+.bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
+                 letter-spacing: 0.02em; }
+.bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
+               margin-left: 6px; font-weight: 700; }
+.bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
+.kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+           margin: 10px 0; }
+.kpi-svg { flex: 0 1 966px; width: 100%; max-width: 1035px; height: auto;
+           background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
+.kpi-svg .dot-wrap:hover circle:nth-child(2) { r: 4.5; }
+.kpi-svg .dot-tip { opacity: 0; pointer-events: none; }
+.kpi-svg .dot-wrap:hover .dot-tip { opacity: 1; }
+.kpi-svg .dot-tip-bg { fill: #222; fill-opacity: 0.92; }
+.kpi-svg .dot-tip-text { fill: #fff; font: 11px -apple-system, system-ui, sans-serif; }
+.kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
+.kpi-axis { stroke: #bbb; stroke-width: 0.6; }
+.kpi-tick { font-size: 9px; fill: #888; }
+.kpi-axis-label { font-size: 9.5px; fill: #666; font-weight: 500; }
+.kpi-legend { flex: 0 0 auto; font-size: 0.78em; line-height: 1.6;
+              padding: 6px 10px; background: #fafafa; border: 1px solid #eee;
+              border-radius: 4px; }
+.kpi-legend .leg-row { display: flex; align-items: center; gap: 6px; }
+.kpi-legend .leg-swatch { display: inline-block; width: 14px; height: 8px;
+                          border-radius: 2px; flex: 0 0 auto; }
+.kpi-legend .leg-label { font-weight: 600; color: #444; }
+.narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
+        margin: 10px 0; font-size: 0.9em; }
+.narr .nrow { margin: 4px 0; line-height: 1.4; }
+.narr .nrow > b:first-child { display: inline-block; min-width: 78px; }
+.orders-link { display: inline-block; margin: 2px 0 12px; padding: 4px 11px; font-size: 0.85em;
+               background: #eef; color: #224; border-radius: 4px; text-decoration: none; }
+.orders-link:hover { background: #dde; }
+.modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; }
+.modal:target { display: block; }
+.modal-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+                  background: rgba(0, 0, 0, 0.45); }
+.modal-card { position: relative; margin: 6vh auto; background: #fff; max-width: 620px;
+              max-height: 82vh; overflow: auto; padding: 14px 22px 20px; border-radius: 8px;
+              box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.modal-card h2 { margin-top: 4px; }
+.modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
+               color: #999; text-decoration: none; }
+.modal-close:hover { color: #333; }
+.commentary { background: #f0f4ff; border-left: 3px solid #7a8fd8; padding: 10px 14px;
+              margin: 14px 0; font-size: 0.92em; line-height: 1.5; font-style: italic;
+              color: #333; }
+.commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
+                      text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
+                      display: block; margin-bottom: 6px; }
+.commentary .clist { margin: 0; padding-left: 20px; }
+.commentary .clist li { margin: 5px 0; }
+.nego-link { display: inline-block; margin: 14px 0; padding: 9px 16px; font-size: 0.95em;
+             font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
+             border-radius: 6px; text-decoration: none; }
+.nego-link:hover { background: #fde0ec; }
+.narr .r-fail { color: #0a8fa8; }
+.narr .r-bad { color: #c0392b; }
+.narr .r-warn { color: #c77a0a; }
+.strategies { background: #fbf6ee; border-left: 3px solid #d8b870; padding: 8px 14px;
+              margin: 14px 0; font-size: 0.92em; }
+.strategies summary { cursor: pointer; }
+.strategies .slist { margin-top: 8px; }
+.strategies .srow { padding: 6px 0; border-top: 1px dotted #e8d8b8; }
+.strategies .srow:first-child { border-top: none; }
+.strategies .srow b { display: inline-block; min-width: 78px; }
+.strategies .sline { margin: 3px 0 3px 80px; line-height: 1.4; }
+.strategies .stag { display: inline-block; font-size: 0.72em; font-weight: 700;
+                    text-transform: uppercase; color: #8a6a2e; min-width: 56px;
+                    margin-right: 6px; letter-spacing: 0.04em; }
+</style>
+</head><body>
+<nav><a href='S1907M.html'>← SPRING 1907 MOVEMENT (S1907M)</a><a href='index.html'>index (20/29)</a><a href='W1907A.html'>WINTER 1907 ADJUSTMENTS (W1907A) →</a></nav>
+<h1>FALL 1907 MOVEMENT <code>(F1907M)</code></h1>
+<h3 class='mapcap'>Orders — start positions, arrows show moves</h3>
+<img class='map' src='F1907M.svg' alt='Orders — start positions, arrows show moves'>
+<details class='strategies'><summary><b>Initial strategies (pre-negotiation)</b>, each power's self-authored plan before talking.</summary>
+<div class='slist'>
+<div class='srow'><b style='color:#c0392b'>AUSTRIA</b><div class='sline'>Turkey retook BUL/SC from Italy last spring, which means Turkey is now at 4 centers with a fleet in BUL/SC and I'm still stuck at 4 — I need to either push A SER into BUL or RUM this fall to finally gain a fifth center, and I should coordinate with Turkey to see if they'll let me take RUM while they consolidate the south, or alternatively press A SER - BUL directly if Turkey will cede it in exchange for my continued cooperation against Italy.</div></div>
+<div class='srow'><b style='color:#2c5fa8'>ENGLAND</b><div class='sline'>My HOL attack bounced again in S1907M despite France taking BEL, which means Germany's F HOL held freely — this fall I need to finally crack HOL by pressing F NTH → HOL with F DEN support while also watching Germany's F ENG sitting in the Channel as a direct threat to my home waters. I'll coordinate with France to ensure continued pressure on Germany's western flank and probe whether Russia's growing 6-center position warrants a northern pivot toward NWY or SWE.</div></div>
+<div class='srow'><b style='color:#1f8aa8'>FRANCE</b><div class='sline'>I finally have BEL after three years of grinding, so this fall I need to press that advantage by pushing into HOL or RUH to crack Germany further while coordinating with England to ensure we both gain centers and keeping A BUR as a flexible support piece.</div></div>
+<div class='srow'><b style='color:#555555'>GERMANY</b><div class='sline'>My core goal this Fall is to finally take DEN from England by pushing F HEL → DEN with F HOL support while holding A BER defensively, and to use A TYR to press into either VEN or TRI to grab an Italian center before Austria collapses entirely, with F ENG holding to block any French naval move into the Channel.</div></div>
+<div class='srow'><b style='color:#2e8b57'>ITALY</b><div class='sline'>I need to retake BUL from Turkey's F BUL/SC using F AEG - BUL/SC with Austrian A SER support if possible, while using F TYS to pressure the western Mediterranean and keeping A VEN and A NAP defensive against any Austrian or German opportunism through TYR.
+
+MESSAGES:
+{
+  "AUSTRIA": "Fall 1907: Turkey took BUL/SC back from me in spring — I need A SER to support F AEG - BUL/SC this fall to retake it. You get a weakened Turkey on your flank and I get my center back; in return I commit A VEN and A NAP fully defensive. Can you confirm A SER S F AEG - BUL/SC?",
+  "RUSSIA": "Fall 1907: Turkey has F BUL/SC now and I need to retake it — can you commit F RUM S F AEG - BUL/SC this fall? With your support at strength 2 versus Turkey's unsupported F BUL/SC, I take it back cleanly. I'll keep F TYS and F ROM well away from your sphere.",
+  "TURKEY": "Fall 1907: You hold BUL/SC but Austria has A SER, Russia has F RUM, and I have F AEG — that fleet is surrounded again just as it was before. A voluntary swap where you move F BUL/SC to GRE and I move F AEG to BUL/SC avoids the bloodshed; otherwise I coordinate with Austria and Russia to dislodge you by force.",
+  "GERMANY": "Fall 1907: Your A TYR adjacent to VEN is concerning — I'm keeping A VEN defensive but want to confirm you have no designs on northern Italy. I'm focused entirely on the Turkish situation in the east and have no interest in a western conflict."
+}</div></div>
+<div class='srow'><b style='color:#7d3c98'>RUSSIA</b><div class='sline'>This fall I want to press Turkey's weakened position by moving F SEV into BLA while supporting F RUM defensively, potentially coordinating with Austria's A SER to threaten BUL/SC now held by Turkey, and keeping A WAR and A UKR stationary to maintain my eastern buffer while F SWE holds to honor my English arrangement.</div></div>
+<div class='srow'><b style='color:#cc8a00'>TURKEY</b><div class='sline'>I've retaken BUL/SC and now hold four centers with four units — my goal this fall is to consolidate BUL while pressuring GRE with F BUL/SC, and I need to decide whether Austria remains a partner or a threat now that Italy's fleet has been pushed back to AEG.
+
+MESSAGES:
+{
+  "AUSTRIA": "Fall 1907: We took BUL together and I want to keep that partnership alive. My plan this fall is to hold F BUL/SC and push toward GRE with support — Italy's F AEG is still a threat to both of us. If you order F ALB S F BUL/SC - GRE, we take GRE together and Italy loses another center; I'll hold A SER as a buffer and make no move toward TRI or VIE. This is the cleanest mutual gain available to either of us right now.",
+  "ITALY": "Fall 1907: Your F AEG retreated from BUL/SC — I'm not chasing it into AEG if you commit to holding there and not contesting GRE. I want GRE this fall; if you withdraw F AEG to ION voluntarily, I'll stop at GRE and we negotiate a stable AEG/ION boundary. Continued resistance just means coordinated pressure from multiple directions.",
+  "RUSSIA": "Fall 1907: BUL is back in Turkish hands and I'm holding it. I have no intention of pressing north toward RUM or SEV — my focus is GRE and stabilizing the Aegean against Italy. If you're willing to hold F RUM defensively, I'll hold F BLA defensively and we maintain the status quo on the Black Sea border."
+}</div></div>
+</div></details>
+<a class='nego-link' href='F1907M.negotiation.html'>💬 Read the negotiation before FALL 1907 MOVEMENT →</a>
+<details class='strategies'><summary><b>Revised strategies (post-negotiation)</b>, each power's updated plan after the negotiation above.</summary>
+<div class='slist'>
+<div class='srow'><b style='color:#c0392b'>AUSTRIA</b><div class='sline'>Russia confirmed F SEV - BLA and F RUM S A SER - BUL, so I'll execute A SER - BUL with A BUD supporting to give strength 2, while holding A TRI and F ALB defensively to protect my home centers and Adriatic flank — if Russia's F SEV cuts F BLA as promised, Turkey's F BUL/SC is unsupported and my attack wins, finally reaching 5 centers.
+
+ORDERS:
+A SER - BUL
+A BUD S A SER - BUL
+A TRI H
+F ALB H</div></div>
+<div class='srow'><b style='color:#2c5fa8'>ENGLAND</b><div class='sline'>Germany has confirmed F ENG is moving to NTH this fall, so I'll move F NTH to ENG supported by F LON to dislodge it — if Germany moves F ENG to NTH and I move F NTH to ENG, we swap and I take the Channel cleanly; F DEN holds to protect DEN against Germany's threatened F HEL → DEN + F HOL support attack, and A LVP and F EDI hold defensively while France executes A BEL → HOL supported by A BUR to take HOL simultaneously.
+
+ORDERS:
+F NTH - ENG
+F LON S F NTH - ENG
+F DEN H
+F EDI H
+A LVP H</div></div>
+<div class='srow'><b style='color:#1f8aa8'>FRANCE</b><div class='sline'>I committed to England to push A BEL → HOL supported by A BUR, and I'm honoring that — Germany rejected my de-escalation offer and England is simultaneously attacking F ENG with F NTH + F LON, so HOL should fall cleanly to me with two units against one while I hold F BRE, F MAO, and A SPA defensively to protect my Atlantic flank.
+
+ORDERS:
+A BEL - HOL
+A BUR S A BEL - HOL
+F BRE H
+F MAO H
+A SPA H</div></div>
+<div class='srow'><b style='color:#555555'>GERMANY</b><div class='sline'>France confirmed A BEL → HOL with A BUR support, so HOL is likely lost regardless; I'll move F HEL → DEN with F HOL support as my final attempt to take DEN from England while using A TYR → VEN to grab an Italian center, and F ENG → NTH to contest the Channel and pressure England's position, accepting that HOL may fall but gaining two new centers to compensate.
+
+ORDERS:
+F HEL - DEN
+F HOL S F HEL - DEN
+F ENG - NTH
+A BER H
+A TYR - VEN</div></div>
+<div class='srow'><b style='color:#2e8b57'>ITALY</b><div class='sline'>Germany confirmed A TYR is moving to VEN, so I must defend VEN by moving A VEN - TYR to bounce the German advance, while executing F AEG - BUL/SC with Russia's confirmed F RUM support and F SEV cutting F BLA, and holding A NAP, F TYS, and F ROM defensively to protect my home centers.
+
+ORDERS:
+F AEG - BUL/SC
+A VEN - TYR
+A NAP H
+F TYS H
+F ROM H</div></div>
+<div class='srow'><b style='color:#7d3c98'>RUSSIA</b><div class='sline'>I'm committed to executing F SEV - BLA to cut Turkey's support, F RUM S F AEG - BUL/SC to give Italy a guaranteed strength-2 attack on Turkey's unsupported fleet, and holding A MOS, A WAR, A UKR, and F SWE stationary to honor my arrangements with England and maintain my eastern buffer.
+
+ORDERS:
+F SEV - BLA
+F RUM S F AEG - BUL/SC
+A MOS H
+A WAR H
+A UKR H
+F SWE H</div></div>
+<div class='srow'><b style='color:#cc8a00'>TURKEY</b><div class='sline'>Russia threatened to cut F BLA's support by moving F SEV - BLA, and Austria refused to hold A SER without compensation, so my plan to move F BUL/SC - GRE while F BLA supports is now risky — if F BLA gets cut by Russia and Austria attacks BUL simultaneously, I lose BUL again. I'll hold F BUL/SC defensively supported by F BLA, hold A CON and F SMY to secure my home centers, and accept that GRE is out of reach this fall while consolidating my 4-center position against the threats from Russia and Austria.
+
+ORDERS:
+F BUL/SC H
+F BLA S F BUL/SC
+A CON H
+F SMY H</div></div>
+</div></details>
+<h3 class='mapcap'>Result — positions after this phase resolved</h3>
+<img class='map' src='F1907M.result.svg' alt='Result — positions after this phase resolved'>
+<h2>What happened this phase</h2>
+<a class='orders-link' href='#orders-modal'>▤ Orders this phase</a>
+<div class='narr'><div class='nrow'><b style='color:#c0392b'>AUSTRIA</b> A SER → BUL <b class='r-warn'>(bounced)</b>; A TRI holds; F ALB holds <b class='r-bad'>(illegal: A BUD S A SER - BUL)</b></div><div class='nrow'><b style='color:#2c5fa8'>ENGLAND</b> F NTH → ENG; F LON <b class='r-fail'>supports</b> F NTH → ENG; F DEN holds; F EDI holds; A LVP holds</div><div class='nrow'><b style='color:#1f8aa8'>FRANCE</b> A BEL → HOL <b class='r-warn'>(bounced)</b>; F BRE holds; F MAO holds; A SPA holds <b class='r-bad'>(illegal: A BUR S A BEL - HOL)</b></div><div class='nrow'><b style='color:#555555'>GERMANY</b> F HEL → DEN <b class='r-warn'>(bounced)</b>; F ENG → NTH <b class='r-warn'>(bounced)</b>; A BER holds; A TYR → VEN <b class='r-warn'>(bounced)</b>  <b class='r-bad'>[dislodged: F ENG]</b> <b class='r-bad'>(illegal: F HOL S F HEL - DEN)</b></div><div class='nrow'><b style='color:#2e8b57'>ITALY</b> F AEG → BUL/SC; A VEN → TYR <b class='r-warn'>(bounced)</b>; A NAP holds; F TYS holds; F ROM holds</div><div class='nrow'><b style='color:#7d3c98'>RUSSIA</b> F SEV → BLA <b class='r-warn'>(bounced)</b>; F RUM <b class='r-fail'>supports</b> F AEG → BUL/SC; A MOS holds; A WAR holds; A UKR holds; F SWE holds</div><div class='nrow'><b style='color:#cc8a00'>TURKEY</b> F BUL/SC → GRE; A CON holds; F SMY holds <b class='r-bad'>(illegal: F BLA S F BUL/SC - GRE)</b></div></div>
+<h3 class='retreats-cap'>Retreats</h3>
+<div class='narr'><div class='nrow'><b style='color:#555555'>GERMANY</b> F ENG retreats → PIC</div></div>
+<div class='commentary'><span class='clabel'>Commentary</span><ul class='clist'><li>England and France executed their coordinated anti-Germany plan perfectly: England dislodged Germany's F ENG from the Channel while France pressed HOL — Germany told France it was moving F ENG to NTH as a "de-escalation" but France had already locked in the HOL attack regardless, leaving Germany squeezed on both flanks simultaneously.</li><li>Germany's A TYR → VEN bounced against Italy's A VEN → TYR, meaning Germany telegraphed its stab in the final messages ("Final warning: A TYR is moving to VEN") and Italy simply mirrored the order — both powers wasted their moves and neither gained anything.</li><li>Russia double-crossed both Austria and Turkey: Austria was promised F RUM support for A SER → BUL, Turkey was asked to hold while Russia "cut" F BLA — instead Russia used F RUM to support Italy's F AEG → BUL/SC, actively working against both neighbors while appearing to negotiate with each of them.</li><li>Italy's F AEG → BUL/SC succeeded in reaching the coast with Russian support (F RUM supporting), but Turkey's F BUL/SC had already vacated toward GRE — Italy gains BUL/SC while Turkey escapes to GRE, meaning Turkey still profits despite the coordinated pressure.</li><li>Austria's A SER → BUL was bounced by Italy's supported fleet move, leaving Austria still at 4 centers after being strung along by both Russia (who switched support to Italy) and Turkey (who manipulated Austria into hesitating with promises of a stable boundary).</li><li>Germany's fleet retreating to Picardy keeps it alive on France's doorstep, signaling Germany isn't done contesting the English Channel corridor despite the setback.</li></ul></div>
+<div class='kpi-row'><svg viewBox='0 0 966 414' class='kpi-svg' xmlns='http://www.w3.org/2000/svg'>
+<text x='483' y='14' text-anchor='middle' class='kpi-title'>Supply centers</text>
+<line x1='46' y1='20' x2='46' y2='352' class='kpi-axis'/>
+<line x1='46' y1='352' x2='954' y2='352' class='kpi-axis'/>
+<line x1='43' y1='352.0' x2='46' y2='352.0' class='kpi-axis'/>
+<text x='41' y='355.0' text-anchor='end' class='kpi-tick'>0</text>
+<line x1='43' y1='186.0' x2='46' y2='186.0' class='kpi-axis'/>
+<text x='41' y='189.0' text-anchor='end' class='kpi-tick'>3.50</text>
+<line x1='43' y1='20.0' x2='46' y2='20.0' class='kpi-axis'/>
+<text x='41' y='23.0' text-anchor='end' class='kpi-tick'>7</text>
+<line x1='46.0' y1='352' x2='46.0' y2='354' class='kpi-axis'/>
+<text x='46.0' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 46.0,357.0)'>S1901M</text>
+<line x1='89.2' y1='352' x2='89.2' y2='354' class='kpi-axis'/>
+<text x='89.2' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 89.2,357.0)'>F1901M</text>
+<line x1='132.5' y1='352' x2='132.5' y2='354' class='kpi-axis'/>
+<text x='132.5' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 132.5,357.0)'>W1901A</text>
+<line x1='175.7' y1='352' x2='175.7' y2='354' class='kpi-axis'/>
+<text x='175.7' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 175.7,357.0)'>S1902M</text>
+<line x1='219.0' y1='352' x2='219.0' y2='354' class='kpi-axis'/>
+<text x='219.0' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 219.0,357.0)'>F1902M</text>
+<line x1='262.2' y1='352' x2='262.2' y2='354' class='kpi-axis'/>
+<text x='262.2' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 262.2,357.0)'>W1902A</text>
+<line x1='305.4' y1='352' x2='305.4' y2='354' class='kpi-axis'/>
+<text x='305.4' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 305.4,357.0)'>S1903M</text>
+<line x1='348.7' y1='352' x2='348.7' y2='354' class='kpi-axis'/>
+<text x='348.7' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 348.7,357.0)'>F1903M</text>
+<line x1='391.9' y1='352' x2='391.9' y2='354' class='kpi-axis'/>
+<text x='391.9' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 391.9,357.0)'>F1903R</text>
+<line x1='435.1' y1='352' x2='435.1' y2='354' class='kpi-axis'/>
+<text x='435.1' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 435.1,357.0)'>W1903A</text>
+<line x1='478.4' y1='352' x2='478.4' y2='354' class='kpi-axis'/>
+<text x='478.4' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 478.4,357.0)'>S1904M</text>
+<line x1='521.6' y1='352' x2='521.6' y2='354' class='kpi-axis'/>
+<text x='521.6' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 521.6,357.0)'>S1904R</text>
+<line x1='564.9' y1='352' x2='564.9' y2='354' class='kpi-axis'/>
+<text x='564.9' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 564.9,357.0)'>F1904M</text>
+<line x1='608.1' y1='352' x2='608.1' y2='354' class='kpi-axis'/>
+<text x='608.1' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 608.1,357.0)'>W1904A</text>
+<line x1='651.3' y1='352' x2='651.3' y2='354' class='kpi-axis'/>
+<text x='651.3' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 651.3,357.0)'>S1905M</text>
+<line x1='694.6' y1='352' x2='694.6' y2='354' class='kpi-axis'/>
+<text x='694.6' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 694.6,357.0)'>F1905M</text>
+<line x1='737.8' y1='352' x2='737.8' y2='354' class='kpi-axis'/>
+<text x='737.8' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 737.8,357.0)'>S1906M</text>
+<line x1='781.0' y1='352' x2='781.0' y2='354' class='kpi-axis'/>
+<text x='781.0' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 781.0,357.0)'>F1906M</text>
+<line x1='824.3' y1='352' x2='824.3' y2='354' class='kpi-axis'/>
+<text x='824.3' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 824.3,357.0)'>W1906A</text>
+<line x1='867.5' y1='352' x2='867.5' y2='354' class='kpi-axis'/>
+<text x='867.5' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 867.5,357.0)'>S1907M</text>
+<line x1='910.8' y1='352' x2='910.8' y2='354' class='kpi-axis'/>
+<text x='910.8' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 910.8,357.0)'>S1907R</text>
+<line x1='954.0' y1='352' x2='954.0' y2='354' class='kpi-axis'/>
+<text x='954.0' y='357.0' text-anchor='end' class='kpi-tick' transform='rotate(-90 954.0,357.0)'>F1907M</text>
+<text x='12' y='186' text-anchor='middle' class='kpi-axis-label' transform='rotate(-90 12,186)'>SC</text>
+<polyline points='46.0,207.0 89.2,159.6 132.5,159.6 175.7,159.6 219.0,159.6 262.2,159.6 305.4,159.6 348.7,159.6 391.9,112.2 435.1,112.2 478.4,112.2 521.6,112.2 564.9,159.6 608.1,159.6 651.3,159.6 694.6,159.6 737.8,159.6 781.0,159.6 824.3,159.6 867.5,159.6 910.8,159.6 954.0,159.6' fill='none' stroke='#c0392b' stroke-width='1.3'/>
+<g class='dot-wrap'><circle cx='46.0' cy='207.0' r='9' class='dot-hit'/><circle cx='46.0' cy='207.0' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 3</title></circle><g class='dot-tip' transform='translate(46.0,207.0)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 3</text></g></g>
+<g class='dot-wrap'><circle cx='89.2' cy='159.6' r='9' class='dot-hit'/><circle cx='89.2' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(89.2,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='132.5' cy='159.6' r='9' class='dot-hit'/><circle cx='132.5' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(132.5,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='175.7' cy='159.6' r='9' class='dot-hit'/><circle cx='175.7' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(175.7,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='219.0' cy='159.6' r='9' class='dot-hit'/><circle cx='219.0' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(219.0,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='262.2' cy='159.6' r='9' class='dot-hit'/><circle cx='262.2' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(262.2,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='305.4' cy='159.6' r='9' class='dot-hit'/><circle cx='305.4' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(305.4,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='348.7' cy='159.6' r='9' class='dot-hit'/><circle cx='348.7' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(348.7,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='391.9' cy='112.2' r='9' class='dot-hit'/><circle cx='391.9' cy='112.2' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 5</title></circle><g class='dot-tip' transform='translate(391.9,112.2)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 5</text></g></g>
+<g class='dot-wrap'><circle cx='435.1' cy='112.2' r='9' class='dot-hit'/><circle cx='435.1' cy='112.2' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 5</title></circle><g class='dot-tip' transform='translate(435.1,112.2)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 5</text></g></g>
+<g class='dot-wrap'><circle cx='478.4' cy='112.2' r='9' class='dot-hit'/><circle cx='478.4' cy='112.2' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 5</title></circle><g class='dot-tip' transform='translate(478.4,112.2)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 5</text></g></g>
+<g class='dot-wrap'><circle cx='521.6' cy='112.2' r='9' class='dot-hit'/><circle cx='521.6' cy='112.2' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 5</title></circle><g class='dot-tip' transform='translate(521.6,112.2)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 5</text></g></g>
+<g class='dot-wrap'><circle cx='564.9' cy='159.6' r='9' class='dot-hit'/><circle cx='564.9' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(564.9,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='608.1' cy='159.6' r='9' class='dot-hit'/><circle cx='608.1' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(608.1,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='651.3' cy='159.6' r='9' class='dot-hit'/><circle cx='651.3' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(651.3,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='694.6' cy='159.6' r='9' class='dot-hit'/><circle cx='694.6' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(694.6,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='737.8' cy='159.6' r='9' class='dot-hit'/><circle cx='737.8' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(737.8,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='781.0' cy='159.6' r='9' class='dot-hit'/><circle cx='781.0' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(781.0,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='824.3' cy='159.6' r='9' class='dot-hit'/><circle cx='824.3' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(824.3,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='867.5' cy='159.6' r='9' class='dot-hit'/><circle cx='867.5' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(867.5,159.6)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='910.8' cy='159.6' r='9' class='dot-hit'/><circle cx='910.8' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(910.8,159.6)'><rect x='-80' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='-75' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<g class='dot-wrap'><circle cx='954.0' cy='159.6' r='9' class='dot-hit'/><circle cx='954.0' cy='159.6' r='3.0' fill='#c0392b' stroke='white' stroke-width='0.8'><title>Austria: 4</title></circle><g class='dot-tip' transform='translate(954.0,159.6)'><rect x='-80' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='-75' y='-10' class='dot-tip-text'>Austria: 4</text></g></g>
+<polyline points='46.0,207.9 89.2,160.5 132.5,160.5 175.7,160.5 219.0,160.5 262.2,160.5 305.4,160.5 348.7,160.5 391.9,113.1 435.1,113.1 478.4,113.1 521.6,113.1 564.9,113.1 608.1,113.1 651.3,113.1 694.6,113.1 737.8,113.1 781.0,113.1 824.3,113.1 867.5,113.1 910.8,113.1 954.0,113.1' fill='none' stroke='#2c5fa8' stroke-width='1.3'/>
+<g class='dot-wrap'><circle cx='46.0' cy='207.9' r='9' class='dot-hit'/><circle cx='46.0' cy='207.9' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 3</title></circle><g class='dot-tip' transform='translate(46.0,207.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 3</text></g></g>
+<g class='dot-wrap'><circle cx='89.2' cy='160.5' r='9' class='dot-hit'/><circle cx='89.2' cy='160.5' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 4</title></circle><g class='dot-tip' transform='translate(89.2,160.5)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 4</text></g></g>
+<g class='dot-wrap'><circle cx='132.5' cy='160.5' r='9' class='dot-hit'/><circle cx='132.5' cy='160.5' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 4</title></circle><g class='dot-tip' transform='translate(132.5,160.5)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 4</text></g></g>
+<g class='dot-wrap'><circle cx='175.7' cy='160.5' r='9' class='dot-hit'/><circle cx='175.7' cy='160.5' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 4</title></circle><g class='dot-tip' transform='translate(175.7,160.5)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 4</text></g></g>
+<g class='dot-wrap'><circle cx='219.0' cy='160.5' r='9' class='dot-hit'/><circle cx='219.0' cy='160.5' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 4</title></circle><g class='dot-tip' transform='translate(219.0,160.5)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 4</text></g></g>
+<g class='dot-wrap'><circle cx='262.2' cy='160.5' r='9' class='dot-hit'/><circle cx='262.2' cy='160.5' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 4</title></circle><g class='dot-tip' transform='translate(262.2,160.5)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 4</text></g></g>
+<g class='dot-wrap'><circle cx='305.4' cy='160.5' r='9' class='dot-hit'/><circle cx='305.4' cy='160.5' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 4</title></circle><g class='dot-tip' transform='translate(305.4,160.5)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 4</text></g></g>
+<g class='dot-wrap'><circle cx='348.7' cy='160.5' r='9' class='dot-hit'/><circle cx='348.7' cy='160.5' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 4</title></circle><g class='dot-tip' transform='translate(348.7,160.5)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 4</text></g></g>
+<g class='dot-wrap'><circle cx='391.9' cy='113.1' r='9' class='dot-hit'/><circle cx='391.9' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(391.9,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='435.1' cy='113.1' r='9' class='dot-hit'/><circle cx='435.1' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(435.1,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='478.4' cy='113.1' r='9' class='dot-hit'/><circle cx='478.4' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(478.4,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='521.6' cy='113.1' r='9' class='dot-hit'/><circle cx='521.6' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(521.6,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='564.9' cy='113.1' r='9' class='dot-hit'/><circle cx='564.9' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(564.9,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='608.1' cy='113.1' r='9' class='dot-hit'/><circle cx='608.1' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(608.1,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='651.3' cy='113.1' r='9' class='dot-hit'/><circle cx='651.3' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(651.3,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='694.6' cy='113.1' r='9' class='dot-hit'/><circle cx='694.6' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(694.6,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='737.8' cy='113.1' r='9' class='dot-hit'/><circle cx='737.8' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(737.8,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='781.0' cy='113.1' r='9' class='dot-hit'/><circle cx='781.0' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(781.0,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='824.3' cy='113.1' r='9' class='dot-hit'/><circle cx='824.3' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(824.3,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='867.5' cy='113.1' r='9' class='dot-hit'/><circle cx='867.5' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(867.5,113.1)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='910.8' cy='113.1' r='9' class='dot-hit'/><circle cx='910.8' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(910.8,113.1)'><rect x='-80' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='-75' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<g class='dot-wrap'><circle cx='954.0' cy='113.1' r='9' class='dot-hit'/><circle cx='954.0' cy='113.1' r='3.0' fill='#2c5fa8' stroke='white' stroke-width='0.8'><title>England: 5</title></circle><g class='dot-tip' transform='translate(954.0,113.1)'><rect x='-80' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='-75' y='-10' class='dot-tip-text'>England: 5</text></g></g>
+<polyline points='46.0,208.8 89.2,161.4 132.5,161.4 175.7,161.4 219.0,114.0 262.2,114.0 305.4,114.0 348.7,114.0 391.9,114.0 435.1,114.0 478.4,114.0 521.6,114.0 564.9,114.0 608.1,114.0 651.3,114.0 694.6,114.0 737.8,114.0 781.0,114.0 824.3,114.0 867.5,114.0 910.8,114.0 954.0,114.0' fill='none' stroke='#1f8aa8' stroke-width='1.3'/>
+<g class='dot-wrap'><circle cx='46.0' cy='208.8' r='9' class='dot-hit'/><circle cx='46.0' cy='208.8' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 3</title></circle><g class='dot-tip' transform='translate(46.0,208.8)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 3</text></g></g>
+<g class='dot-wrap'><circle cx='89.2' cy='161.4' r='9' class='dot-hit'/><circle cx='89.2' cy='161.4' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 4</title></circle><g class='dot-tip' transform='translate(89.2,161.4)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 4</text></g></g>
+<g class='dot-wrap'><circle cx='132.5' cy='161.4' r='9' class='dot-hit'/><circle cx='132.5' cy='161.4' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 4</title></circle><g class='dot-tip' transform='translate(132.5,161.4)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 4</text></g></g>
+<g class='dot-wrap'><circle cx='175.7' cy='161.4' r='9' class='dot-hit'/><circle cx='175.7' cy='161.4' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 4</title></circle><g class='dot-tip' transform='translate(175.7,161.4)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 4</text></g></g>
+<g class='dot-wrap'><circle cx='219.0' cy='114.0' r='9' class='dot-hit'/><circle cx='219.0' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(219.0,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='262.2' cy='114.0' r='9' class='dot-hit'/><circle cx='262.2' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(262.2,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='305.4' cy='114.0' r='9' class='dot-hit'/><circle cx='305.4' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(305.4,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='348.7' cy='114.0' r='9' class='dot-hit'/><circle cx='348.7' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(348.7,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='391.9' cy='114.0' r='9' class='dot-hit'/><circle cx='391.9' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(391.9,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='435.1' cy='114.0' r='9' class='dot-hit'/><circle cx='435.1' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(435.1,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='478.4' cy='114.0' r='9' class='dot-hit'/><circle cx='478.4' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(478.4,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='521.6' cy='114.0' r='9' class='dot-hit'/><circle cx='521.6' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(521.6,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='564.9' cy='114.0' r='9' class='dot-hit'/><circle cx='564.9' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(564.9,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='608.1' cy='114.0' r='9' class='dot-hit'/><circle cx='608.1' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(608.1,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='651.3' cy='114.0' r='9' class='dot-hit'/><circle cx='651.3' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(651.3,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='694.6' cy='114.0' r='9' class='dot-hit'/><circle cx='694.6' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(694.6,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='737.8' cy='114.0' r='9' class='dot-hit'/><circle cx='737.8' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(737.8,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='781.0' cy='114.0' r='9' class='dot-hit'/><circle cx='781.0' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(781.0,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='824.3' cy='114.0' r='9' class='dot-hit'/><circle cx='824.3' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(824.3,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='867.5' cy='114.0' r='9' class='dot-hit'/><circle cx='867.5' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(867.5,114.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='910.8' cy='114.0' r='9' class='dot-hit'/><circle cx='910.8' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(910.8,114.0)'><rect x='-74' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='-69' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<g class='dot-wrap'><circle cx='954.0' cy='114.0' r='9' class='dot-hit'/><circle cx='954.0' cy='114.0' r='3.0' fill='#1f8aa8' stroke='white' stroke-width='0.8'><title>France: 5</title></circle><g class='dot-tip' transform='translate(954.0,114.0)'><rect x='-74' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='-69' y='-10' class='dot-tip-text'>France: 5</text></g></g>
+<polyline points='46.0,209.7 89.2,162.3 132.5,162.3 175.7,162.3 219.0,162.3 262.2,162.3 305.4,162.3 348.7,162.3 391.9,114.9 435.1,114.9 478.4,114.9 521.6,114.9 564.9,114.9 608.1,114.9 651.3,114.9 694.6,114.9 737.8,114.9 781.0,114.9 824.3,114.9 867.5,114.9 910.8,114.9 954.0,114.9' fill='none' stroke='#555555' stroke-width='1.3'/>
+<g class='dot-wrap'><circle cx='46.0' cy='209.7' r='9' class='dot-hit'/><circle cx='46.0' cy='209.7' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 3</title></circle><g class='dot-tip' transform='translate(46.0,209.7)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 3</text></g></g>
+<g class='dot-wrap'><circle cx='89.2' cy='162.3' r='9' class='dot-hit'/><circle cx='89.2' cy='162.3' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 4</title></circle><g class='dot-tip' transform='translate(89.2,162.3)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 4</text></g></g>
+<g class='dot-wrap'><circle cx='132.5' cy='162.3' r='9' class='dot-hit'/><circle cx='132.5' cy='162.3' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 4</title></circle><g class='dot-tip' transform='translate(132.5,162.3)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 4</text></g></g>
+<g class='dot-wrap'><circle cx='175.7' cy='162.3' r='9' class='dot-hit'/><circle cx='175.7' cy='162.3' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 4</title></circle><g class='dot-tip' transform='translate(175.7,162.3)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 4</text></g></g>
+<g class='dot-wrap'><circle cx='219.0' cy='162.3' r='9' class='dot-hit'/><circle cx='219.0' cy='162.3' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 4</title></circle><g class='dot-tip' transform='translate(219.0,162.3)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 4</text></g></g>
+<g class='dot-wrap'><circle cx='262.2' cy='162.3' r='9' class='dot-hit'/><circle cx='262.2' cy='162.3' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 4</title></circle><g class='dot-tip' transform='translate(262.2,162.3)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 4</text></g></g>
+<g class='dot-wrap'><circle cx='305.4' cy='162.3' r='9' class='dot-hit'/><circle cx='305.4' cy='162.3' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 4</title></circle><g class='dot-tip' transform='translate(305.4,162.3)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 4</text></g></g>
+<g class='dot-wrap'><circle cx='348.7' cy='162.3' r='9' class='dot-hit'/><circle cx='348.7' cy='162.3' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 4</title></circle><g class='dot-tip' transform='translate(348.7,162.3)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 4</text></g></g>
+<g class='dot-wrap'><circle cx='391.9' cy='114.9' r='9' class='dot-hit'/><circle cx='391.9' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(391.9,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='435.1' cy='114.9' r='9' class='dot-hit'/><circle cx='435.1' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(435.1,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='478.4' cy='114.9' r='9' class='dot-hit'/><circle cx='478.4' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(478.4,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='521.6' cy='114.9' r='9' class='dot-hit'/><circle cx='521.6' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(521.6,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='564.9' cy='114.9' r='9' class='dot-hit'/><circle cx='564.9' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(564.9,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='608.1' cy='114.9' r='9' class='dot-hit'/><circle cx='608.1' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(608.1,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='651.3' cy='114.9' r='9' class='dot-hit'/><circle cx='651.3' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(651.3,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='694.6' cy='114.9' r='9' class='dot-hit'/><circle cx='694.6' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(694.6,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='737.8' cy='114.9' r='9' class='dot-hit'/><circle cx='737.8' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(737.8,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='781.0' cy='114.9' r='9' class='dot-hit'/><circle cx='781.0' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(781.0,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='824.3' cy='114.9' r='9' class='dot-hit'/><circle cx='824.3' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(824.3,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='867.5' cy='114.9' r='9' class='dot-hit'/><circle cx='867.5' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(867.5,114.9)'><rect x='8' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='910.8' cy='114.9' r='9' class='dot-hit'/><circle cx='910.8' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(910.8,114.9)'><rect x='-80' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='-75' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<g class='dot-wrap'><circle cx='954.0' cy='114.9' r='9' class='dot-hit'/><circle cx='954.0' cy='114.9' r='3.0' fill='#555555' stroke='white' stroke-width='0.8'><title>Germany: 5</title></circle><g class='dot-tip' transform='translate(954.0,114.9)'><rect x='-80' y='-22' width='70' height='18' rx='3' class='dot-tip-bg'/><text x='-75' y='-10' class='dot-tip-text'>Germany: 5</text></g></g>
+<polyline points='46.0,210.6 89.2,163.2 132.5,163.2 175.7,163.2 219.0,115.8 262.2,115.8 305.4,115.8 348.7,115.8 391.9,163.2 435.1,163.2 478.4,163.2 521.6,163.2 564.9,115.8 608.1,115.8 651.3,115.8 694.6,115.8 737.8,115.8 781.0,115.8 824.3,115.8 867.5,115.8 910.8,115.8 954.0,115.8' fill='none' stroke='#2e8b57' stroke-width='1.3'/>
+<g class='dot-wrap'><circle cx='46.0' cy='210.6' r='9' class='dot-hit'/><circle cx='46.0' cy='210.6' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 3</title></circle><g class='dot-tip' transform='translate(46.0,210.6)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 3</text></g></g>
+<g class='dot-wrap'><circle cx='89.2' cy='163.2' r='9' class='dot-hit'/><circle cx='89.2' cy='163.2' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 4</title></circle><g class='dot-tip' transform='translate(89.2,163.2)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 4</text></g></g>
+<g class='dot-wrap'><circle cx='132.5' cy='163.2' r='9' class='dot-hit'/><circle cx='132.5' cy='163.2' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 4</title></circle><g class='dot-tip' transform='translate(132.5,163.2)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 4</text></g></g>
+<g class='dot-wrap'><circle cx='175.7' cy='163.2' r='9' class='dot-hit'/><circle cx='175.7' cy='163.2' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 4</title></circle><g class='dot-tip' transform='translate(175.7,163.2)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 4</text></g></g>
+<g class='dot-wrap'><circle cx='219.0' cy='115.8' r='9' class='dot-hit'/><circle cx='219.0' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(219.0,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='262.2' cy='115.8' r='9' class='dot-hit'/><circle cx='262.2' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(262.2,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='305.4' cy='115.8' r='9' class='dot-hit'/><circle cx='305.4' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(305.4,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='348.7' cy='115.8' r='9' class='dot-hit'/><circle cx='348.7' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(348.7,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='391.9' cy='163.2' r='9' class='dot-hit'/><circle cx='391.9' cy='163.2' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 4</title></circle><g class='dot-tip' transform='translate(391.9,163.2)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 4</text></g></g>
+<g class='dot-wrap'><circle cx='435.1' cy='163.2' r='9' class='dot-hit'/><circle cx='435.1' cy='163.2' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 4</title></circle><g class='dot-tip' transform='translate(435.1,163.2)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 4</text></g></g>
+<g class='dot-wrap'><circle cx='478.4' cy='163.2' r='9' class='dot-hit'/><circle cx='478.4' cy='163.2' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 4</title></circle><g class='dot-tip' transform='translate(478.4,163.2)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 4</text></g></g>
+<g class='dot-wrap'><circle cx='521.6' cy='163.2' r='9' class='dot-hit'/><circle cx='521.6' cy='163.2' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 4</title></circle><g class='dot-tip' transform='translate(521.6,163.2)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 4</text></g></g>
+<g class='dot-wrap'><circle cx='564.9' cy='115.8' r='9' class='dot-hit'/><circle cx='564.9' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(564.9,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='608.1' cy='115.8' r='9' class='dot-hit'/><circle cx='608.1' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(608.1,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='651.3' cy='115.8' r='9' class='dot-hit'/><circle cx='651.3' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(651.3,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='694.6' cy='115.8' r='9' class='dot-hit'/><circle cx='694.6' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(694.6,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='737.8' cy='115.8' r='9' class='dot-hit'/><circle cx='737.8' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(737.8,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='781.0' cy='115.8' r='9' class='dot-hit'/><circle cx='781.0' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(781.0,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='824.3' cy='115.8' r='9' class='dot-hit'/><circle cx='824.3' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(824.3,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='867.5' cy='115.8' r='9' class='dot-hit'/><circle cx='867.5' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(867.5,115.8)'><rect x='8' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='910.8' cy='115.8' r='9' class='dot-hit'/><circle cx='910.8' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(910.8,115.8)'><rect x='-70' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='-65' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<g class='dot-wrap'><circle cx='954.0' cy='115.8' r='9' class='dot-hit'/><circle cx='954.0' cy='115.8' r='3.0' fill='#2e8b57' stroke='white' stroke-width='0.8'><title>Italy: 5</title></circle><g class='dot-tip' transform='translate(954.0,115.8)'><rect x='-70' y='-22' width='60' height='18' rx='3' class='dot-tip-bg'/><text x='-65' y='-10' class='dot-tip-text'>Italy: 5</text></g></g>
+<polyline points='46.0,164.1 89.2,69.2 132.5,69.2 175.7,69.2 219.0,69.2 262.2,69.2 305.4,69.2 348.7,69.2 391.9,69.2 435.1,69.2 478.4,69.2 521.6,69.2 564.9,69.2 608.1,69.2 651.3,69.2 694.6,69.2 737.8,69.2 781.0,69.2 824.3,69.2 867.5,69.2 910.8,69.2 954.0,69.2' fill='none' stroke='#7d3c98' stroke-width='1.3'/>
+<g class='dot-wrap'><circle cx='46.0' cy='164.1' r='9' class='dot-hit'/><circle cx='46.0' cy='164.1' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 4</title></circle><g class='dot-tip' transform='translate(46.0,164.1)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 4</text></g></g>
+<g class='dot-wrap'><circle cx='89.2' cy='69.2' r='9' class='dot-hit'/><circle cx='89.2' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(89.2,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='132.5' cy='69.2' r='9' class='dot-hit'/><circle cx='132.5' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(132.5,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='175.7' cy='69.2' r='9' class='dot-hit'/><circle cx='175.7' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(175.7,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='219.0' cy='69.2' r='9' class='dot-hit'/><circle cx='219.0' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(219.0,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='262.2' cy='69.2' r='9' class='dot-hit'/><circle cx='262.2' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(262.2,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='305.4' cy='69.2' r='9' class='dot-hit'/><circle cx='305.4' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(305.4,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='348.7' cy='69.2' r='9' class='dot-hit'/><circle cx='348.7' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(348.7,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='391.9' cy='69.2' r='9' class='dot-hit'/><circle cx='391.9' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(391.9,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='435.1' cy='69.2' r='9' class='dot-hit'/><circle cx='435.1' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(435.1,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='478.4' cy='69.2' r='9' class='dot-hit'/><circle cx='478.4' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(478.4,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='521.6' cy='69.2' r='9' class='dot-hit'/><circle cx='521.6' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(521.6,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='564.9' cy='69.2' r='9' class='dot-hit'/><circle cx='564.9' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(564.9,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='608.1' cy='69.2' r='9' class='dot-hit'/><circle cx='608.1' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(608.1,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='651.3' cy='69.2' r='9' class='dot-hit'/><circle cx='651.3' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(651.3,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='694.6' cy='69.2' r='9' class='dot-hit'/><circle cx='694.6' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(694.6,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='737.8' cy='69.2' r='9' class='dot-hit'/><circle cx='737.8' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(737.8,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='781.0' cy='69.2' r='9' class='dot-hit'/><circle cx='781.0' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(781.0,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='824.3' cy='69.2' r='9' class='dot-hit'/><circle cx='824.3' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(824.3,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='867.5' cy='69.2' r='9' class='dot-hit'/><circle cx='867.5' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(867.5,69.2)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='910.8' cy='69.2' r='9' class='dot-hit'/><circle cx='910.8' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(910.8,69.2)'><rect x='-74' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='-69' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<g class='dot-wrap'><circle cx='954.0' cy='69.2' r='9' class='dot-hit'/><circle cx='954.0' cy='69.2' r='3.0' fill='#7d3c98' stroke='white' stroke-width='0.8'><title>Russia: 6</title></circle><g class='dot-tip' transform='translate(954.0,69.2)'><rect x='-74' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='-69' y='-10' class='dot-tip-text'>Russia: 6</text></g></g>
+<polyline points='46.0,212.4 89.2,165.0 132.5,165.0 175.7,165.0 219.0,165.0 262.2,165.0 305.4,165.0 348.7,165.0 391.9,165.0 435.1,165.0 478.4,165.0 521.6,165.0 564.9,165.0 608.1,165.0 651.3,165.0 694.6,165.0 737.8,165.0 781.0,165.0 824.3,165.0 867.5,165.0 910.8,165.0 954.0,165.0' fill='none' stroke='#cc8a00' stroke-width='1.3'/>
+<g class='dot-wrap'><circle cx='46.0' cy='212.4' r='9' class='dot-hit'/><circle cx='46.0' cy='212.4' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 3</title></circle><g class='dot-tip' transform='translate(46.0,212.4)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 3</text></g></g>
+<g class='dot-wrap'><circle cx='89.2' cy='165.0' r='9' class='dot-hit'/><circle cx='89.2' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(89.2,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='132.5' cy='165.0' r='9' class='dot-hit'/><circle cx='132.5' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(132.5,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='175.7' cy='165.0' r='9' class='dot-hit'/><circle cx='175.7' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(175.7,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='219.0' cy='165.0' r='9' class='dot-hit'/><circle cx='219.0' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(219.0,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='262.2' cy='165.0' r='9' class='dot-hit'/><circle cx='262.2' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(262.2,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='305.4' cy='165.0' r='9' class='dot-hit'/><circle cx='305.4' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(305.4,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='348.7' cy='165.0' r='9' class='dot-hit'/><circle cx='348.7' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(348.7,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='391.9' cy='165.0' r='9' class='dot-hit'/><circle cx='391.9' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(391.9,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='435.1' cy='165.0' r='9' class='dot-hit'/><circle cx='435.1' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(435.1,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='478.4' cy='165.0' r='9' class='dot-hit'/><circle cx='478.4' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(478.4,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='521.6' cy='165.0' r='9' class='dot-hit'/><circle cx='521.6' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(521.6,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='564.9' cy='165.0' r='9' class='dot-hit'/><circle cx='564.9' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(564.9,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='608.1' cy='165.0' r='9' class='dot-hit'/><circle cx='608.1' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(608.1,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='651.3' cy='165.0' r='9' class='dot-hit'/><circle cx='651.3' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(651.3,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='694.6' cy='165.0' r='9' class='dot-hit'/><circle cx='694.6' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(694.6,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='737.8' cy='165.0' r='9' class='dot-hit'/><circle cx='737.8' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(737.8,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='781.0' cy='165.0' r='9' class='dot-hit'/><circle cx='781.0' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(781.0,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='824.3' cy='165.0' r='9' class='dot-hit'/><circle cx='824.3' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(824.3,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='867.5' cy='165.0' r='9' class='dot-hit'/><circle cx='867.5' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(867.5,165.0)'><rect x='8' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='13' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='910.8' cy='165.0' r='9' class='dot-hit'/><circle cx='910.8' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(910.8,165.0)'><rect x='-74' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='-69' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+<g class='dot-wrap'><circle cx='954.0' cy='165.0' r='9' class='dot-hit'/><circle cx='954.0' cy='165.0' r='3.0' fill='#cc8a00' stroke='white' stroke-width='0.8'><title>Turkey: 4</title></circle><g class='dot-tip' transform='translate(954.0,165.0)'><rect x='-74' y='-22' width='64' height='18' rx='3' class='dot-tip-bg'/><text x='-69' y='-10' class='dot-tip-text'>Turkey: 4</text></g></g>
+</svg><div class='kpi-legend'><div class='leg-row'><span class='leg-swatch' style='background:#c0392b'></span><span class='leg-label'>AUSTRIA</span></div><div class='leg-row'><span class='leg-swatch' style='background:#2c5fa8'></span><span class='leg-label'>ENGLAND</span></div><div class='leg-row'><span class='leg-swatch' style='background:#1f8aa8'></span><span class='leg-label'>FRANCE</span></div><div class='leg-row'><span class='leg-swatch' style='background:#555555'></span><span class='leg-label'>GERMANY</span></div><div class='leg-row'><span class='leg-swatch' style='background:#2e8b57'></span><span class='leg-label'>ITALY</span></div><div class='leg-row'><span class='leg-swatch' style='background:#7d3c98'></span><span class='leg-label'>RUSSIA</span></div><div class='leg-row'><span class='leg-swatch' style='background:#cc8a00'></span><span class='leg-label'>TURKEY</span></div></div></div>
+<nav><a href='S1907M.html'>← SPRING 1907 MOVEMENT (S1907M)</a><a href='index.html'>index (20/29)</a><a href='W1907A.html'>WINTER 1907 ADJUSTMENTS (W1907A) →</a></nav>
+<div id='orders-modal' class='modal'>
+<a class='modal-backdrop' href='#'></a>
+<div class='modal-card'>
+<a class='modal-close' href='#' title='close'>&times;</a>
+<h2>Orders this phase</h2>
+<div class='orders'>
+<div class='power'><b>AUSTRIA</b>: <code>A SER - BUL</code> · <code>A TRI H</code> · <code>F ALB H</code> <span class='invalid'>(illegal: <code>A BUD S A SER - BUL</code>)</span></div>
+<div class='power'><b>ENGLAND</b>: <code>F NTH - ENG</code> · <code>F LON S F NTH - ENG</code> · <code>F DEN H</code> · <code>F EDI H</code> · <code>A LVP H</code></div>
+<div class='power'><b>FRANCE</b>: <code>A BEL - HOL</code> · <code>F BRE H</code> · <code>F MAO H</code> · <code>A SPA H</code> <span class='invalid'>(illegal: <code>A BUR S A BEL - HOL</code>)</span></div>
+<div class='power'><b>GERMANY</b>: <code>F HEL - DEN</code> · <code>F ENG - NTH</code> · <code>A BER H</code> · <code>A TYR - VEN</code> <span class='invalid'>(illegal: <code>F HOL S F HEL - DEN</code>)</span></div>
+<div class='power'><b>ITALY</b>: <code>F AEG - BUL/SC</code> · <code>A VEN - TYR</code> · <code>A NAP H</code> · <code>F TYS H</code> · <code>F ROM H</code></div>
+<div class='power'><b>RUSSIA</b>: <code>F SEV - BLA</code> · <code>F RUM S F AEG - BUL/SC</code> · <code>A MOS H</code> · <code>A WAR H</code> · <code>A UKR H</code> · <code>F SWE H</code></div>
+<div class='power'><b>TURKEY</b>: <code>F BUL/SC - GRE</code> · <code>A CON H</code> · <code>F SMY H</code> <span class='invalid'>(illegal: <code>F BLA S F BUL/SC - GRE</code>)</span></div>
+</div>
+</div></div>
+</body></html>

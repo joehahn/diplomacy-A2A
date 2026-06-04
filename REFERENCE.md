@@ -57,7 +57,8 @@ row above).
 | *(deleted; previous canonical, 5-yr)* | Sonnet | 3 rounds, 5 yr, strategy on, `--log-prompts`, per-power placeholder personas | 18 | 4479s | **≈249** | **$11.98** + $0.50 commentary |
 | *(deleted; previous 10-yr canonical, serial)* | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, uniform baseline persona | 36 | 9434s | **≈262** | **$24.69** + commentary |
 | *(deleted; parallel-fan-out Haiku measurement)* | Haiku | 3 rounds, 5 yr, strategy on, `--with-commentary`, uniform baseline | 17 | 588s | **≈35** | **$3.43** (Haiku rates) |
-| 20260601T214429Z **(canonical, 10-yr, parallel)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, `--with-commentary`, uniform baseline persona, all 2026-06-01 prompt improvements | 33 | 1873s | **≈57** | **$24.03** + commentary |
+| 20260601T214429Z *(previous canonical, 10-yr, parallel)* | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, `--with-commentary`, uniform baseline persona, all 2026-06-01 prompt improvements | 33 | 1873s | **≈57** | **$24.03** + commentary |
+| 2026-06-04.01.23.15 **(canonical, 10-yr, parallel)** | Sonnet | 3 rounds, 10 yr, strategy on, `--log-prompts`, `--with-commentary`, uniform baseline persona, + power-adjacency block | 35 | 2043s | **≈58** | **$25.23** + commentary |
 
 **Headline (serial regime):** Haiku is ≈3-4× faster than Sonnet *per
 phase on simple workloads* (1 round, no strategy log). On the
@@ -70,10 +71,10 @@ across the board.
 **Parallel fan-out effect:** the deleted Haiku measurement row shows
 ≈35 s/phase on Haiku canonical workload, vs ≈145 s/phase on the same
 model under the serial plain-vanilla baseline, a 4.2× per-phase
-speedup. The current Sonnet 10-yr canonical (`20260601T214429Z`, last
-row) lands at ≈57 s/phase parallel vs ≈262 s/phase on the previous
-serial Sonnet canonical, a 4.6× speedup, for a 31-minute wall-time
-total across 33 phases.
+speedup. The current Sonnet 10-yr canonical (`2026-06-04.01.23.15`,
+last row) lands at ≈58 s/phase parallel vs ≈262 s/phase on the earlier
+serial Sonnet canonical, a 4.5× speedup, for a 34-minute wall-time
+total across 35 phases.
 
 ---
 
@@ -83,7 +84,7 @@ total across 33 phases.
 
 Produces tight 1-2 sentence strategy notes, opens negotiations with
 concrete bilateral proposals, closes deals across rounds, and lets
-dialogue visibly drive orders. The current canonical
+dialogue visibly drive orders. The previous canonical
 (`20260601T214429Z`,
 `python -m diplomacy_a2a run --log-prompts --with-commentary`) played
 10 game-years to S1911M and ended with Germany dominant at 8 SCs,
@@ -231,7 +232,7 @@ rounds, and (b) testing whether the worst-case restating is specific
 to the France position under uniform persona, by varying persona or
 swapping models on France alone.
 
-**Sonnet does not exhibit this anchoring** on the current canonical
+**Sonnet does not exhibit this anchoring** on the previous canonical
 (`20260601T214429Z`): F1901M France-to-Germany opens directly with
 a concrete bilateral Belgium-support proposal, no Russia mentions,
 no globally-salient-but-locally-irrelevant content. The anchoring is
@@ -341,7 +342,7 @@ exhibits:
 3. A talk-vs-action gap that closes only because the *talk* gets
    smaller, not because *action* gets larger.
 
-The committed Sonnet 10-yr canonical (`20260601T214429Z`) shows
+The previous Sonnet 10-yr canonical (`20260601T214429Z`) shows
 four residual failure modes, three shared with Haiku at lower rates
 and one Sonnet-specific:
 
