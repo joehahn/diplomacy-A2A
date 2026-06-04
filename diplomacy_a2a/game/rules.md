@@ -83,6 +83,7 @@ These are the only forms accepted. Anything else is rejected.
 | Support a holding unit | `<U> S <U2>` | `A PAR S F BRE` |
 | Support a moving unit | `<U> S <U2> - <PROV>` | `A PAR S F BRE - PIC` |
 | Convoy an army by sea | `<F> C <A> - <PROV>` | `F MAO C A SPA - GAS` |
+| Move an army via convoy | `<A> - <PROV> VIA` | `A APU - TUN VIA` |
 
 Where `<U>` and `<U2>` are full unit identifiers (`A PAR`, `F BRE`).
 
@@ -116,9 +117,12 @@ These determine what actually happens when orders resolve simultaneously.
 - **Attacking a supporting unit cuts its support** (drops it to zero
   strength), unless the attack comes from the province the support is
   aimed at.
-- **Convoys** — an army can be convoyed across a sea via a chain of
-  fleets, each ordered to convoy that specific army move. If any fleet
-  in the chain is dislodged, the convoy fails and the army stays put.
+- **A convoy needs two matching orders, both yours, the same turn:** the
+  army orders its move with the `VIA` suffix (`A APU - TUN VIA`), and each
+  fleet on the sea route convoys that exact move (`F ION C A APU - TUN`).
+  `VIA` is the adjudicator's required notation for a convoyed move; it does
+  not appear in normal board play. If any convoying fleet is dislodged, the
+  convoy fails and the army stays put.
 - **Dislodgment** — a unit forced out of its province by superior
   attacking strength is dislodged and must retreat (or disband) in the
   next retreat phase. It cannot retreat to the province the attack came
