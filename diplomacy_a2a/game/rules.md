@@ -109,8 +109,11 @@ control*. You may build at most as many units as you have excess centers.
 
 These determine what actually happens when orders resolve simultaneously.
 
-- **Equal strength stalemates** — if two units of equal strength try to
-  enter the same province, neither succeeds; both bounce.
+- **Bounce.** A move "bounces" when it fails because another unit of equal
+  or greater strength contests the same province: the move does not happen
+  and the unit stays where it started. Two equal-strength moves into the same
+  province both bounce. Bounced orders are shown as "(bounced)" in the turn
+  recap.
 - **A support must name the exact move it backs.** Help an attack on X
   with `<U> S <U2> - X`; help a hold with `<U> S <U2>`. A wrong
   destination has no effect.
