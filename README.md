@@ -43,7 +43,7 @@ well-prompted frontier LLM, and with all players represented by AI agents.
 
 ## Visual dive into a representative game
 
-You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.04.00.49/dashboard/index.html)**,
+You are invited to explore our **[canonical game](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)**,
 which uses Sonnet to power seven AI agents across 10 game-years. A game
 year has five phases (Spring Movement & Retreats, Fall Movement &
 Retreats, Winter Adjustments), so the canonical contains 20 movement
@@ -57,33 +57,34 @@ negotiations into success, and who backstabbed whom.
 
 ## A2A highlights from the canonical
 
-Two moments where agent-to-agent negotiation visibly drove
-outcomes (one cooperative, one a betrayal), and a third where
-coordination was honored to the letter and still failed:
+Three moments where agent-to-agent negotiation visibly drove outcomes:
+a coordinated attack delivered, a betrayal that landed, and a coalition
+that broke when one party defected for its own gain.
 
-- **Austria and Italy take Bulgaria from Turkey** at
-  [S1906M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.04.00.49/dashboard/S1906M.html).
-  Italy promised to back the attack ("F GRE S A RUM - BUL ... that gives
-  you BUL at 2 strength against unsupported A BUL"), and delivered it.
-  Austria's A RUM → BUL, supported by Italy's fleet, dislodged Turkey's
-  defending army, and Austria captured the Bulgaria center the next Fall.
+- **France and Russia squeeze England out of Holland** at
+  [F1907M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/F1907M.html).
+  France proposed the exact play to Russia ("A BEL - HOL this fall, and I
+  need A KIE to support A BEL - HOL ... 2 strength against England's F HOL").
+  Russia supplied A KIE's support on schedule, and France's A BEL → HOL
+  dislodged England's fleet exactly as agreed, part of the multi-front
+  pressure that kept the leader from running away.
 
-- **France lies to Russia about its target** at
-  [F1909M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.04.00.49/dashboard/F1909M.html).
-  France told Russia it was moving "A KIE → DEN this fall ... purely
-  anti-Russia," and told England the same. Instead it threw a supported
-  assault at Russia's Berlin (A KIE → BER with A MUN support). The lie
-  was real, but Russia had pre-committed F BAL to defend Berlin, so the
-  attack bounced and the stab drew no blood.
+- **Austria stabs Turkey for a home center** at
+  [S1904M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/S1904M.html).
+  Austria's "final offer" promised "I order A BUL to hold rather than push
+  to CON this spring, you keep your 3 centers." Turkey set a defensive line
+  on that word, leaving Constantinople open. Austria ordered A BUL → CON
+  anyway and walked into Turkey's undefended capital, which became Austrian
+  at the next adjustment.
 
-- **An honored Anglo-French attack on Berlin still bounces** at
-  [F1905M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.04.00.49/dashboard/F1905M.html).
-  England and France negotiated a supported strike across three rounds
-  ("execute A SIL → BER and we take it at strength 2") and both submitted
-  exactly the agreed orders, no defection. It failed anyway: Russia had
-  anticipated it and pre-ordered F BAL to support Berlin's defense, so the
-  attack bounced at equal strength. Faithful talk, sound execution, beaten
-  by a better-prepared defender.
+- **A Franco-Russian attack on Kiel falls apart** at
+  [S1910M](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/S1910M.html).
+  Russia confirmed the joint plan ("A BER - KIE with F BAL supporting ... if
+  you push A HOL - KIE simultaneously, we hit at strength 3 and take it") and
+  executed its half. But France quietly redirected, ordering A HOL → BEL and
+  A BUR → MUN to grab two centers for itself, so Russia's attack hit Kiel
+  alone and bounced against England's supported hold while France pocketed
+  Belgium and Munich.
 
 ## Project goals & deliverables
 
@@ -188,13 +189,13 @@ python -m diplomacy_a2a run --power-memory TURKEY=5
 python -m diplomacy_a2a run --category axis_a --power-model TURKEY=claude-opus-4-7
 
 # Render a finished game, this step does not use any LLM
-python -m diplomacy_a2a render results/canonical/2026-06-04.04.00.49/
+python -m diplomacy_a2a render results/canonical/2026-06-04.14.48.20/
 
 # Add or refresh LLM commentary on a finished run, then render
-python -m diplomacy_a2a render results/canonical/2026-06-04.04.00.49/ --with-commentary
+python -m diplomacy_a2a render results/canonical/2026-06-04.14.48.20/ --with-commentary
 
 # Generate commentary only, no render (useful in scripts)
-python -m diplomacy_a2a commentary results/canonical/2026-06-04.04.00.49/
+python -m diplomacy_a2a commentary results/canonical/2026-06-04.14.48.20/
 
 python -m diplomacy_a2a --help                # subcommand list
 python -m diplomacy_a2a run --help            # game-execution options
@@ -358,11 +359,11 @@ pre-game collusion, information asymmetry), the success-vs-spend chart
 described in goal 3, and any falsifiable claims that emerge about which
 agent designs perform better in A2A competition.
 
-Cost to execute the canonical game is about **$24 when using Sonnet**,
-which processes **11.3M input tokens** (of which about **48% is
-cached and served at 10% of full price**) and **330K output tokens**
-across **about 860 LLM calls**, with the game executing in about
-**33 minutes** of wall time.
+Cost to execute the canonical game is about **$26 when using Sonnet**,
+which processes **11.9M input tokens** (of which about **48% is
+cached and served at 10% of full price**) and **347K output tokens**
+across **about 885 LLM calls**, with the game executing in about
+**34 minutes** of wall time.
 
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).

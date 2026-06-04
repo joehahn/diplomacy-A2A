@@ -121,7 +121,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("run_dir", type=Path,
                           help="path to a finished run directory, e.g. "
-                               "results/canonical/2026-06-04.04.00.49/")
+                               "results/canonical/2026-06-04.14.48.20/")
     p_render.add_argument("--with-commentary", action="store_true",
                           help="ensure commentary.json is present (generate it if "
                                "missing or refresh it if --refresh-commentary), then "
