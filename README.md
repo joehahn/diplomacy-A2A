@@ -359,7 +359,9 @@ behavior across every power.
 
 By default, every run produces an HTML dashboard at
 `results/<run-id>/dashboard/index.html`, navigable phase-by-phase (one
-slide per phase). Each slide contains:
+slide per phase); explore the
+**[canonical run's dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)**
+live. Each slide contains:
 
 - **Orders and results maps**: what each unit was ordered to do that
   phase and the board after adjudication.
@@ -371,6 +373,13 @@ slide per phase). Each slide contains:
 - **Negotiation transcripts**: a link to all agent-to-agent dialogue that
   preceded that phase's orders.
 - **KPI charts**: each player's supply center (SC) counts.
+
+A run executed with `--log-prompts` (like the canonical) also commits
+**[`prompts.md`](https://github.com/joehahn/diplomacy-A2A/blob/main/results/canonical/2026-06-04.14.48.20/prompts.md)**:
+the exact prompt and full response for every agent call in the first
+game-year. It shows precisely what each agent was shown (the system rules,
+its board view, the dialogue, its strategy history) and what it replied, the
+ground truth behind everything in the dashboard.
 
 ## Summary of Main Findings
 

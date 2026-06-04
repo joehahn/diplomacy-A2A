@@ -1238,8 +1238,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                         dislodgements += 1
 
         # Pass 3: negotiation density. Total messages exchanged across the
-        # game, plus the share that contain conditional-trade language
-        # ("quid pro quo") and the share that contain alliance / coalition
+        # game, plus the share that contain conditional-bargaining language
+        # (conditional offers) and the share that contain alliance / coalition
         # vocabulary. Both are quick markers of negotiation character.
         total_msgs = cond_msgs = alliance_msgs = 0
         cond_re = re.compile(
@@ -1325,7 +1325,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             # of total messages. Marked as sub-rows so the index renders
             # them indented under Negotiation messages.
             cond_pct = 100 * cond_msgs / total_msgs
-            outcomes_rows.append(("Quid pro quo", f"{cond_pct:.1f}%", True))
+            outcomes_rows.append(("Conditional bargaining", f"{cond_pct:.1f}%", True))
             alliance_pct = 100 * alliance_msgs / total_msgs
             outcomes_rows.append(("Alliances", f"{alliance_pct:.1f}%", True))
             if betrayals > 0:

@@ -102,7 +102,7 @@ first two are preserved here:
 |---|---:|---:|---:|
 | Negotiation messages | 914 | 1036 | 1034 |
 | Messages to non-adjacent powers | 13.6% | 20.2% | 19% |
-| Quid pro quo | 46.4% | 50.4% | 55.2% |
+| Conditional bargaining | 46.4% | 50.4% | 55.2% |
 | Betrayals | 4.6% | 2.3% | 4.5% |
 | Hold rate | 59.2% | 57.5% | 49.4% |
 | Support orders | 11.7% | 12.3% | 14.5% |
