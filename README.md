@@ -198,7 +198,7 @@ python -m diplomacy_a2a render results/canonical/2026-06-04.14.48.20/ --with-com
 # Generate commentary only, no render (useful in scripts)
 python -m diplomacy_a2a commentary results/canonical/2026-06-04.14.48.20/
 
-# Interrogate a power about its play in a finished run (one LLM call, ~$0.01-0.15)
+# Interrogate a power about its play after game has completed (one LLM call, ~$0.1)
 python -m diplomacy_a2a ask results/canonical/2026-06-04.14.48.20 ENGLAND \
   "Your army sat in York the entire game and never moved. Why?"
 
@@ -236,15 +236,6 @@ agents (`--power-model`, `--power-memory`), and control output
 | `--results-dir PATH` | `results` | Root directory for artifacts. |
 | `--category NAME` | – | Subfolder under `--results-dir` to organize the run (e.g. `canonical`, `axis_a`, `axis_b`). Empty default writes to `results/<run-id>/` like before. |
 | `--quiet` | off | Suppress the verbose phase-by-phase trace. |
-
-### Options *not* in the CLI yet
-
-- **Per-agent personality traits** (aggressive, untruthful, backstabbing, crazy)
-  — currently every power shares the same persona prompt from
-  [`personas/registry.py`](diplomacy_a2a/personas/registry.py). The programmatic
-  `run_game(personas={"TURKEY": "<prompt>"})` already accepts per-power
-  overrides; the CLI flag is **axis B** of the goal-3 experiments — design in
-  [REFERENCE.md](REFERENCE.md).
 
 ## Code architecture
 
@@ -337,6 +328,20 @@ agents carry an explicit memory of their stated plans. Notes are
 **private to each agent**, mirroring how Diplomacy works at a table, and
 they are visible in the dashboard.
 
+## Ask the agent
+
+After a game you can interrogate any power about its own play with the `ask`
+subcommand: it rebuilds that power's view of the finished game from the
+transcript (its strategy notes, orders, results, and private dialogue) and
+puts a free-form question to a fresh instance of the same persona, so the
+answer is grounded in the agent's own recorded reasoning rather than invented
+after the fact. One LLM call, ~$0.1.
+
+```bash
+python -m diplomacy_a2a ask results/canonical/2026-06-04.14.48.20 ENGLAND \
+  "Your army sat in York the entire game and never moved. Why?"
+```
+
 ## Dashboard
 
 By default, every run produces an HTML dashboard at
@@ -352,22 +357,7 @@ slide per phase). Each slide contains:
 - **Strategy notes**: each agent's initial and revised plans for the phase.
 - **Negotiation transcripts**: a link to all agent-to-agent dialogue that
   preceded that phase's orders.
-- **KPI charts**: each player's supply center (SC) counts as well as
-  their Sum-of-Squares (SoS) score, where SoS = SC² / Σ(SC²).
-
-## Ask the agent
-
-After a game you can interrogate any power about its own play with the `ask`
-subcommand: it rebuilds that power's view of the finished game from the
-transcript (its strategy notes, orders, results, and private dialogue) and
-puts a free-form question to a fresh instance of the same persona, so the
-answer is grounded in the agent's own recorded reasoning rather than invented
-after the fact. One LLM call, a few cents to ~$0.15.
-
-```bash
-python -m diplomacy_a2a ask results/canonical/2026-06-04.14.48.20 ENGLAND \
-  "Your army sat in York the entire game and never moved. Why?"
-```
+- **KPI charts**: each player's supply center (SC) counts.
 
 ## Summary of Main Findings
 
