@@ -342,6 +342,19 @@ python -m diplomacy_a2a ask results/canonical/2026-06-04.14.48.20 ENGLAND \
   "Your army sat in York the entire game and never moved. Why?"
 ```
 
+England's own answer to that question:
+
+> I never found a good use for A YOR and kept deferring the decision until it
+> became a habit ... my entire strategy was fleet-based, which made sense for
+> England's geography, but it meant A YOR had no role in any of the attacks I
+> was actually executing ... It was a genuine waste.
+
+Beyond curiosity, this is the project's main tool for its hardest problem:
+prompting the agents out of passive, suboptimal play. An agent's own account
+of a mistake (here, that it never set up the convoy its idle army needed)
+points straight at what to change in the prompt to fix that whole class of
+behavior across every power.
+
 ## Dashboard
 
 By default, every run produces an HTML dashboard at

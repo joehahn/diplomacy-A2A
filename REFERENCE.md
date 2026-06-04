@@ -811,8 +811,6 @@ slideshow:
 
 - **PPSC** (final SC count): straight from `phase_resolved.centers` at the
   last resolved phase.
-- **Sum-of-Squares share** (per phase, per power): `len(centers[p])²` ÷
-  `Σ len(centers[p])²` over survivors. Eliminated powers contribute 0.
 - **Survival rate**: `len(final_state.centers[p]) ≥ 1`.
 - **Peak SC** (per power): `max(len(centers[p]))` across all
   `phase_resolved` events.
