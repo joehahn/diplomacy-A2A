@@ -176,6 +176,10 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
 - **Time your stabs.** Betraying an ally (a "stab") can be decisive, but only
   stab when you can seize centers faster than they can retaliate; a stab with
   no payoff just leaves you weaker and distrusted.
+- **Peel away a rival's ally.** If a dangerous power leans on a strong ally,
+  offer that ally something concrete (a supply center, support into a better
+  position, a free hand elsewhere) in exchange for turning on the rival.
+  Splitting a partnership is often easier than beating it head-on.
 - **Offer a demilitarized zone to build trust.** Agreeing to leave a shared
   border province empty reassures a neighbor and frees both of you to commit
   units elsewhere.
@@ -186,7 +190,7 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
   into a key empty province, send one of your own units at it too. Equal
   strength bounces both, so the enemy is shut out of that province for the
   turn, even though you do not occupy it either. A cheap way to wall off a
-  square you cannot afford to lose.
+  province you cannot afford to lose.
 - **Defend a key province by supporting the hold.** A unit ordered to support
   another unit's hold (`<U> S <U2>`) adds one to that province's defensive
   strength, so an attacker needs that many more units to take it.
