@@ -19,7 +19,7 @@ renderers the `render` subcommand uses on committed transcripts):
   (post-resolution) — maps replayed from the transcript
 - `index.html` + `start.html` + `<short-phase>.html` — slideshow viewer
 
-run-id is a UTC timestamp like `20260523T231245Z`.
+run-id is a UTC timestamp like `2026-05-23.23.12.45`.
 """
 from __future__ import annotations
 
@@ -68,7 +68,7 @@ PRICE_PER_MTOK = _RATE_TABLE["claude-sonnet-4-6"]
 
 
 def _run_id() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d.%H.%M.%S")
 
 
 def _estimate_cost(tokens_by_model: dict[str, dict[str, int]]) -> float:

@@ -35,11 +35,3 @@ F1910M, becoming the dominant power.
 [**View this run's turn-by-turn dashboard**](https://joehahn.github.io/diplomacy-A2A/results/canonical/20260601T214429Z/dashboard/index.html)
 (GitHub Pages) to flip through the maps, narration, commentary, agent
 strategies, and dialogue.
-
-## `20260529T225943Z/`: earlier 5-year run, kept as a smaller example
-
-A 5-year Sonnet run with per-power placeholder personas, retained because
-it is roughly half the size of the canonical and useful as a quick
-visitor example without scrolling through 10 game-years. Final standings
-at F1905M were Germany 6 / Russia 6 / Austria 5 / France 5 / Italy 5 /
-England 4 / Turkey 3, no eliminations, no dominant power.
