@@ -110,12 +110,12 @@ These determine what actually happens when orders resolve simultaneously.
 
 - **Equal strength stalemates** — if two units of equal strength try to
   enter the same province, neither succeeds; both bounce.
-- **Support requires equal direction** — supporting a move into `X`
-  helps any attack on `X` by the supported unit; supporting a holding
-  unit helps that specific unit defend in place.
-- **Support is cut** — a unit giving support is "cut" if it is attacked
-  by any unit *other than from the province it was supporting an attack
-  on*. A cut support contributes zero strength.
+- **A support must name the exact move it backs.** Help an attack on X
+  with `<U> S <U2> - X`; help a hold with `<U> S <U2>`. A wrong
+  destination has no effect.
+- **Attacking a supporting unit cuts its support** (drops it to zero
+  strength), unless the attack comes from the province the support is
+  aimed at.
 - **Convoys** — an army can be convoyed across a sea via a chain of
   fleets, each ordered to convoy that specific army move. If any fleet
   in the chain is dislodged, the convoy fails and the army stays put.
