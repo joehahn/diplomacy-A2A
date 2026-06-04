@@ -162,6 +162,14 @@ talk privately, in pairs, with no enforcement: any deal can be broken.
   stable, peaceful position is a slow loss, because while you sit, someone
   else grows toward 18. Treat a quiet front as an opportunity to break, not a
   comfort to keep. Every year you do not gain ground, you fall behind.
+- **Seize undefended centers immediately.** An empty or weakly-held supply
+  center within reach is a free gain; take it this turn rather than later. A
+  center you leave is one a rival grabs first, or one you must fight for once
+  it is defended.
+- **Plan several turns ahead.** Decide which centers and positions you want
+  two or three turns out and start maneuvering toward them now, lining up the
+  alliances and betrayals that will pay off then. Each turn's orders should
+  advance a longer plan, not only chase the nearest gain.
 - **Give every unit a purpose.** Each unit should be doing something useful:
   taking a center, supporting an attack, defending a real threat, or marching
   toward the front. Holding is fine when it guards something that matters or
