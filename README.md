@@ -197,6 +197,10 @@ python -m diplomacy_a2a render results/canonical/2026-06-04.14.48.20/ --with-com
 # Generate commentary only, no render (useful in scripts)
 python -m diplomacy_a2a commentary results/canonical/2026-06-04.14.48.20/
 
+# Interrogate a power about its play in a finished run (one LLM call, ~$0.01-0.15)
+python -m diplomacy_a2a ask results/canonical/2026-06-04.14.48.20 ENGLAND \
+  "Your army sat in York the entire game and never moved. Why?"
+
 python -m diplomacy_a2a --help                # subcommand list
 python -m diplomacy_a2a run --help            # game-execution options
 python -m diplomacy_a2a render --help         # render + commentary options

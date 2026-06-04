@@ -863,8 +863,18 @@ Two question modes are envisioned:
   matches reality, especially when axis E (information asymmetry) is
   in play.
 
-Implementation: a new `interview.py` module plus an `ask` subcommand,
-roughly 80 lines total. Cost is about $0.01-0.03 per question on Sonnet.
+**Implemented** as [`diplomacy_a2a/interview.py`](diplomacy_a2a/interview.py)
+plus the `ask` subcommand:
+`python -m diplomacy_a2a ask <run-dir> <POWER> "<question>"`. It rebuilds the
+power's whole-game view (strategy notes, orders, adjudicated results, and
+private dialogue) from the transcript, or only up to `--phase <SHORT_PHASE>`
+for the what-did-you-know-then state-verification mode; `--model` lets a
+different/stronger model answer than the one that played. The answer reuses
+the same rules + persona system prompt the agent played with (via
+`agent.rules_with_tables`), minus the order/message output instructions, so it
+replies in prose grounded in its own recorded words. Cost is about $0.10-0.15
+per whole-game question on Sonnet (a few cents with `--phase` or
+`--no-dialogue`).
 
 ### LLM baseline knowledge probe
 

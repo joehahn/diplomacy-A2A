@@ -1,6 +1,6 @@
 """Command-line entry point for Diplomacy A2A.
 
-The CLI is organized as three subcommands, split along cost / LLM-use lines:
+The CLI is organized as four subcommands, split along cost / LLM-use lines:
 
   run         Execute a game — agents negotiate, agents move, library
               adjudicates. Writes transcript.jsonl (+ prompts.jsonl if
@@ -15,6 +15,10 @@ The CLI is organized as three subcommands, split along cost / LLM-use lines:
   commentary  Generate commentary.json — LLM-written strategic interpretation
               per phase. Modest cost (~$1 on Sonnet for the canonical's 33
               phases). Re-runnable with a different model via --model.
+
+  ask         Interrogate one power about its play in a finished run. Rebuilds
+              the power's view from the transcript and puts a free-form
+              question to it. One LLM call (~$0.01-0.15).
 
 Composition flag — `--with-commentary` (valid on both `run` and `render`)
 runs the commentary step then re-renders so the slides include it. This is
@@ -33,7 +37,7 @@ from dotenv import load_dotenv
 
 from diplomacy_a2a.config import DEFAULT_MODEL, SMOKE_MODEL
 
-_SUBCOMMANDS = {"run", "render", "commentary"}
+_SUBCOMMANDS = {"run", "render", "commentary", "ask"}
 
 
 def _add_run_args(p: argparse.ArgumentParser) -> None:
@@ -103,7 +107,7 @@ def _build_parser() -> argparse.ArgumentParser:
         description="Run a Diplomacy game, render its dashboard, or add LLM "
                     "commentary. Invoking with no subcommand defaults to `run`.",
     )
-    sub = p.add_subparsers(dest="subcommand", metavar="{run,render,commentary}")
+    sub = p.add_subparsers(dest="subcommand", metavar="{run,render,commentary,ask}")
 
     p_run = sub.add_parser(
         "run",
@@ -145,6 +149,29 @@ def _build_parser() -> argparse.ArgumentParser:
     p_comm.add_argument("--model", default=DEFAULT_MODEL,
                         help=f"Anthropic model id for the commentator "
                              f"(default: {DEFAULT_MODEL})")
+
+    p_ask = sub.add_parser(
+        "ask",
+        help="interrogate one power about its play in a finished run (LLM; ~$0.01-0.15)",
+        description="Reconstruct a power's view of a finished game from its "
+                    "transcript and put a free-form question to it. One LLM call. "
+                    "The answer is grounded in the power's own recorded strategy "
+                    "notes, orders, and dialogue.",
+    )
+    p_ask.add_argument("run_dir", type=Path,
+                       help="path to a finished run directory")
+    p_ask.add_argument("power", help="which power to interview, e.g. ENGLAND")
+    p_ask.add_argument("question", help="the question to ask, in quotes")
+    p_ask.add_argument("--phase", default=None, metavar="SHORT_PHASE",
+                       help="reconstruct the power's view only up to this phase "
+                            "(e.g. F1905M), so it answers with what it knew then; "
+                            "default is the whole game.")
+    p_ask.add_argument("--model", default=None,
+                       help="model that answers (default: the model the power "
+                            "actually played with).")
+    p_ask.add_argument("--no-dialogue", action="store_true",
+                       help="omit the power's private dialogue from the "
+                            "reconstructed context (cheaper, smaller prompt).")
 
     return p
 
@@ -277,6 +304,31 @@ def _commentary_subcommand(args: argparse.Namespace) -> None:
     print("(Run `render` to rebuild the HTML slides with this commentary.)")
 
 
+def _ask_subcommand(args: argparse.Namespace) -> None:
+    """Dispatch the `ask` subcommand: interrogate a power about a finished run."""
+    load_dotenv(".env")
+    from diplomacy_a2a.interview import interview
+    from diplomacy_a2a.llm.anthropic_client import RunnerError
+    from diplomacy_a2a.runner import _accumulate, _estimate_cost
+    try:
+        answer, chat, model = interview(
+            args.run_dir, args.power, args.question,
+            phase=args.phase, model=args.model,
+            with_dialogue=not args.no_dialogue,
+        )
+    except RunnerError as e:
+        print(f"\nERROR: {e}\n", file=sys.stderr)
+        raise SystemExit(1)
+    print(answer)
+    buckets: dict[str, dict[str, int]] = {}
+    _accumulate(buckets, model, chat)
+    cost = _estimate_cost(buckets)
+    tokens_in = (chat.input_tokens + chat.cache_read_input_tokens
+                 + chat.cache_creation_input_tokens)
+    print(f"\n[{args.power.upper()} via {model} — {tokens_in} in / "
+          f"{chat.output_tokens} out, ~${cost:.3f}]", file=sys.stderr)
+
+
 def main(argv: list[str] | None = None) -> None:
     if argv is None:
         argv = sys.argv[1:]
@@ -298,5 +350,7 @@ def main(argv: list[str] | None = None) -> None:
         _render_subcommand(args)
     elif args.subcommand == "commentary":
         _commentary_subcommand(args)
+    elif args.subcommand == "ask":
+        _ask_subcommand(args)
     else:  # pragma: no cover — argparse should never let us reach here
         raise SystemExit(f"unknown subcommand: {args.subcommand!r}")

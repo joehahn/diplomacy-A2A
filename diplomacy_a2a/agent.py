@@ -29,6 +29,33 @@ def _load_default_rules() -> str:
     return _RULES_PATH.read_text()
 
 
+def rules_with_tables(rules: str, power: str, adjacency_table: bool = True) -> str:
+    """Fill the rules digest's `{{ADJACENCY_TABLE}}` slot with the geography tables.
+
+    Shared by the live agent's system prompt and the post-game `ask` interview,
+    so both see the identical rules + adjacency context for a power.
+    """
+    if adjacency_table:
+        from diplomacy_a2a.game.adjacency import (
+            generate_adjacency_table,
+            generate_power_adjacency_table,
+        )
+        table_section = (
+            "## Adjacency table\n\n" + generate_adjacency_table()
+            + "\n\n## Power adjacency (starting borders between powers)\n\n"
+            + generate_power_adjacency_table(power)
+        )
+    else:
+        table_section = (
+            "## Adjacency table\n\n"
+            "(No adjacency table provided. Infer which provinces border "
+            "which from the legal-moves list each phase, from one-hop moves "
+            "other powers mention in negotiation messages, and from your "
+            "prior knowledge of the standard Diplomacy map.)"
+        )
+    return rules.replace("{{ADJACENCY_TABLE}}", table_section)
+
+
 @dataclass(frozen=True)
 class DialogueMessage:
     """One private message between two powers, scoped to a phase."""
@@ -105,26 +132,7 @@ class Agent:
 
     def _build_system_prompt(self) -> str:
         other_powers = ", ".join(p for p in POWERS if p != self.power)
-        rules = self.rules
-        if self.adjacency_table:
-            from diplomacy_a2a.game.adjacency import (
-                generate_adjacency_table,
-                generate_power_adjacency_table,
-            )
-            table_section = (
-                "## Adjacency table\n\n" + generate_adjacency_table()
-                + "\n\n## Power adjacency (starting borders between powers)\n\n"
-                + generate_power_adjacency_table(self.power)
-            )
-        else:
-            table_section = (
-                "## Adjacency table\n\n"
-                "(No adjacency table provided. Infer which provinces border "
-                "which from the legal-moves list each phase, from one-hop moves "
-                "other powers mention in negotiation messages, and from your "
-                "prior knowledge of the standard Diplomacy map.)"
-            )
-        rules = rules.replace("{{ADJACENCY_TABLE}}", table_section)
+        rules = rules_with_tables(self.rules, self.power, self.adjacency_table)
         return (
             f"{rules}\n\n"
             f"You are playing as {self.power} in a game of Diplomacy.\n\n"
