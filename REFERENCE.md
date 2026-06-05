@@ -712,13 +712,65 @@ uses the official `anthropic` Python SDK plus prompt-caching headers.
 
 Adding a second provider (OpenAI, Gemini, a LiteLLM wrapper, etc.) is
 intended to be a new file behind the same protocol, not a refactor. The
-protocol exposes one method, `chat(system, messages, tools) -> response`,
-with strict types, so a second implementation drops in mechanically.
+protocol exposes one method,
+`chat(system, messages, max_tokens, temperature) -> ChatResult`, with
+strict types, so a second implementation drops in mechanically.
 Anthropic stayed the v1 choice because of prompt caching, which serves
 the rules + persona prefix at ≈10% of full input price after the first
 write and is critical to the per-run budget. The Sonnet 5-year canonical
 saves ≈22% from caching alone. A future provider that lacks comparable
 caching would cost roughly that much more per game on equivalent rates.
+
+### Candidate cheaper models (June 2026 snapshot)
+
+If the goal is roughly-Sonnet play at a lower bill, the leading
+alternatives, with Sonnet 4.6 ($3 / $15 per M input / output) as the
+reference:
+
+- **Gemini 3 Flash** (Google), about $0.50 / $3.00, roughly 5x cheaper.
+  Major-lab reliability and the closest everyday quality to Sonnet of the
+  cheap options.
+- **DeepSeek V3.2 / V4-Flash**, about $0.14-0.28 / $0.28-0.42, roughly
+  10-35x cheaper. Strong reasoning lineage; OpenAI-compatible API natively.
+- **Qwen3 Coder / 3.x**, about $0.30 / $1.50, open-weight, strong
+  instruction-following.
+- **Kimi K2.6**, about $0.95 / $4.00, long context, open-weight.
+
+Honest caveat: there is no public Diplomacy benchmark, so "as good at
+Diplomacy" is an inference, not a measured fact. Sonnet leads the general
+leaderboards, but its largest margin is on coding and the gap narrows on
+reasoning, which is closer to what Diplomacy exercises. The right test is a
+one-year A/B against Sonnet judged on the actual deliverable: negotiation
+richness plus illegal-order rate. The latter matters because legal-order
+instruction-following is already a documented weak spot (see the
+surface-legal-supports roadmap entry), and a cheaper model could regress
+there in a way that shows up directly in the transcript. Test cost is a few
+dollars.
+
+### One gateway key instead of three accounts
+
+An LLM gateway (Vercel AI Gateway, OpenRouter) exposes Anthropic, Gemini,
+and DeepSeek behind a single OpenAI-compatible key, account, and bill, at
+list-ish prices: Vercel charges zero per-token markup (even with BYOK);
+OpenRouter passes through list price plus a small credit-purchase fee
+(~5.5%). For the code this is simpler than maintaining one client per
+provider: a single OpenAI-compatible `LLMClient` impl pointed at the
+gateway `base_url`, with the model chosen by string
+(`anthropic/claude-sonnet-4-6`, `google/gemini-3-flash`,
+`deepseek/deepseek-v3.2`). For the model axis that reduces "swap providers"
+to "change the per-power model string."
+
+Two caveats. Prompt caching passes through both gateways (DeepSeek
+automatic; Anthropic and Gemini need explicit `cache_control` breakpoints,
+same as calling them directly), so the ≈22% cache saving on Sonnet
+survives. The Anthropic Batch API (the 50% sweep discount on the roadmap)
+is a separate async endpoint that gateways generally do not expose, so
+routing Sonnet through a gateway likely forfeits it; this is moot when the
+bulk sweeps run on the cheap models, whose per-token price is already far
+below batched Sonnet. Finally, a gateway shifts the "runs with only an
+Anthropic key" promise, so keep `AnthropicClient` as the default direct
+path and make the gateway an opt-in client (its own key) used only for the
+multi-provider experiments.
 
 ---
 
