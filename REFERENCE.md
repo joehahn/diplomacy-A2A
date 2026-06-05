@@ -1083,3 +1083,43 @@ logic, and prefix integration. Add roughly one LLM call per
 reflection note for scoring (so ~70 critic calls per game) plus a
 one-off batch dedup pass after each game. Cost overhead is modest;
 engineering overhead is the real cost.
+
+### Batch API for sweep cost reduction
+
+Anthropic's Message Batches API charges a flat 50% of the synchronous
+rate for the same model, same prompts, and identical output quality.
+It stacks with prompt caching, so the two discounts compound. The only
+difference is execution: a batch is asynchronous (submit, poll, retrieve;
+the SLA is "within 24h," usually much faster).
+
+The discount applies to any request, so it lowers single-game cost too in
+principle. In practice it is not worth using for a single interactive game:
+a game is a long chain of small dependent steps (round 2 sees round 1's
+incoming messages; phase N+1 depends on phase N's adjudication), so a
+synchronous step can only batch the ~7 logically-simultaneous per-power
+calls within one negotiation round / order step, and the async submit-poll
+latency between those small steps would make one game painfully slow. Keep
+the current synchronous threaded path (`_run_for_each_power` in
+`runner.py`) for demo and iteration, where latency matters and dollars
+do not.
+
+The payoff is the unattended controlled-variation sweep (axes A-D, configs
+x seeds), which is many *independent* games. There, batch across games
+rather than within one: "round 1 negotiate for FRANCE" becomes one batch
+of N requests across the N games in flight, not 7. Batch sizes get large,
+the async latency is amortized across the whole grid, and the sweep's
+dominant token cost drops by half with zero quality change and no second
+provider. This is the lowest-risk cost lever available because it touches
+neither the model nor the prompts.
+
+Implementation: a batch execution mode for the sweep driver only. The
+refactor inverts the run loop from "run one game to completion" to "advance
+all games one step, collect that step's per-power calls into a batch,
+submit, retrieve, apply results, repeat." The per-call prompt construction
+and transcript bookkeeping are unchanged; what changes is the scheduler
+around them, plus a thin batch path behind the `LLMClient` seam (submit /
+poll / retrieve) alongside the existing synchronous `complete`. Worth doing
+once the full axis grid is actually being run; for a handful of one-off
+games the refactor does not pay for itself, and dropping to a cheaper model
+saves faster. Composes with the provider-boundary work (a non-Anthropic
+arm) and with prompt caching.
