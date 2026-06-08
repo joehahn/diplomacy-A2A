@@ -1522,8 +1522,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 f"<div class='nrow'><b style='color:{color}'>{pw}</b> {body}</div>"
             )
         # "What happened" narration, with a link that pops the raw orders, and
-        # on movement-phase slides a pair of small KPI timeseries (SC count and
-        # SoS share) rendered to the right of the narration table.
+        # on movement-phase slides a small SC-count KPI timeseries rendered to
+        # the right of the narration table.
         recap_html: list[str] = []
         if narration_rows:
             recap_html.append("<h2>What happened this phase</h2>")
