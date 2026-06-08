@@ -44,15 +44,21 @@ from diplomacy_a2a.transcripts import (
     render_prompts_md,
 )
 
-# Per-million-token rates by model family (published Anthropic pricing).
-# Used only for end-of-run cost estimation. Unknown models fall back to the
-# default ("claude-sonnet-4-6") rates so cost is over-estimated rather than
-# silently under-estimated.
+# Per-million-token rates by model family. Used only for end-of-run cost
+# estimation. Anthropic rates are published list prices; gateway rates are from
+# the OpenRouter model pages (confirmed 2026-06-08). The gateway path sends no
+# cache_control, so its cache buckets are always 0 and those rates are nominal.
+# Unknown models fall back to the default ("claude-sonnet-4-6") rates so cost is
+# over-estimated rather than silently under-estimated.
 _RATE_TABLE = {
     "claude-sonnet-4-6": {"input": 3.0, "output": 15.0, "cache_create": 3.75, "cache_read": 0.30},
     "claude-opus-4-7":   {"input": 15.0, "output": 75.0, "cache_create": 18.75, "cache_read": 1.50},
     "claude-opus-4-8":   {"input": 15.0, "output": 75.0, "cache_create": 18.75, "cache_read": 1.50},
     "claude-haiku-4-5":  {"input": 1.0, "output": 5.0, "cache_create": 1.25, "cache_read": 0.10},
+    # OpenRouter gateway models (see config.GATEWAY_MODELS).
+    "deepseek/deepseek-v4-flash": {"input": 0.0983, "output": 0.1966, "cache_create": 0.0983, "cache_read": 0.0098},
+    "google/gemini-3.5-flash":    {"input": 1.50, "output": 9.0, "cache_create": 1.50, "cache_read": 0.15},
+    "moonshotai/kimi-k2.6":       {"input": 0.68, "output": 3.42, "cache_create": 0.68, "cache_read": 0.068},
 }
 
 
