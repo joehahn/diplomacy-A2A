@@ -398,6 +398,17 @@ cached and served at 10% of full price**) and **347K output tokens**
 across **about 885 LLM calls**, with the game executing in about
 **34 minutes** of wall time.
 
+### Cost-reduction work in progress: cheaper-model gateway
+
+To make the goal-3 sweeps affordable, agents can now run on cheaper
+non-Anthropic models (DeepSeek, Gemini, Kimi, MiniMax) through an
+OpenRouter gateway, chosen per power by model id. A `claude-*` id routes
+to the direct `AnthropicClient`; any other id (for example
+`deepseek/deepseek-v4-flash`) routes to a `GatewayClient` speaking
+OpenRouter's OpenAI-compatible API. The "runs with only an Anthropic key"
+default is unchanged: the gateway is opt-in and reads its own
+`OPENROUTER_API_KEY`. See the provider-boundary section of REFERENCE.md for
+rationale, candidate models, and caveats.
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).
 

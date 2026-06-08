@@ -13,5 +13,16 @@ DEFAULT_MODEL = "claude-sonnet-4-6"
 # smoke mode does NOT exercise the cache code path.
 SMOKE_MODEL = "claude-haiku-4-5-20251001"
 
+# Cheap-model candidates reached through OpenRouter (see llm/gateway_client.py).
+# Any non-"claude-" id routes to the gateway. Pinned, not "latest", so reruns
+# stay comparable. Confirm each slug against https://openrouter.ai/models before
+# a paid run; the exact "provider/model" strings change as versions ship.
+GATEWAY_MODELS = {
+    "deepseek": "deepseek/deepseek-v4-flash",
+    "kimi": "moonshotai/kimi-k2.6",
+    "minimax": "minimax/minimax-m3",
+    "gemini": "google/gemini-3.5-flash",  # fallback
+}
+
 DEFAULT_MAX_TOKENS = 1024
 DEFAULT_TEMPERATURE = 1.0

@@ -718,15 +718,20 @@ Results will land under `results/model-capability/` when complete.
 
 All LLM calls in the codebase go through a single `LLMClient` protocol
 defined in [`diplomacy_a2a/llm/client.py`](diplomacy_a2a/llm/client.py).
-The only v1 implementation is `AnthropicClient`
-([`anthropic_client.py`](diplomacy_a2a/llm/anthropic_client.py)), which
-uses the official `anthropic` Python SDK plus prompt-caching headers.
+Two implementations satisfy it. `AnthropicClient`
+([`anthropic_client.py`](diplomacy_a2a/llm/anthropic_client.py)) is the
+default and uses the official `anthropic` Python SDK plus prompt-caching
+headers. `GatewayClient`
+([`gateway_client.py`](diplomacy_a2a/llm/gateway_client.py)) speaks
+OpenRouter's OpenAI-compatible API (via the `openai` SDK) for cheaper
+non-Anthropic models. `make_client`
+([`factory.py`](diplomacy_a2a/llm/factory.py)) routes by model id: a
+`claude-*` id goes to Anthropic, anything else to the gateway.
 
-Adding a second provider (OpenAI, Gemini, a LiteLLM wrapper, etc.) is
-intended to be a new file behind the same protocol, not a refactor. The
-protocol exposes one method,
+The protocol exposes one method,
 `chat(system, messages, max_tokens, temperature) -> ChatResult`, with
-strict types, so a second implementation drops in mechanically.
+strict types, so a further implementation (a different gateway, a local
+model) drops in mechanically as a new file behind the same protocol.
 Anthropic stayed the v1 choice because of prompt caching, which serves
 the rules + persona prefix at ≈10% of full input price after the first
 write and is critical to the per-run budget. The Sonnet 5-year canonical
@@ -761,28 +766,28 @@ dollars.
 
 ### One gateway key instead of three accounts
 
-An LLM gateway (Vercel AI Gateway, OpenRouter) exposes Anthropic, Gemini,
-and DeepSeek behind a single OpenAI-compatible key, account, and bill, at
+An LLM gateway (Vercel AI Gateway, OpenRouter) exposes Gemini, DeepSeek,
+and others behind a single OpenAI-compatible key, account, and bill, at
 list-ish prices: Vercel charges zero per-token markup (even with BYOK);
 OpenRouter passes through list price plus a small credit-purchase fee
-(~5.5%). For the code this is simpler than maintaining one client per
-provider: a single OpenAI-compatible `LLMClient` impl pointed at the
-gateway `base_url`, with the model chosen by string
-(`anthropic/claude-sonnet-4-6`, `google/gemini-3-flash`,
-`deepseek/deepseek-v3.2`). For the model axis that reduces "swap providers"
-to "change the per-power model string."
+(~5.5%). This is implemented as `GatewayClient` against OpenRouter, with
+the model chosen by string. The pinned candidate ids live in
+`GATEWAY_MODELS` in [`config.py`](diplomacy_a2a/config.py)
+(`deepseek/deepseek-v4-flash`, `google/gemini-3.5-flash`,
+`moonshotai/kimi-k2.6`, `minimax/minimax-m3`). For the model axis that
+reduces "swap providers" to "change the per-power model string."
 
-Two caveats. Prompt caching passes through both gateways (DeepSeek
-automatic; Anthropic and Gemini need explicit `cache_control` breakpoints,
-same as calling them directly), so the ≈22% cache saving on Sonnet
-survives. The Anthropic Batch API (the 50% sweep discount on the roadmap)
-is a separate async endpoint that gateways generally do not expose, so
-routing Sonnet through a gateway likely forfeits it; this is moot when the
-bulk sweeps run on the cheap models, whose per-token price is already far
-below batched Sonnet. Finally, a gateway shifts the "runs with only an
-Anthropic key" promise, so keep `AnthropicClient` as the default direct
-path and make the gateway an opt-in client (its own key) used only for the
-multi-provider experiments.
+Two caveats. Prompt caching: Anthropic always routes through the direct
+`AnthropicClient`, so its ≈22% cache saving on Sonnet is fully preserved.
+`GatewayClient` does not send `cache_control` breakpoints today, so its
+`ChatResult` cache fields are 0; DeepSeek still caches automatically, while
+Gemini and others run uncached through this path. The Anthropic Batch API
+(the 50% sweep discount on the roadmap) is a separate async endpoint that
+gateways generally do not expose; this is moot when the bulk sweeps run on
+the cheap models, whose per-token price is already far below batched
+Sonnet. Second, the gateway is opt-in: it reads its own `OPENROUTER_API_KEY`
+and is reached only when a non-`claude-*` model id is selected, so the
+"runs with only an Anthropic key" default holds.
 
 ---
 

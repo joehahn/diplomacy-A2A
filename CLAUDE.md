@@ -17,12 +17,14 @@ record of it — not by game outcomes. This is a portfolio demo, so output legib
   adjudication go through Meta's `diplomacy` library (MIT, DATC-compliant), wrapped
   thinly in `diplomacy_a2a/game/`. If you're tempted to write order-resolution logic,
   stop — find the library call instead.
-- **Model IDs live only in `config.py`** (`DEFAULT_MODEL`, `SMOKE_MODEL`), pinned not
-  "latest" so reruns stay comparable. Don't hardcode model strings anywhere else;
-  override per-call if needed.
-- **`LLMClient` (`llm/client.py`) is the provider seam.** A second provider should be
-  a new implementation behind that protocol, not a refactor. `AnthropicClient` is the
-  only v1 impl.
+- **Model IDs live only in `config.py`** (`DEFAULT_MODEL`, `SMOKE_MODEL`,
+  `GATEWAY_MODELS`), pinned not "latest" so reruns stay comparable. Don't hardcode
+  model strings anywhere else; override per-call if needed.
+- **`LLMClient` (`llm/client.py`) is the provider seam.** Two impls satisfy it:
+  `AnthropicClient` (default, direct) and `GatewayClient` (OpenRouter, for cheaper
+  models). `make_client` in `llm/factory.py` routes by model id (`claude-*` to
+  Anthropic, else the gateway). A further provider is a new impl behind the protocol,
+  not a refactor.
 
 ## Current reality vs. the README (as of this writing)
 

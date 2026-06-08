@@ -211,12 +211,13 @@ def _do_render(run_dir: Path) -> None:
 def _do_commentary(run_dir: Path, model: str) -> None:
     """Generate commentary.json from a finished transcript. Does not re-render."""
     from diplomacy_a2a.commentary import generate_commentary
-    from diplomacy_a2a.llm.anthropic_client import AnthropicClient, RunnerError
+    from diplomacy_a2a.llm.anthropic_client import RunnerError
+    from diplomacy_a2a.llm.factory import make_client
     jsonl_path = run_dir / "transcript.jsonl"
     if not jsonl_path.exists():
         raise SystemExit(f"No transcript.jsonl in {run_dir}")
     try:
-        commentary = generate_commentary(jsonl_path, AnthropicClient(model=model))
+        commentary = generate_commentary(jsonl_path, make_client(model))
     except RunnerError as e:
         print(f"\nERROR: {e}\n", file=sys.stderr)
         raise SystemExit(1)
@@ -243,14 +244,15 @@ def _run_subcommand(args: argparse.Namespace) -> None:
 
     # Lazy-import so `--help` works without an API key or the LLM SDK setup.
     load_dotenv(".env")
-    from diplomacy_a2a.llm.anthropic_client import AnthropicClient, RunnerError
+    from diplomacy_a2a.llm.anthropic_client import RunnerError
+    from diplomacy_a2a.llm.factory import make_client
     from diplomacy_a2a.runner import run_game
 
-    power_clients = {pw: AnthropicClient(model=mdl) for pw, mdl in power_model_specs}
+    power_clients = {pw: make_client(mdl) for pw, mdl in power_model_specs}
 
     try:
         run_dir = run_game(
-            client=AnthropicClient(model=model),
+            client=make_client(model),
             model=model,
             years=years,
             negotiation_rounds=rounds,

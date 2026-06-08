@@ -163,8 +163,8 @@ def interview(run_dir: Path, power: str, question: str, *, phase: str | None = N
     adjacency_table = bool(started.get("adjacency_table", True))
 
     if client is None:
-        from diplomacy_a2a.llm.anthropic_client import AnthropicClient
-        client = AnthropicClient(model=model)
+        from diplomacy_a2a.llm.factory import make_client
+        client = make_client(model)
 
     rules = rules_with_tables(_load_default_rules(), power, adjacency_table)
     system = (
