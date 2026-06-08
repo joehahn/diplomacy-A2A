@@ -25,4 +25,10 @@ GATEWAY_MODELS = {
 }
 
 DEFAULT_MAX_TOKENS = 1024
+# Order generation gets a larger cap than other calls. Verbose models (notably
+# the gateway's Kimi K2.6) narrate their order reasoning at length and can spend
+# the whole budget before emitting the order block, leaving the power with no
+# parseable orders. max_tokens is a ceiling, not a target, so a model that
+# finishes early (e.g. Sonnet) pays nothing for the extra headroom.
+ORDER_MAX_TOKENS = 4096
 DEFAULT_TEMPERATURE = 1.0
