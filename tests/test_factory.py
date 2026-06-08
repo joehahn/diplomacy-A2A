@@ -61,3 +61,13 @@ def test_gateway_without_key_raises_friendly_error(monkeypatch: pytest.MonkeyPat
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     with pytest.raises(RunnerError, match="OPENROUTER_API_KEY"):
         make_client(GATEWAY_MODELS["gemini"])
+
+
+def test_gateway_reasoning_defaults_off_and_is_overridable() -> None:
+    # Reasoning is off by default so a reasoning model's hidden chain-of-thought
+    # cannot silently eat the token budget; callers can opt back in.
+    default = make_client(GATEWAY_MODELS["kimi"])
+    assert isinstance(default, GatewayClient)
+    assert default._enable_reasoning is False
+    opted_in = make_client(GATEWAY_MODELS["kimi"], enable_reasoning=True)
+    assert opted_in._enable_reasoning is True

@@ -13,6 +13,14 @@ OpenRouter does not expose Anthropic-style prompt caching through this path,
 so the system prompt is sent as a plain leading message and the cache fields
 on `ChatResult` stay 0.
 
+Reasoning models (e.g. Kimi K2.6) bill a hidden chain-of-thought as output
+that counts against `max_tokens`; with the harness's small per-call budgets
+the reasoning can consume the whole budget and leave empty content. By
+default this client disables reasoning (`reasoning: {enabled: false}`) so the
+budget goes to the answer, and it treats empty content as a retry-then-fail
+condition instead of silently returning "". Pass `enable_reasoning=True` to
+keep reasoning on, in which case give the call a much larger `max_tokens`.
+
 The key is read from `OPENROUTER_API_KEY`. Callers run `dotenv.load_dotenv()`
 before instantiating this client.
 """
@@ -63,7 +71,23 @@ def _is_temperature_rejection(e: Exception) -> bool:
     return isinstance(e, BadRequestError) and "temperature" in str(e).lower()
 
 
+def _is_reasoning_rejection(e: Exception) -> bool:
+    return isinstance(e, BadRequestError) and "reasoning" in str(e).lower()
+
+
+class _EmptyResponse(Exception):
+    """The model returned no usable text. Carries the finish_reason so the
+    retry/error layer can explain the likely cause (reasoning models can burn
+    the whole token budget on hidden reasoning and emit empty content)."""
+
+    def __init__(self, finish_reason: str | None) -> None:
+        super().__init__(f"empty content (finish_reason={finish_reason})")
+        self.finish_reason = finish_reason
+
+
 def _categorize(e: Exception) -> str:
+    if isinstance(e, _EmptyResponse):
+        return "empty_response"
     if isinstance(e, RateLimitError):
         return "rate_limit"
     if isinstance(e, PermissionDeniedError):
@@ -136,6 +160,7 @@ class GatewayClient(LLMClient):
         *,
         max_retries: int = 4,
         verbose_retries: bool = True,
+        enable_reasoning: bool = False,
     ) -> None:
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
@@ -148,6 +173,13 @@ class GatewayClient(LLMClient):
         self._client = OpenAI(api_key=api_key, base_url=_BASE_URL, max_retries=0)
         self._max_retries = max_retries
         self._verbose_retries = verbose_retries
+        # Reasoning models hide a chain-of-thought that is billed as output and
+        # counts against max_tokens; with the harness's small per-call budgets it
+        # can consume the whole budget and leave empty content. Default off so
+        # the budget goes to the answer; the agent's explicit strategy step is
+        # the visible reasoning we actually want. Set True to let the model
+        # reason (then give it a much larger max_tokens).
+        self._enable_reasoning = enable_reasoning
         self._error_logger: ErrorLogger | None = None
 
     def set_error_logger(self, logger: ErrorLogger | None) -> None:
@@ -163,6 +195,9 @@ class GatewayClient(LLMClient):
         temperature: float,
     ) -> ChatResult:
         include_temperature = True
+        # When reasoning is off we ask OpenRouter to disable it explicitly; a
+        # provider that does not accept the param self-heals below by dropping it.
+        send_reasoning_off = not self._enable_reasoning
         for attempt in range(1, self._max_retries + 2):  # one final attempt past max
             try:
                 kwargs = dict(
@@ -175,12 +210,46 @@ class GatewayClient(LLMClient):
                 )
                 if include_temperature:
                     kwargs["temperature"] = temperature
+                if send_reasoning_off:
+                    kwargs["extra_body"] = {"reasoning": {"enabled": False}}
                 response = self._client.chat.completions.create(**kwargs)
+                choice = response.choices[0]
+                text = choice.message.content or ""
+                if not text.strip():
+                    raise _EmptyResponse(getattr(choice, "finish_reason", None))
+            except _EmptyResponse as e:
+                # No usable text. Common cause: a reasoning model spent the whole
+                # max_tokens budget on hidden reasoning. Retry, then fail loudly
+                # rather than letting the caller treat empty as "no orders".
+                last_chance = attempt > self._max_retries
+                self._log_error(attempt, e, fatal=last_chance)
+                if last_chance:
+                    raise RunnerError(
+                        f"OpenRouter API ({self.model}): returned empty content "
+                        f"after {self._max_retries} retries (finish_reason="
+                        f"{e.finish_reason}). If this is a reasoning model, the "
+                        f"reasoning likely consumed the token budget: raise "
+                        f"max_tokens or construct GatewayClient with "
+                        f"enable_reasoning=False."
+                    ) from e
+                wait = _retry_wait(e, attempt)
+                if self._verbose_retries:
+                    print(
+                        f"  [WARN] empty content from OpenRouter API ({self.model}) "
+                        f"— retrying in {wait:.1f}s (attempt {attempt}/{self._max_retries})",
+                        flush=True,
+                    )
+                time.sleep(wait)
+                continue
             except _FATAL_TYPES as e:
                 # Some models (reasoning tiers) reject an explicit temperature
                 # with a 400. Drop the parameter and retry rather than aborting.
                 if include_temperature and _is_temperature_rejection(e):
                     include_temperature = False
+                    continue
+                # A provider that does not accept the reasoning param: drop it.
+                if send_reasoning_off and _is_reasoning_rejection(e):
+                    send_reasoning_off = False
                     continue
                 self._log_error(attempt, e, fatal=True)
                 raise _friendly_fatal(e) from e
@@ -202,8 +271,6 @@ class GatewayClient(LLMClient):
                 time.sleep(wait)
                 continue
             else:
-                choice = response.choices[0]
-                text = choice.message.content or ""
                 usage = response.usage
                 return ChatResult(
                     text=text,
