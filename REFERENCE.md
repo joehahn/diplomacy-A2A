@@ -108,6 +108,7 @@ measurements whose numbers are preserved here:
 | Negotiation messages | 914 | 1036 | 1034 | 981 |
 | Messages to non-adjacent powers | 13.6% | 20.2% | 19% | 23% |
 | Conditional bargaining | 46.4% | 50.4% | 55.2% | 31.7% |
+| Questions asked | — | — | 21.1% | 48.8% |
 | Betrayals | 4.6% | 2.3% | 4.5% | 0.5% |
 | Hold rate | 59.2% | 57.5% | 49.4% | 48.1% |
 | Support orders | 11.7% | 12.3% | 14.5% | 6.9% |
@@ -117,6 +118,10 @@ measurements whose numbers are preserved here:
 | Illegal orders | 4.4% | 2.2% | 3.1% | 11.0% |
 | Adjacency errors | 4.4% | 2.2% | 3.1% | 10.8% |
 | Phases played | 35 | 36 | 41 | 32 |
+
+"Questions asked" = share of messages containing a `?`. Only runs 3 and 4
+are recomputable; runs 1 and 2 were one-offs whose transcripts were not
+retained, so those cells are blank (`—`).
 
 **Full revision (1 → 2):** illegal orders and adjacency errors halved (clearer
 support/order rules), and cross-board diplomacy rose sharply (negotiation
@@ -141,7 +146,10 @@ too. The gap is *competence*, not activity: Haiku's illegal-order and
 adjacency-error rates run ~3.5x higher (11% vs 3%), it coordinates far less
 (support orders 7% vs 15%, dislodgements 5 vs 17), and its negotiation is
 thinner (conditional bargaining 32% vs 55%) with betrayals almost never
-executed (0.5% vs 4.5%), a wider talk-vs-action gap. The board stayed even
+executed (0.5% vs 4.5%), a wider talk-vs-action gap. One inversion stands out:
+Haiku asks questions in nearly half its messages (48.8% vs Sonnet's 21.1%),
+leaning on the partner to supply information Sonnet more often commits to a
+plan about. More interrogation, thinner follow-through. The board stayed even
 (top power at 6, no runaway) where Sonnet produced a clear leader, at $8 vs $25.
 
 ---

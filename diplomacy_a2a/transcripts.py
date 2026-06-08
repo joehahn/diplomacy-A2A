@@ -1241,7 +1241,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         # game, plus the share that contain conditional-bargaining language
         # (conditional offers) and the share that contain alliance / coalition
         # vocabulary. Both are quick markers of negotiation character.
-        total_msgs = cond_msgs = alliance_msgs = 0
+        total_msgs = cond_msgs = alliance_msgs = question_msgs = 0
         cond_re = re.compile(
             r"\b(if you|if I|in exchange|in return|provided that)\b", re.I
         )
@@ -1264,6 +1264,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                         cond_msgs += 1
                     if alliance_re.search(text):
                         alliance_msgs += 1
+                    if "?" in text:
+                        question_msgs += 1
 
         # Pass 4: candidate betrayals. Heuristic: a message whose speaker
         # promises non-aggression toward a specific province ('won't /
@@ -1328,6 +1330,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             outcomes_rows.append(("Conditional bargaining", f"{cond_pct:.1f}%", True))
             alliance_pct = 100 * alliance_msgs / total_msgs
             outcomes_rows.append(("Alliances", f"{alliance_pct:.1f}%", True))
+            question_pct = 100 * question_msgs / total_msgs
+            outcomes_rows.append(("Questions asked", f"{question_pct:.1f}%", True))
             if betrayals > 0:
                 betrayal_pct = 100 * betrayals / total_msgs
                 outcomes_rows.append(("Betrayals", f"{betrayal_pct:.1f}%", True))
