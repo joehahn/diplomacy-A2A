@@ -1237,6 +1237,22 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     if any("dislodged" in t for t in tokens):
                         dislodgements += 1
 
+        # Pass 2b: cumulative builds and disbands across all adjustment
+        # ("A") phases. Scoped to adjustment phases so retreat-phase removals,
+        # already reflected in Dislodgements, are not double-counted. WAIVE
+        # (a declined build) counts as neither.
+        builds = disbands = 0
+        for e in events:
+            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("A"):
+                for o in e.get("valid", []):
+                    toks = o.split()
+                    if not toks:
+                        continue
+                    if toks[-1] == "B":
+                        builds += 1
+                    elif toks[-1] == "D":
+                        disbands += 1
+
         # Pass 3: negotiation density. Total messages exchanged across the
         # game, plus the share that contain conditional-bargaining language
         # (conditional offers) and the share that contain alliance / coalition
@@ -1338,6 +1354,9 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         if bounces or dislodgements:
             outcomes_rows.append(("Bounces", str(bounces)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))
+        if builds or disbands:
+            outcomes_rows.append(("Builds", str(builds)))
+            outcomes_rows.append(("Disbands", str(disbands)))
         if total_orders > 0:
             def _pct(n: int) -> str:
                 return f"{100 * n / total_orders:.1f}%"

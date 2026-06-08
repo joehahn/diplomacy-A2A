@@ -114,14 +114,18 @@ measurements whose numbers are preserved here:
 | Support orders | 11.7% | 12.3% | 14.5% | 6.9% |
 | Bounces | 73 | 74 | 88 | 83 |
 | Dislodgements | 12 | 11 | 17 | 5 |
+| Builds | — | — | 26 | 17 |
+| Disbands | — | — | 11 | 6 |
 | Convoy orders | 0.0% | 0.0% | 0.3% | 1.6% |
 | Illegal orders | 4.4% | 2.2% | 3.1% | 11.0% |
 | Adjacency errors | 4.4% | 2.2% | 3.1% | 10.8% |
 | Phases played | 35 | 36 | 41 | 32 |
 
-"Questions asked" = share of messages containing a `?`. Only runs 3 and 4
-are recomputable; runs 1 and 2 were one-offs whose transcripts were not
-retained, so those cells are blank (`—`).
+"Questions asked" = share of messages containing a `?`. "Builds"/"Disbands"
+are cumulative counts across all winter adjustment phases (retreat-phase
+removals are excluded; they show up under Dislodgements). All three were
+added after runs 1 and 2 were retired, so only runs 3 and 4 (transcripts
+still on disk) are recomputable; the run 1/2 cells are blank (`—`).
 
 **Full revision (1 → 2):** illegal orders and adjacency errors halved (clearer
 support/order rules), and cross-board diplomacy rose sharply (negotiation
