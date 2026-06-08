@@ -1328,10 +1328,10 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             # them indented under Negotiation messages.
             cond_pct = 100 * cond_msgs / total_msgs
             outcomes_rows.append(("Conditional bargaining", f"{cond_pct:.1f}%", True))
-            alliance_pct = 100 * alliance_msgs / total_msgs
-            outcomes_rows.append(("Alliances", f"{alliance_pct:.1f}%", True))
             question_pct = 100 * question_msgs / total_msgs
             outcomes_rows.append(("Questions asked", f"{question_pct:.1f}%", True))
+            alliance_pct = 100 * alliance_msgs / total_msgs
+            outcomes_rows.append(("Alliances", f"{alliance_pct:.1f}%", True))
             if betrayals > 0:
                 betrayal_pct = 100 * betrayals / total_msgs
                 outcomes_rows.append(("Betrayals", f"{betrayal_pct:.1f}%", True))
