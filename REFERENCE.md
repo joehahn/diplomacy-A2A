@@ -994,6 +994,31 @@ slideshow:
   promises that lack the keyword markers are missed entirely. A short
   stop-list (`IF`, `AND`, `BUT`, `THE`, `OUR`, `ALL`, …) filters the
   most common false-positive 3-letter tokens.
+- **Aggression index** (per-power cumulative line chart on the dashboard index,
+  signed): scores supply-center swings from consecutive
+  `phase_resolved.centers` snapshots. When a center changes hands the gainer
+  earns **+2** for taking an *occupied* center (a unit sat on it the prior
+  snapshot, i.e. a defender was dislodged) or **+1** for an uncontested one; the
+  former owner loses **-1** if it garrisoned the center, **-2** if it left it
+  undefended. Cumulative net per power. Tracks net territorial dominance, and
+  because it is essentially weighted SC growth it correlates strongly with final
+  standing.
+- **Defense index** (per-power cumulative line chart, signed): scores units
+  *under attack* each movement phase. A unit is attacked when an enemy ordered a
+  move into its province. If it **held** (not dislodged): **+2** vs a supported
+  attack, **+1** vs an unsupported one. If it was **dislodged**: **-2** on a
+  supply center, **-1** elsewhere. Unattacked units score nothing. Cumulative
+  net per power. Measures tactical unit survival, distinct from territory: a
+  power can stay positive on defense while losing centers it never garrisoned
+  (those losses fall on the aggression index instead).
+- **Aggression-vs-defense scatter** (dashboard index): one power-colored dot per
+  nation, final aggression (x) vs final defense (y), with dashed zero crosshairs
+  marking the four offense/defense quadrants. In the canonical game the x-axis
+  (aggression) tracks final standing closely while the y-axis (defense) is
+  nearly orthogonal to it, style rather than quality: France finished 2nd with
+  low defense (a "glass cannon"), Russia 5th with the highest defense (a
+  "turtle"). All three are n=1 per game and, in self-play, reflect the seat's
+  situation under one model, not cross-model skill.
 
 Behavioral metrics (planned, axis B–D dependent):
 - **Promise→action fidelity**: parse stated intentions in negotiation
