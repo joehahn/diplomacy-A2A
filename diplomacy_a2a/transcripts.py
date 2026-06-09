@@ -1410,16 +1410,14 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             if betrayals > 0:
                 betrayal_pct = 100 * betrayals / total_msgs
                 outcomes_rows.append(("Betrayals", f"{betrayal_pct:.1f}%", True))
-        if bounces or dislodgements:
+        if bounces or dislodgements or land_turnover:
             outcomes_rows.append(("Bounces", str(bounces)))
+            if land_turnover > 0 and land:
+                outcomes_rows.append(("Land turnover", str(land_turnover)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))
         if builds or disbands:
             outcomes_rows.append(("Builds", str(builds)))
             outcomes_rows.append(("Disbands", str(disbands)))
-        if land_turnover > 0 and land:
-            outcomes_rows.append(("Land turnover", str(land_turnover)))
-            per_prov = land_turnover / len(land)
-            outcomes_rows.append(("Per land province", f"{per_prov:.2f}", True))
         if total_orders > 0:
             def _pct(n: int) -> str:
                 return f"{100 * n / total_orders:.1f}%"
