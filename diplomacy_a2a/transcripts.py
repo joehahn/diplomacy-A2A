@@ -1273,18 +1273,19 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     elif toks[-1] == "D":
                         disbands += 1
 
-        # Pass 2c: land turnover. The "color" of a province is the power whose
-        # unit occupies it, with empty as its own state. Turnover counts every
-        # change in that color between consecutive post-adjudication snapshots:
-        # empty->FRANCE, FRANCE->GERMANY, and FRANCE->empty each count once, so
-        # a province taken, lost, then retaken contributes 3. Restricted to the
-        # 56 land provinces; the 19 water provinces are excluded because fleet
-        # shuffling through sea lanes is churn that is not tied to centers or
-        # strategy. This is board occupation churn ("where the armies are"),
-        # distinct from supply-center ownership which only flips at Fall. The
-        # baseline is the first resolved phase, so the fixed opening positions
-        # and the spring-1901 settle are not counted. Reported as a raw total
-        # plus an average over the 56 land provinces (comparable across runs).
+        # Pass 2c: land turnover ("changed hands"). The occupier of a province
+        # is the power whose unit sits on it. Turnover counts only direct
+        # power->other-power handovers between consecutive post-adjudication
+        # snapshots: a province held by FRANCE that is held by GERMANY next
+        # snapshot counts once. Moves onto or off of empty ground
+        # (empty->power, power->empty) are NOT counted, so a unit simply
+        # relocating across open territory adds nothing; only one power taking
+        # ground that another power held does. Restricted to the 56 land
+        # provinces; the 19 water provinces are excluded because fleet shuffling
+        # through sea lanes is not tied to centers or strategy. Distinct from
+        # supply-center ownership, which only flips at Fall. Reported as a raw
+        # total plus an average over the 56 land provinces (comparable across
+        # runs).
         land = _land_provinces()
 
         def _prov(unit: str) -> str:
@@ -1305,8 +1306,9 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         land_turnover = 0
         prev_occ = occ_snapshots[0] if occ_snapshots else {}
         for occ in occ_snapshots[1:]:
-            for p in set(occ) | set(prev_occ):
-                if prev_occ.get(p, "empty") != occ.get(p, "empty"):
+            for p, power in occ.items():
+                before = prev_occ.get(p)
+                if before is not None and before != power:
                     land_turnover += 1
             prev_occ = occ
 
