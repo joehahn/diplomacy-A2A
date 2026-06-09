@@ -195,9 +195,18 @@ class GatewayClient(LLMClient):
         temperature: float,
     ) -> ChatResult:
         include_temperature = True
-        # When reasoning is off we ask OpenRouter to disable it explicitly; a
-        # provider that does not accept the param self-heals below by dropping it.
-        send_reasoning_off = not self._enable_reasoning
+        # Reasoning controls, tried in order on a "reasoning is mandatory"
+        # rejection. effort "none" is the documented off switch (works for Kimi,
+        # DeepSeek). Gemini 3-series models reject "none" because reasoning is
+        # mandatory, so step down to "minimal" (the lowest thinkingLevel) rather
+        # than paying for full default reasoning. None sends no param and lets
+        # the model reason; enable_reasoning=True opts straight into that.
+        reasoning_steps = (None,) if self._enable_reasoning else (
+            {"effort": "none"},
+            {"effort": "minimal"},
+            None,
+        )
+        r_idx = 0
         for attempt in range(1, self._max_retries + 2):  # one final attempt past max
             try:
                 kwargs = dict(
@@ -210,8 +219,9 @@ class GatewayClient(LLMClient):
                 )
                 if include_temperature:
                     kwargs["temperature"] = temperature
-                if send_reasoning_off:
-                    kwargs["extra_body"] = {"reasoning": {"enabled": False}}
+                reasoning = reasoning_steps[r_idx]
+                if reasoning is not None:
+                    kwargs["extra_body"] = {"reasoning": reasoning}
                 response = self._client.chat.completions.create(**kwargs)
                 choice = response.choices[0]
                 text = choice.message.content or ""
@@ -260,9 +270,11 @@ class GatewayClient(LLMClient):
                 if include_temperature and _is_temperature_rejection(e):
                     include_temperature = False
                     continue
-                # A provider that does not accept the reasoning param: drop it.
-                if send_reasoning_off and _is_reasoning_rejection(e):
-                    send_reasoning_off = False
+                # A model that rejects this reasoning setting (e.g. "reasoning is
+                # mandatory" for Gemini 3): step down to the next, lower setting
+                # rather than dropping the param into full default reasoning.
+                if _is_reasoning_rejection(e) and r_idx < len(reasoning_steps) - 1:
+                    r_idx += 1
                     continue
                 self._log_error(attempt, e, fatal=True)
                 raise _friendly_fatal(e) from e
