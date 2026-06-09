@@ -942,7 +942,9 @@ body:has(.thread:target) .thread { display: none; }
 body:has(.thread:target) .thread:target { display: block; }
 .kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
            margin: 10px 0; }
-.kpi-svg { flex: 0 1 966px; width: 100%; max-width: 1035px; height: auto;
+.kpi-stack { flex: 0 1 966px; min-width: 0; max-width: 1035px;
+             display: flex; flex-direction: column; gap: 4px; }
+.kpi-svg { display: block; width: 100%; max-width: 1035px; height: auto;
            background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
 .kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
 .kpi-svg .dot-wrap:hover circle:nth-child(2) { r: 4.5; }
@@ -1201,7 +1203,7 @@ def _adjustments_chart(
     sorted_powers = sorted(powers)
     n_pow = len(sorted_powers)
     pidx = {p: i for i, p in enumerate(sorted_powers)}
-    bar_w = 2.6
+    bar_w = 6.5
 
     parts: list[str] = [
         f"<svg viewBox='0 0 {width} {height}' class='kpi-svg' "
@@ -1299,7 +1301,10 @@ def _kpi_charts_for_phase(
             ph: adjustments_by_phase[ph] for ph in phases if ph in adjustments_by_phase
         }
         adj_html = _adjustments_chart(phases, adj_for, powers)
-    return f"<div class='kpi-row'>{sc_chart}{legend}</div>{adj_html}"
+    return (
+        f"<div class='kpi-row'><div class='kpi-stack'>{sc_chart}{adj_html}</div>"
+        f"{legend}</div>"
+    )
 
 
 # Coloring in the "What happened" narration:
