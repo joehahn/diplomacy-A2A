@@ -794,6 +794,9 @@ reasoning models run with reasoning minimized (`effort: minimal`).
 | Dropped turns % | 0.7 | 0.2 | 4.4 | 0.0 | 0.2 |
 | Hold % | 59.4 | 48.4 | 48.1 | 53.0 | 49.4 |
 | Support % | 7.5 | 13.6 | 6.9 | 20.1 | 14.5 |
+| Support move % | 4.3 | 6.0 | 5.0 | 5.3 | 9.5 |
+| Support hold % | 3.2 | 7.6 | 2.0 | 14.8 | 5.0 |
+| Support eff % | 77.8 | 76.3 | 96.4 | 61.8 | 67.2 |
 | Convoy % | 2.6 | 0.5 | 1.6 | 1.6 | 0.3 |
 | **Negotiation** | | | | | |
 | Messages | 1359 | 1501 | 981 | 1378 | 1034 |
@@ -812,6 +815,13 @@ reasoning models run with reasoning minimized (`effort: minimal`).
   DeepSeek**: lower illegal rate (6.0 vs 7.0%), far better coordination (Support
   13.6 vs 7.5%, near Sonnet), and fewer dropped turns (0.2 vs 0.7%). Haiku is
   weakest (illegal 11.0%, dropped 4.4%).
+- **Support breakdown (offensive vs defensive):** the Support % splits into
+  move-supports (backing an attack) and hold-supports (backing a unit in place).
+  Sonnet's coordination is the most offensive (move 9.5%); Gemini's high Support
+  is mostly defensive (hold 14.8% vs move 5.3%), so it builds walls more than it
+  backs attacks. Effective move-support (did the backed attack succeed) runs
+  62-78% across the field; Haiku's 96% is inflated by an inert board where its
+  few supported moves were uncontested.
 - **Board (color):** MiMo plays the most contested board of the cheap tier (Land
   turnover 24, vs DeepSeek 12 and Haiku 7, near Sonnet's 27); Haiku is the most
   static (turnover 7). Higher N_eff tends to track a quieter board.

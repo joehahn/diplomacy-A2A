@@ -114,6 +114,54 @@ def land_turnover(events: list[dict]) -> int:
     return total
 
 
+def support_breakdown(events: list[dict]) -> tuple[int, int, int]:
+    """(move-supports, hold-supports, effective move-supports) over movement phases.
+
+    A support order ("X S Y - Z") is a move-support (offensive: backing an
+    attack); "X S Y" is a hold-support (defensive: backing a unit in place). A
+    move-support is effective when its supported move succeeds: the supported
+    unit is not bounced/voided/dislodged and lands at its destination in the
+    post-resolution board.
+    """
+    resolved: dict[str, tuple[dict, set]] = {}
+    for e in events:
+        if e.get("type") == "phase_resolved":
+            res = e.get("results", {}) or {}
+            locs = set()
+            for units in (e.get("units", {}) or {}).values():
+                for u in units:
+                    t = u.split()
+                    if len(t) >= 2:
+                        locs.add((t[0], t[1].split("/")[0]))
+            resolved[e.get("resolved_phase", "")] = (res, locs)
+    move_s = hold_s = eff = 0
+    for e in events:
+        if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
+            continue
+        res, locs = resolved.get(e.get("phase", ""), ({}, set()))
+        for o in e.get("valid", []):
+            parts = o.split(" S ")
+            if len(parts) != 2:
+                continue
+            supported = parts[1].strip()
+            if " - " in supported:
+                move_s += 1
+                unit, dest = (s.strip() for s in supported.split(" - ", 1))
+                failed = any(
+                    tok in ("bounce", "void", "dislodged")
+                    for tok in res.get(unit, ["void"])
+                )
+                landed = bool(unit.split()) and (
+                    unit.split()[0],
+                    dest.split("/")[0],
+                ) in locs
+                if not failed and landed:
+                    eff += 1
+            else:
+                hold_s += 1
+    return move_s, hold_s, eff
+
+
 def n_eff(centers: dict[str, list[str]]) -> float:
     """Effective number of powers: (sum SC)^2 / sum(SC^2), in [1, 7].
 
@@ -229,6 +277,7 @@ def metrics(events: list[dict]) -> dict:
     def pct(n: int, d: int) -> float:
         return 100 * n / d if d else 0.0
 
+    supp_move, supp_hold, supp_eff = support_breakdown(events)
     return {
         "model": run_started.get("model", "?"),
         "phases": run_ended.get("phases_played", "?"),
@@ -243,6 +292,9 @@ def metrics(events: list[dict]) -> dict:
         "dropped": pct(dropped, expected_units),
         "holds": pct(holds, total),
         "supports": pct(supports, total),
+        "supp_move": pct(supp_move, total),
+        "supp_hold": pct(supp_hold, total),
+        "supp_eff": pct(supp_eff, supp_move),
         "convoys": pct(convoys, total),
         "msgs": msgs,
         "cond": pct(cond, msgs),
@@ -268,6 +320,9 @@ ROWS = [
     ("Dropped turns %", "dropped", "{:.1f}"),
     ("Hold %", "holds", "{:.1f}"),
     ("Support %", "supports", "{:.1f}"),
+    ("Support move %", "supp_move", "{:.1f}"),
+    ("Support hold %", "supp_hold", "{:.1f}"),
+    ("Support eff %", "supp_eff", "{:.1f}"),
     ("Convoy %", "convoys", "{:.1f}"),
     ("Negotiation", None, None),
     ("Messages", "msgs", "{}"),
