@@ -944,7 +944,7 @@ body:has(.thread:target) .thread:target { display: block; }
            margin: 10px 0; }
 .kpi-stack { flex: 0 1 966px; min-width: 0; max-width: 1035px;
              display: flex; flex-direction: column; gap: 4px; }
-.kpi-scatter { flex: 0 1 480px; min-width: 0; }
+.kpi-scatter { flex: 0 1 640px; min-width: 0; }
 .kpi-svg { display: block; width: 100%; max-width: 1035px; height: auto;
            background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
 .kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
@@ -2003,9 +2003,21 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     for sl in slides:
         index_body.append(f"  <li><a href='{sl['file']}'>{sl['title']}</a></li>")
     index_body.append("</ol>")
-    # Full-game SC trajectory at a glance, between the slide list and the
-    # link list. Uses the same _kpi_charts_for_phase helper as per-slide
-    # charts; passing the last phase as the cut-off plots the whole arc.
+    # Other artifacts list, placed just above the charts.
+    index_body.append("<h2>Other artifacts</h2>")
+    index_body.append("<ul>")
+    index_body.append("  <li><a href='report.md'>report.md</a> — full postmortem with reasoning</li>")
+    # transcript.jsonl + prompts.* are at the run-dir top level (one level up
+    # from the dashboard/ directory the slideshow lives in).
+    index_body.append("  <li><a href='../transcript.jsonl'>transcript.jsonl</a> — raw event log</li>")
+    if (out_dir.parent / "prompts.md").exists():
+        index_body.append(
+            "  <li><a href='../prompts.md'>prompts.md</a> — every prompt each agent received "
+            "(readable rendering of <code>prompts.jsonl</code>)</li>"
+        )
+    index_body.append("</ul>")
+    # Full-game charts: SC trajectory + index charts, then the endgame scatter
+    # with the final standings repeated beneath it for comparison.
     phase_order = [ph["short"] for ph in phases]
     if phase_order:
         full_chart = _kpi_charts_for_phase(
@@ -2021,7 +2033,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         scatter = _scatter_chart(
             "Aggression vs defense (endgame)",
             [(p, agg_final.get(p, 0), def_final.get(p, 0)) for p in powers_all],
-            xlabel="Aggression", ylabel="Defense",
+            xlabel="Aggression index", ylabel="Defense index",
+            width=640, height=550,
         )
         if scatter:
             index_body.append("<h2>Aggression vs defense (endgame)</h2>")
@@ -2029,18 +2042,9 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 f"<div class='kpi-row'><div class='kpi-scatter'>{scatter}</div>"
                 f"{_kpi_legend(powers_all)}</div>"
             )
-    index_body.append("<h2>Other artifacts</h2>")
-    index_body.append("<ul>")
-    index_body.append("  <li><a href='report.md'>report.md</a> — full postmortem with reasoning</li>")
-    # transcript.jsonl + prompts.* are at the run-dir top level (one level up
-    # from the dashboard/ directory the slideshow lives in).
-    index_body.append("  <li><a href='../transcript.jsonl'>transcript.jsonl</a> — raw event log</li>")
-    if (out_dir.parent / "prompts.md").exists():
-        index_body.append(
-            "  <li><a href='../prompts.md'>prompts.md</a> — every prompt each agent received "
-            "(readable rendering of <code>prompts.jsonl</code>)</li>"
-        )
-    index_body.append("</ul>")
+            if standings_chart:
+                index_body.append("<h3 class='so-heading'>Final standings</h3>")
+                index_body.append(standings_chart)
     (out_dir / "index.html").write_text(
         _html_page(title=f"Diplomacy A2A — {run_id}", body="\n".join(index_body))
     )
