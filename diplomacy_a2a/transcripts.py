@@ -34,9 +34,29 @@ import textwrap
 import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 
 from diplomacy_a2a.narration import narrate_phase
+
+
+@lru_cache(maxsize=1)
+def _land_provinces() -> frozenset[str]:
+    """Base codes of the 56 land provinces (LAND + COAST) from the map.
+
+    Coastal provinces count as land: they hold armies and most are supply
+    centers, so a coastal capture is exactly the turnover we want. The 19
+    pure-water provinces are excluded. Sourced from the diplomacy library's
+    area types rather than a hardcoded list.
+    """
+    from diplomacy import Map
+
+    m = Map()
+    return frozenset(
+        loc.split("/")[0].upper()
+        for loc in m.locs
+        if m.area_type(loc) in ("LAND", "COAST")
+    )
 
 
 def _softwrap(text: str, width: int = 78) -> str:
@@ -1253,6 +1273,43 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     elif toks[-1] == "D":
                         disbands += 1
 
+        # Pass 2c: land turnover. The "color" of a province is the power whose
+        # unit occupies it, with empty as its own state. Turnover counts every
+        # change in that color between consecutive post-adjudication snapshots:
+        # empty->FRANCE, FRANCE->GERMANY, and FRANCE->empty each count once, so
+        # a province taken, lost, then retaken contributes 3. Restricted to the
+        # 56 land provinces; the 19 water provinces are excluded because fleet
+        # shuffling through sea lanes is churn that is not tied to centers or
+        # strategy. This is board occupation churn ("where the armies are"),
+        # distinct from supply-center ownership which only flips at Fall. The
+        # baseline is the first resolved phase, so the fixed opening positions
+        # and the spring-1901 settle are not counted. Reported as a raw total
+        # plus an average over the 56 land provinces (comparable across runs).
+        land = _land_provinces()
+
+        def _prov(unit: str) -> str:
+            # "F STP/SC" -> "STP", "A PAR" -> "PAR".
+            loc = unit.split()[-1] if unit.split() else unit
+            return loc.split("/")[0].upper()
+
+        occ_snapshots: list[dict[str, str]] = []  # ordered; province -> power
+        for e in events:
+            if e.get("type") == "phase_resolved":
+                occ: dict[str, str] = {}
+                for power, units in (e.get("units", {}) or {}).items():
+                    for u in units:
+                        p = _prov(u)
+                        if p in land:
+                            occ[p] = power
+                occ_snapshots.append(occ)
+        land_turnover = 0
+        prev_occ = occ_snapshots[0] if occ_snapshots else {}
+        for occ in occ_snapshots[1:]:
+            for p in set(occ) | set(prev_occ):
+                if prev_occ.get(p, "empty") != occ.get(p, "empty"):
+                    land_turnover += 1
+            prev_occ = occ
+
         # Pass 3: negotiation density. Total messages exchanged across the
         # game, plus the share that contain conditional-bargaining language
         # (conditional offers) and the share that contain alliance / coalition
@@ -1357,6 +1414,10 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         if builds or disbands:
             outcomes_rows.append(("Builds", str(builds)))
             outcomes_rows.append(("Disbands", str(disbands)))
+        if land_turnover > 0 and land:
+            outcomes_rows.append(("Land turnover", str(land_turnover)))
+            per_prov = land_turnover / len(land)
+            outcomes_rows.append(("Per land province", f"{per_prov:.2f}", True))
         if total_orders > 0:
             def _pct(n: int) -> str:
                 return f"{100 * n / total_orders:.1f}%"
