@@ -944,6 +944,7 @@ body:has(.thread:target) .thread:target { display: block; }
            margin: 10px 0; }
 .kpi-stack { flex: 0 1 966px; min-width: 0; max-width: 1035px;
              display: flex; flex-direction: column; gap: 4px; }
+.kpi-scatter { flex: 0 1 480px; min-width: 0; }
 .kpi-svg { display: block; width: 100%; max-width: 1035px; height: auto;
            background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
 .kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
@@ -1268,13 +1269,13 @@ def _signed_line_chart(
     x_labels: list[str],
     *,
     width: int = 966,
-    height: int = 200,
+    height: int = 414,
 ) -> str:
     """Line chart for a signed cumulative index: one polyline per power colored
     from POWER_COLORS, a zero baseline, and an auto y-range from the data (so
     curves can fall below zero). Shares the SC trajectory's x geometry (same
-    width and left/right padding) so it aligns directly beneath it; a dot with
-    the final value sits at the end of each curve.
+    width and left/right padding) so it aligns directly beneath it; every point
+    carries a hover popup showing the nation and its running score.
     """
     n = len(x_labels)
     if n < 2 or not series:
@@ -1319,13 +1320,98 @@ def _signed_line_chart(
         parts.append(
             f"<polyline points='{coords}' fill='none' stroke='{color}' stroke-width='1.3'/>"
         )
-        i = len(pts) - 1
-        cx, cy = xs[i], y_for(pts[i])
-        tip = f"{power.title()}: {int(round(pts[i])):+d}"
+        for i, v in enumerate(pts):
+            cx, cy = xs[i], y_for(v)
+            tip = f"{power.title()}: {int(round(v)):+d}"
+            tip_w = max(60, len(tip) * 6 + 10)
+            tip_dx = -tip_w - 10 if cx + tip_w + 14 > width else 8
+            tip_dy = -14 if cy < pad_t + 18 else -22
+            parts.append(
+                f"<g class='dot-wrap'>"
+                f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='9' class='dot-hit'/>"
+                f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='3.0' fill='{color}' "
+                f"stroke='white' stroke-width='0.8'><title>{tip}</title></circle>"
+                f"<g class='dot-tip' transform='translate({cx:.1f},{cy:.1f})'>"
+                f"<rect x='{tip_dx}' y='{tip_dy}' width='{tip_w}' height='18' rx='3' "
+                f"class='dot-tip-bg'/>"
+                f"<text x='{tip_dx + 5}' y='{tip_dy + 12}' class='dot-tip-text'>{tip}</text>"
+                f"</g></g>"
+            )
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def _scatter_chart(
+    title: str,
+    points: list[tuple[str, float, float]],
+    *,
+    xlabel: str,
+    ylabel: str,
+    width: int = 480,
+    height: int = 414,
+) -> str:
+    """Scatter of one labeled, power-colored dot per power, with dashed zero
+    crosshairs so the four quadrants (strong/weak offense x strong/weak defense)
+    read at a glance. `points` is (power, x, y); hover shows both scores.
+    """
+    if not points:
+        return ""
+    xs_v = [x for _, x, _ in points]
+    ys_v = [y for _, _, y in points]
+    xmin, xmax = min(xs_v + [0]), max(xs_v + [0])
+    ymin, ymax = min(ys_v + [0]), max(ys_v + [0])
+    xmin -= (xmax - xmin) * 0.12 or 1
+    xmax += (xmax - xmin) * 0.12 or 1
+    ymin -= (ymax - ymin) * 0.12 or 1
+    ymax += (ymax - ymin) * 0.12 or 1
+    pad_l, pad_r, pad_t, pad_b = 44, 14, 22, 40
+    plot_w = width - pad_l - pad_r
+    plot_h = height - pad_t - pad_b
+
+    def x_for(v: float) -> float:
+        return pad_l + (v - xmin) / (xmax - xmin) * plot_w
+
+    def y_for(v: float) -> float:
+        return pad_t + (ymax - v) / (ymax - ymin) * plot_h
+
+    parts: list[str] = [
+        f"<svg viewBox='0 0 {width} {height}' class='kpi-svg' "
+        f"xmlns='http://www.w3.org/2000/svg'>",
+        f"<text x='{width/2:.0f}' y='14' text-anchor='middle' class='kpi-title'>{title}</text>",
+        f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{height-pad_b}' class='kpi-axis'/>",
+        f"<line x1='{pad_l}' y1='{height-pad_b}' x2='{width-pad_r}' y2='{height-pad_b}' class='kpi-axis'/>",
+        f"<line x1='{x_for(0):.1f}' y1='{pad_t}' x2='{x_for(0):.1f}' y2='{height-pad_b}' "
+        f"stroke='#ccc' stroke-dasharray='3,3'/>",
+        f"<line x1='{pad_l}' y1='{y_for(0):.1f}' x2='{width-pad_r}' y2='{y_for(0):.1f}' "
+        f"stroke='#ccc' stroke-dasharray='3,3'/>",
+        f"<text x='{(pad_l+width-pad_r)/2:.0f}' y='{height-6}' text-anchor='middle' "
+        f"class='kpi-axis-label'>{xlabel}</text>",
+    ]
+    ylx, yly = 11, (pad_t + height - pad_b) / 2
+    parts.append(
+        f"<text x='{ylx}' y='{yly:.0f}' text-anchor='middle' class='kpi-axis-label' "
+        f"transform='rotate(-90 {ylx},{yly:.0f})'>{ylabel}</text>"
+    )
+    for v in sorted({round(xmin), 0, round(xmax)}):
         parts.append(
-            f"<g class='dot-wrap'><circle cx='{cx:.1f}' cy='{cy:.1f}' r='9' class='dot-hit'/>"
-            f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='3' fill='{color}' stroke='white' "
-            f"stroke-width='0.8'><title>{tip}</title></circle></g>"
+            f"<text x='{x_for(v):.1f}' y='{height-pad_b+12:.1f}' text-anchor='middle' "
+            f"class='kpi-tick'>{int(v)}</text>"
+        )
+    for v in sorted({round(ymin), 0, round(ymax)}):
+        parts.append(
+            f"<text x='{pad_l-5}' y='{y_for(v)+3:.1f}' text-anchor='end' class='kpi-tick'>{int(v)}</text>"
+        )
+    for power, xv, yv in points:
+        cx, cy = x_for(xv), y_for(yv)
+        color = POWER_COLORS.get(power, "#777")
+        tip = f"{power.title()}: agg {int(round(xv)):+d}, def {int(round(yv)):+d}"
+        parts.append(
+            f"<g class='dot-wrap'>"
+            f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='9' class='dot-hit'/>"
+            f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='4' fill='{color}' stroke='white' "
+            f"stroke-width='1'><title>{tip}</title></circle>"
+            f"<text x='{cx+6:.1f}' y='{cy-5:.1f}' class='kpi-tick' fill='{color}'>"
+            f"{power.title()}</text></g>"
         )
     parts.append("</svg>")
     return "\n".join(parts)
@@ -1929,6 +2015,20 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         if full_chart:
             index_body.append("<h2>Supply center trajectory</h2>")
             index_body.append(full_chart)
+        last_ph = phase_order[-1]
+        agg_final = aggression_by_phase.get(last_ph, {})
+        def_final = defense_by_phase.get(last_ph, {})
+        scatter = _scatter_chart(
+            "Aggression vs defense (endgame)",
+            [(p, agg_final.get(p, 0), def_final.get(p, 0)) for p in powers_all],
+            xlabel="Aggression", ylabel="Defense",
+        )
+        if scatter:
+            index_body.append("<h2>Aggression vs defense (endgame)</h2>")
+            index_body.append(
+                f"<div class='kpi-row'><div class='kpi-scatter'>{scatter}</div>"
+                f"{_kpi_legend(powers_all)}</div>"
+            )
     index_body.append("<h2>Other artifacts</h2>")
     index_body.append("<ul>")
     index_body.append("  <li><a href='report.md'>report.md</a> — full postmortem with reasoning</li>")
