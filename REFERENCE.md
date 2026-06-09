@@ -764,7 +764,7 @@ surface-legal-supports roadmap entry), and a cheaper model could regress
 there in a way that shows up directly in the transcript. Test cost is a few
 dollars.
 
-### Cheap-model playtest results: DeepSeek vs Haiku vs Gemini vs Sonnet
+### Cheap-model playtest results: DeepSeek vs MiMo vs Haiku vs Gemini vs Sonnet
 
 Measured comparison (2026-06-09): a full 10-year homogeneous self-play game per
 model (one model drives all seven powers), columns ordered cheapest to priciest.
@@ -773,55 +773,59 @@ order and message metrics mirror the dashboard, while N_eff and dropped-turns ar
 reference-only. Game-level rows are n=1, so rank on the Competence block (each
 rate averages over hundreds of orders) and read Board and Negotiation as color.
 Sonnet is the committed canonical run (`results/canonical/2026-06-04.14.48.20`);
-the DeepSeek, Haiku, and Gemini sides are research runs kept in gitignored
-`scratch/`, so the table below is the preserved result. Gemini ran with reasoning
-minimized (`effort: minimal`, the lowest its mandatory-reasoning endpoint allows).
+the DeepSeek, MiMo, Haiku, and Gemini sides are research runs kept in gitignored
+`scratch/`, so the table below is the preserved result. Gemini and MiMo are
+reasoning models run with reasoning minimized (`effort: minimal`).
 
-| Metric | deepseek/deepseek-v4-flash | claude-haiku-4-5 | google/gemini-3.5-flash | claude-sonnet-4-6 |
-|--------|----------------------------|------------------|-------------------------|-------------------|
-| **Cost & runtime** | | | | |
-| Cost (USD) | $1.17 | $8.05 | $17.35 | $25.62 |
-| Wall-clock (min) | 54.5 | 21.8 | 9.0 | 34.0 |
-| Phases played | 36 | 32 | 34 | 41 |
-| **Board** | | | | |
-| N_eff (final) | 6.02 | 6.45 | 5.78 | 5.61 |
-| Max SC (final) | 9 | 6 | 7 | 8 |
-| Land turnover | 12 | 7 | 12 | 27 |
-| **Competence** | | | | |
-| Total orders | 626 | 563 | 641 | 640 |
-| Illegal % | 7.0 | 11.0 | 2.8 | 3.1 |
-| Adjacency % | 6.4 | 10.8 | 2.8 | 3.1 |
-| Dropped turns % | 0.7 | 4.4 | 0.0 | 0.2 |
-| Hold % | 59.4 | 48.1 | 53.0 | 49.4 |
-| Support % | 7.5 | 6.9 | 20.1 | 14.5 |
-| Convoy % | 2.6 | 1.6 | 1.6 | 0.3 |
-| **Negotiation** | | | | |
-| Messages | 1359 | 981 | 1378 | 1034 |
-| Bargaining % | 48.5 | 31.7 | 18.0 | 55.2 |
-| Alliances % | 26.3 | 16.2 | 18.9 | 18.8 |
-| Betrayals | 37 | 5 | 18 | 47 |
+| Metric | deepseek/deepseek-v4-flash | xiaomi/mimo-v2.5 | claude-haiku-4-5 | google/gemini-3.5-flash | claude-sonnet-4-6 |
+|--------|----------------------------|------------------|------------------|-------------------------|-------------------|
+| **Cost & runtime** | | | | | |
+| Cost (USD) | $1.17 | $1.66 | $8.05 | $17.35 | $25.62 |
+| Wall-clock (min) | 54.5 | 31.9 | 21.8 | 9.0 | 34.0 |
+| Phases played | 36 | 36 | 32 | 34 | 41 |
+| **Board** | | | | | |
+| N_eff (final) | 6.02 | 5.72 | 6.45 | 5.78 | 5.61 |
+| Max SC (final) | 9 | 8 | 6 | 7 | 8 |
+| Land turnover | 12 | 24 | 7 | 12 | 27 |
+| **Competence** | | | | | |
+| Total orders | 626 | 634 | 563 | 641 | 640 |
+| Illegal % | 7.0 | 6.0 | 11.0 | 2.8 | 3.1 |
+| Adjacency % | 6.4 | 6.0 | 10.8 | 2.8 | 3.1 |
+| Dropped turns % | 0.7 | 0.2 | 4.4 | 0.0 | 0.2 |
+| Hold % | 59.4 | 48.4 | 48.1 | 53.0 | 49.4 |
+| Support % | 7.5 | 13.6 | 6.9 | 20.1 | 14.5 |
+| Convoy % | 2.6 | 0.5 | 1.6 | 1.6 | 0.3 |
+| **Negotiation** | | | | | |
+| Messages | 1359 | 1501 | 981 | 1378 | 1034 |
+| Bargaining % | 48.5 | 42.1 | 31.7 | 18.0 | 55.2 |
+| Alliances % | 26.3 | 18.9 | 16.2 | 18.9 | 18.8 |
+| Betrayals | 37 | 97 | 5 | 18 | 47 |
 
 **Reading.**
 
-- **Cost and speed:** four tiers, DeepSeek $1.17, Haiku $8.05, Gemini $17.35,
-  Sonnet $25.62. Gemini is the fastest (9.0 min, reasoning minimized); DeepSeek
-  is the cheapest but slowest (54.5 min: no gateway prompt caching, higher
-  per-call latency, retries).
-- **Competence (trustworthy):** the surprise is Gemini, the *cleanest player* of
-  all four: lowest illegal rate (2.8%, below even Sonnet's 3.1%), highest
-  coordination (Support 20.1%), and zero dropped turns. Sonnet is next. DeepSeek
-  is middling (illegal 7.0%), and Haiku is weakest (illegal 11.0%, dropped 4.4%).
-- **Board (color):** higher N_eff tends to mean a quieter board; Haiku is the
-  extreme (highest N_eff 6.45 but lowest Land turnover 7 and only 5 betrayals,
-  the most static game). Sonnet's board is the most contested (turnover 27).
-- **Negotiation (color):** Sonnet bargains and betrays the most (55% / 47);
-  Gemini talks the most but strikes the fewest concrete deals (Bargaining 18%).
-- **Verdict:** for pure low cost, **DeepSeek** ($1.17, functional if mid-tier
-  mechanically). For the **best play below Sonnet's price, Gemini** ($17.35),
-  which actually edges Sonnet on mechanical cleanliness and is the fastest, but
-  is fast-and-expensive, not cheap. **Haiku is dominated**: the weakest
-  competence at a middling price. Kimi K2.6 stays out (~$20 from sheer visible
-  verbosity, plus order truncation).
+- **Cost and speed:** five tiers, DeepSeek $1.17, MiMo $1.66, Haiku $8.05, Gemini
+  $17.35, Sonnet $25.62. Gemini is the fastest (9.0 min, reasoning minimized);
+  DeepSeek the slowest (54.5 min: no gateway prompt caching, higher per-call
+  latency, retries).
+- **Competence (trustworthy):** Gemini is the cleanest player (illegal 2.8%,
+  Support 20.1%, 0 dropped), Sonnet next. Among the budget models, **MiMo edges
+  DeepSeek**: lower illegal rate (6.0 vs 7.0%), far better coordination (Support
+  13.6 vs 7.5%, near Sonnet), and fewer dropped turns (0.2 vs 0.7%). Haiku is
+  weakest (illegal 11.0%, dropped 4.4%).
+- **Board (color):** MiMo plays the most contested board of the cheap tier (Land
+  turnover 24, vs DeepSeek 12 and Haiku 7, near Sonnet's 27); Haiku is the most
+  static (turnover 7). Higher N_eff tends to track a quieter board.
+- **Negotiation (color):** MiMo is the most aggressive negotiator of all five
+  (97 betrayals and 1501 messages, both the most), which matters for the
+  transcript deliverable. Sonnet bargains the most concretely (55%); Gemini talks
+  but deals least (Bargaining 18%).
+- **Verdict:** **MiMo-v2.5 is the best cheap value**, edging DeepSeek on play and
+  negotiation richness for ~$0.50 more ($1.66). DeepSeek remains the rock-bottom
+  cost pick ($1.17, functional if mid-tier). Gemini is the best play below
+  Sonnet's price but expensive ($17.35, fast and cleanest on legality). Haiku is
+  dominated (weakest competence at a middling $8.05). Kimi K2.6 stays out (~$20,
+  visible verbosity plus truncation); Qwen3.5-Flash is cheaper still (~$0.5/10yr
+  from a 1-year smoke) but mid-tier and uncoordinated, a pure cost play.
 
 ### One gateway key instead of three accounts
 
