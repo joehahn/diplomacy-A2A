@@ -403,6 +403,283 @@ def regenerate_maps(jsonl_path: Path, out_dir: Path) -> None:
         os.unlink(tmp.name)
 
 
+def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
+    """Gameplay-outcome KPI rows in display order, shared by the HTML viewer and
+    report.md so the two never disagree. Each row is (label, value) or
+    (label, value, True) where True marks an indented sub-row. The body is the
+    single source of truth for every gameplay KPI; render_html_viewer and
+    render_markdown both consume what this returns.
+    """
+    outcomes_rows: list[tuple] = []
+    if run_ended:
+        # Compute all gameplay stats first, then append rows in the
+        # reading order the dashboard wants: Phases played, Total orders,
+        # Bounces, Dislodgements, Hold rate, Support orders, Convoy orders,
+        # Illegal orders, Adjacency errors, Negotiation messages.
+
+        # Pass 1: per-category counts across all movement-phase orders.
+        # Total includes invalid so the same denominator covers every
+        # percentage below.
+        total_orders = total_holds = total_supports = total_convoys = 0
+        illegal_orders = adjacency_errors = 0
+        for e in events:
+            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
+                for o in e.get("valid", []):
+                    total_orders += 1
+                    stripped = o.rstrip()
+                    if stripped.endswith(" H"):
+                        total_holds += 1
+                    elif re.search(r"\bS\b", o):
+                        total_supports += 1
+                    elif re.search(r"\bC\b", o) or stripped.endswith(" VIA"):
+                        total_convoys += 1
+                for inv in e.get("invalid", []):
+                    total_orders += 1
+                    illegal_orders += 1
+                    # An illegal order is treated as adjacency-related if
+                    # its syntax is support or move; in practice almost all
+                    # rejected supports and rejected moves fail because the
+                    # acting unit (or destination) is not adjacent. Convoy
+                    # and other-syntax illegals are excluded.
+                    if re.search(r"\bS\b", inv) or (
+                        " - " in inv
+                        and not re.search(r"\bC\b", inv)
+                        and not inv.endswith(" VIA")
+                    ):
+                        adjacency_errors += 1
+
+        # Pass 2: bounces and dislodgements from per-unit result tokens at
+        # phase_resolved.
+        bounces = dislodgements = 0
+        for e in events:
+            if e.get("type") == "phase_resolved":
+                for tokens in (e.get("results", {}) or {}).values():
+                    if any("bounce" in t for t in tokens):
+                        bounces += 1
+                    if any("dislodged" in t for t in tokens):
+                        dislodgements += 1
+
+        # Pass 2b: cumulative builds and disbands across all adjustment
+        # ("A") phases. Scoped to adjustment phases so retreat-phase removals,
+        # already reflected in Dislodgements, are not double-counted. WAIVE
+        # (a declined build) counts as neither.
+        builds = disbands = 0
+        for e in events:
+            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("A"):
+                for o in e.get("valid", []):
+                    toks = o.split()
+                    if not toks:
+                        continue
+                    if toks[-1] == "B":
+                        builds += 1
+                    elif toks[-1] == "D":
+                        disbands += 1
+
+        # Pass 2c: land turnover ("changed hands"). The occupier of a province
+        # is the power whose unit sits on it. Turnover counts only direct
+        # power->other-power handovers between consecutive post-adjudication
+        # snapshots: a province held by FRANCE that is held by GERMANY next
+        # snapshot counts once. Moves onto or off of empty ground
+        # (empty->power, power->empty) are NOT counted, so a unit simply
+        # relocating across open territory adds nothing; only one power taking
+        # ground that another power held does. Restricted to the 56 land
+        # provinces; the 19 water provinces are excluded because fleet shuffling
+        # through sea lanes is not tied to centers or strategy. Distinct from
+        # supply-center ownership, which only flips at Fall. Reported as a raw
+        # total plus an average over the 56 land provinces (comparable across
+        # runs).
+        land = _land_provinces()
+
+        def _prov(unit: str) -> str:
+            # "F STP/SC" -> "STP", "A PAR" -> "PAR".
+            loc = unit.split()[-1] if unit.split() else unit
+            return loc.split("/")[0].upper()
+
+        occ_snapshots: list[dict[str, str]] = []  # ordered; province -> power
+        for e in events:
+            if e.get("type") == "phase_resolved":
+                occ: dict[str, str] = {}
+                for power, units in (e.get("units", {}) or {}).items():
+                    for u in units:
+                        p = _prov(u)
+                        if p in land:
+                            occ[p] = power
+                occ_snapshots.append(occ)
+        land_turnover = 0
+        prev_occ = occ_snapshots[0] if occ_snapshots else {}
+        for occ in occ_snapshots[1:]:
+            for p, power in occ.items():
+                before = prev_occ.get(p)
+                if before is not None and before != power:
+                    land_turnover += 1
+            prev_occ = occ
+
+        # Pass 2d: support breakdown. Split support orders into move-supports
+        # (offensive: backing an attack, "X S Y - Z") and hold-supports
+        # (defensive: backing a unit in place, "X S Y"), and count the
+        # move-supports whose supported move succeeded: the supported unit is
+        # not bounced/voided/dislodged and lands at its destination in the
+        # post-resolution board.
+        support_moves = support_holds = support_eff = 0
+        _resolved: dict[str, tuple[dict, set]] = {}
+        for e in events:
+            if e.get("type") == "phase_resolved":
+                res = e.get("results", {}) or {}
+                locs: set = set()
+                for units in (e.get("units", {}) or {}).values():
+                    for u in units:
+                        toks = u.split()
+                        if len(toks) >= 2:
+                            locs.add((toks[0], toks[1].split("/")[0]))
+                _resolved[e.get("resolved_phase", "")] = (res, locs)
+        for e in events:
+            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
+                res, locs = _resolved.get(e.get("phase", ""), ({}, set()))
+                for o in e.get("valid", []):
+                    parts = o.split(" S ")
+                    if len(parts) != 2:
+                        continue
+                    supported = parts[1].strip()
+                    if " - " in supported:
+                        support_moves += 1
+                        unit, dest = (s.strip() for s in supported.split(" - ", 1))
+                        failed = any(
+                            tok in ("bounce", "void", "dislodged")
+                            for tok in res.get(unit, ["void"])
+                        )
+                        landed = bool(unit.split()) and (
+                            unit.split()[0], dest.split("/")[0]) in locs
+                        if not failed and landed:
+                            support_eff += 1
+                    else:
+                        support_holds += 1
+
+        # Pass 3: negotiation density. Total messages exchanged across the
+        # game, plus the share that contain conditional-bargaining language
+        # (conditional offers) and the share that contain alliance / coalition
+        # vocabulary. Both are quick markers of negotiation character.
+        total_msgs = cond_msgs = alliance_msgs = question_msgs = 0
+        cond_re = re.compile(
+            r"\b(if you|if I|in exchange|in return|provided that)\b", re.I
+        )
+        alliance_re = re.compile(
+            r"\b("
+            r"alliance|alliances|ally|allies|allied|"
+            r"coalition|coalitions|"
+            r"partner|partners|partnership|"
+            r"pact|pacts|non-aggression|"
+            r"coordinate|coordinated|coordination|"
+            r"cooperate|cooperation"
+            r")\b|work together|together against",
+            re.I,
+        )
+        for e in events:
+            if e.get("type") == "agent_messages":
+                for _, text in (e.get("messages", {}) or {}).items():
+                    total_msgs += 1
+                    if cond_re.search(text):
+                        cond_msgs += 1
+                    if alliance_re.search(text):
+                        alliance_msgs += 1
+                    if "?" in text:
+                        question_msgs += 1
+
+        # Pass 4: candidate betrayals. Heuristic: a message whose speaker
+        # promises non-aggression toward a specific province ('won't /
+        # will not / stay out / no interest in / respect') followed by the
+        # speaker moving a unit into that province in the same phase's
+        # adjudicated orders. Catches false positives (province named in
+        # passing) and misses subtler promises that lack the keyword
+        # markers, so read this as an order-of-magnitude signal rather
+        # than an exact betrayal tally.
+        orders_by_pp_phase: dict[str, dict[str, list[str]]] = {}
+        for e in events:
+            if e.get("type") == "orders_submitted":
+                orders_by_pp_phase.setdefault(e["phase"], {})[e["power"]] = e.get(
+                    "valid", []
+                )
+        promise_re = re.compile(
+            r"(won't|will not|stay out|no interest in|respect)", re.I
+        )
+        # 3-letter ALL-CAPS English words that could appear in messages
+        # and would otherwise be mistaken for province codes.
+        stop_words = {
+            "IF", "AND", "BUT", "THE", "OUR", "ALL", "HAS", "NOT", "NEW",
+            "HOLD", "SC", "YOU", "FOR", "ARE", "WAS", "WHO", "WHY", "HOW",
+            "OUT", "OWN",
+        }
+        seen_betray: set[tuple[str, str, str]] = set()
+        betrayals = 0
+        for e in events:
+            if e.get("type") != "agent_messages":
+                continue
+            phase = e.get("phase", "")
+            speaker = e.get("power", "")
+            speaker_orders = orders_by_pp_phase.get(phase, {}).get(speaker, [])
+            for _, text in (e.get("messages", {}) or {}).items():
+                if not promise_re.search(text):
+                    continue
+                provs = {
+                    p for p in re.findall(r"\b([A-Z]{3})\b", text)
+                    if p not in stop_words
+                }
+                for prov in provs:
+                    key = (phase, speaker, prov)
+                    if key in seen_betray:
+                        continue
+                    for o in speaker_orders:
+                        m = re.match(r"[AF] \S+\s*-\s*(\S+)", o)
+                        if m and m.group(1).split("/")[0] == prov:
+                            betrayals += 1
+                            seen_betray.add(key)
+                            break
+
+        # Append in the desired display order.
+        outcomes_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
+        if total_orders > 0:
+            outcomes_rows.append(("Total number of orders", str(total_orders)))
+        if total_msgs > 0:
+            outcomes_rows.append(("Negotiation messages", str(total_msgs)))
+            # Sub-metrics of negotiation behavior, all reported as a share
+            # of total messages. Marked as sub-rows so the index renders
+            # them indented under Negotiation messages.
+            cond_pct = 100 * cond_msgs / total_msgs
+            outcomes_rows.append(("Conditional bargaining", f"{cond_pct:.1f}%", True))
+            question_pct = 100 * question_msgs / total_msgs
+            outcomes_rows.append(("Questions asked", f"{question_pct:.1f}%", True))
+            alliance_pct = 100 * alliance_msgs / total_msgs
+            outcomes_rows.append(("Alliances", f"{alliance_pct:.1f}%", True))
+            if betrayals > 0:
+                betrayal_pct = 100 * betrayals / total_msgs
+                outcomes_rows.append(("Betrayals", f"{betrayal_pct:.1f}%", True))
+        if bounces or dislodgements or land_turnover:
+            outcomes_rows.append(("Bounces", str(bounces)))
+            if land_turnover > 0 and land:
+                outcomes_rows.append(("Land turnover", str(land_turnover)))
+            outcomes_rows.append(("Dislodgements", str(dislodgements)))
+        if builds or disbands:
+            outcomes_rows.append(("Builds", str(builds)))
+            outcomes_rows.append(("Disbands", str(disbands)))
+        if total_orders > 0:
+            def _pct(n: int) -> str:
+                return f"{100 * n / total_orders:.1f}%"
+            outcomes_rows.append(("Hold rate", _pct(total_holds)))
+            outcomes_rows.append(("Support rate", _pct(total_supports)))
+            outcomes_rows.append(("support-move", _pct(support_moves), True))
+            if support_moves:
+                outcomes_rows.append(
+                    ("successful support-move",
+                     f"{100 * support_eff / support_moves:.1f}%", True)
+                )
+            outcomes_rows.append(("support-hold", _pct(support_holds), True))
+            outcomes_rows.append(("Convoy orders", _pct(total_convoys)))
+            outcomes_rows.append(("Illegal orders", _pct(illegal_orders)))
+            outcomes_rows.append(("Adjacency errors", _pct(adjacency_errors)))
+    else:
+        outcomes_rows.append(("Run state", "<i>incomplete (no run_ended event)</i>"))
+    return outcomes_rows
+
+
 def render_markdown(jsonl_path: Path, out_path: Path) -> None:
     """Render the JSONL event log as a human-readable markdown postmortem."""
     events = [json.loads(line) for line in jsonl_path.read_text().splitlines() if line.strip()]
@@ -426,6 +703,20 @@ def render_markdown(jsonl_path: Path, out_path: Path) -> None:
         )
         lines.append(f"- **Approx cost (USD)**: ${run_ended.get('cost_usd', 0):.4f}")
     lines.append("")
+
+    # Gameplay KPIs, the same metrics the HTML viewer shows, surfaced here so
+    # they are visible in the GitHub-readable report. Sub-rows are indented.
+    outcomes = _compute_outcomes(events, run_ended)
+    if outcomes:
+        lines.append("## Game KPIs")
+        lines.append("")
+        for row in outcomes:
+            label, value = row[0], row[1]
+            if len(row) > 2 and row[2]:
+                lines.append(f"  - {label}: {value}")
+            else:
+                lines.append(f"- **{label}**: {value}")
+        lines.append("")
 
     personas = run_started.get("personas", {})
     if personas:
@@ -1210,271 +1501,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             ))
         settings_rows.append(("Cost (USD)", f"${run_ended.get('cost_usd', 0):.2f}"))
 
-        # Compute all gameplay stats first, then append rows in the
-        # reading order the dashboard wants: Phases played, Total orders,
-        # Bounces, Dislodgements, Hold rate, Support orders, Convoy orders,
-        # Illegal orders, Adjacency errors, Negotiation messages.
-
-        # Pass 1: per-category counts across all movement-phase orders.
-        # Total includes invalid so the same denominator covers every
-        # percentage below.
-        total_orders = total_holds = total_supports = total_convoys = 0
-        illegal_orders = adjacency_errors = 0
-        for e in events:
-            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
-                for o in e.get("valid", []):
-                    total_orders += 1
-                    stripped = o.rstrip()
-                    if stripped.endswith(" H"):
-                        total_holds += 1
-                    elif re.search(r"\bS\b", o):
-                        total_supports += 1
-                    elif re.search(r"\bC\b", o) or stripped.endswith(" VIA"):
-                        total_convoys += 1
-                for inv in e.get("invalid", []):
-                    total_orders += 1
-                    illegal_orders += 1
-                    # An illegal order is treated as adjacency-related if
-                    # its syntax is support or move; in practice almost all
-                    # rejected supports and rejected moves fail because the
-                    # acting unit (or destination) is not adjacent. Convoy
-                    # and other-syntax illegals are excluded.
-                    if re.search(r"\bS\b", inv) or (
-                        " - " in inv
-                        and not re.search(r"\bC\b", inv)
-                        and not inv.endswith(" VIA")
-                    ):
-                        adjacency_errors += 1
-
-        # Pass 2: bounces and dislodgements from per-unit result tokens at
-        # phase_resolved.
-        bounces = dislodgements = 0
-        for e in events:
-            if e.get("type") == "phase_resolved":
-                for tokens in (e.get("results", {}) or {}).values():
-                    if any("bounce" in t for t in tokens):
-                        bounces += 1
-                    if any("dislodged" in t for t in tokens):
-                        dislodgements += 1
-
-        # Pass 2b: cumulative builds and disbands across all adjustment
-        # ("A") phases. Scoped to adjustment phases so retreat-phase removals,
-        # already reflected in Dislodgements, are not double-counted. WAIVE
-        # (a declined build) counts as neither.
-        builds = disbands = 0
-        for e in events:
-            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("A"):
-                for o in e.get("valid", []):
-                    toks = o.split()
-                    if not toks:
-                        continue
-                    if toks[-1] == "B":
-                        builds += 1
-                    elif toks[-1] == "D":
-                        disbands += 1
-
-        # Pass 2c: land turnover ("changed hands"). The occupier of a province
-        # is the power whose unit sits on it. Turnover counts only direct
-        # power->other-power handovers between consecutive post-adjudication
-        # snapshots: a province held by FRANCE that is held by GERMANY next
-        # snapshot counts once. Moves onto or off of empty ground
-        # (empty->power, power->empty) are NOT counted, so a unit simply
-        # relocating across open territory adds nothing; only one power taking
-        # ground that another power held does. Restricted to the 56 land
-        # provinces; the 19 water provinces are excluded because fleet shuffling
-        # through sea lanes is not tied to centers or strategy. Distinct from
-        # supply-center ownership, which only flips at Fall. Reported as a raw
-        # total plus an average over the 56 land provinces (comparable across
-        # runs).
-        land = _land_provinces()
-
-        def _prov(unit: str) -> str:
-            # "F STP/SC" -> "STP", "A PAR" -> "PAR".
-            loc = unit.split()[-1] if unit.split() else unit
-            return loc.split("/")[0].upper()
-
-        occ_snapshots: list[dict[str, str]] = []  # ordered; province -> power
-        for e in events:
-            if e.get("type") == "phase_resolved":
-                occ: dict[str, str] = {}
-                for power, units in (e.get("units", {}) or {}).items():
-                    for u in units:
-                        p = _prov(u)
-                        if p in land:
-                            occ[p] = power
-                occ_snapshots.append(occ)
-        land_turnover = 0
-        prev_occ = occ_snapshots[0] if occ_snapshots else {}
-        for occ in occ_snapshots[1:]:
-            for p, power in occ.items():
-                before = prev_occ.get(p)
-                if before is not None and before != power:
-                    land_turnover += 1
-            prev_occ = occ
-
-        # Pass 2d: support breakdown. Split support orders into move-supports
-        # (offensive: backing an attack, "X S Y - Z") and hold-supports
-        # (defensive: backing a unit in place, "X S Y"), and count the
-        # move-supports whose supported move succeeded: the supported unit is
-        # not bounced/voided/dislodged and lands at its destination in the
-        # post-resolution board.
-        support_moves = support_holds = support_eff = 0
-        _resolved: dict[str, tuple[dict, set]] = {}
-        for e in events:
-            if e.get("type") == "phase_resolved":
-                res = e.get("results", {}) or {}
-                locs: set = set()
-                for units in (e.get("units", {}) or {}).values():
-                    for u in units:
-                        toks = u.split()
-                        if len(toks) >= 2:
-                            locs.add((toks[0], toks[1].split("/")[0]))
-                _resolved[e.get("resolved_phase", "")] = (res, locs)
-        for e in events:
-            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
-                res, locs = _resolved.get(e.get("phase", ""), ({}, set()))
-                for o in e.get("valid", []):
-                    parts = o.split(" S ")
-                    if len(parts) != 2:
-                        continue
-                    supported = parts[1].strip()
-                    if " - " in supported:
-                        support_moves += 1
-                        unit, dest = (s.strip() for s in supported.split(" - ", 1))
-                        failed = any(
-                            tok in ("bounce", "void", "dislodged")
-                            for tok in res.get(unit, ["void"])
-                        )
-                        landed = bool(unit.split()) and (
-                            unit.split()[0], dest.split("/")[0]) in locs
-                        if not failed and landed:
-                            support_eff += 1
-                    else:
-                        support_holds += 1
-
-        # Pass 3: negotiation density. Total messages exchanged across the
-        # game, plus the share that contain conditional-bargaining language
-        # (conditional offers) and the share that contain alliance / coalition
-        # vocabulary. Both are quick markers of negotiation character.
-        total_msgs = cond_msgs = alliance_msgs = question_msgs = 0
-        cond_re = re.compile(
-            r"\b(if you|if I|in exchange|in return|provided that)\b", re.I
-        )
-        alliance_re = re.compile(
-            r"\b("
-            r"alliance|alliances|ally|allies|allied|"
-            r"coalition|coalitions|"
-            r"partner|partners|partnership|"
-            r"pact|pacts|non-aggression|"
-            r"coordinate|coordinated|coordination|"
-            r"cooperate|cooperation"
-            r")\b|work together|together against",
-            re.I,
-        )
-        for e in events:
-            if e.get("type") == "agent_messages":
-                for _, text in (e.get("messages", {}) or {}).items():
-                    total_msgs += 1
-                    if cond_re.search(text):
-                        cond_msgs += 1
-                    if alliance_re.search(text):
-                        alliance_msgs += 1
-                    if "?" in text:
-                        question_msgs += 1
-
-        # Pass 4: candidate betrayals. Heuristic: a message whose speaker
-        # promises non-aggression toward a specific province ('won't /
-        # will not / stay out / no interest in / respect') followed by the
-        # speaker moving a unit into that province in the same phase's
-        # adjudicated orders. Catches false positives (province named in
-        # passing) and misses subtler promises that lack the keyword
-        # markers, so read this as an order-of-magnitude signal rather
-        # than an exact betrayal tally.
-        orders_by_pp_phase: dict[str, dict[str, list[str]]] = {}
-        for e in events:
-            if e.get("type") == "orders_submitted":
-                orders_by_pp_phase.setdefault(e["phase"], {})[e["power"]] = e.get(
-                    "valid", []
-                )
-        promise_re = re.compile(
-            r"(won't|will not|stay out|no interest in|respect)", re.I
-        )
-        # 3-letter ALL-CAPS English words that could appear in messages
-        # and would otherwise be mistaken for province codes.
-        stop_words = {
-            "IF", "AND", "BUT", "THE", "OUR", "ALL", "HAS", "NOT", "NEW",
-            "HOLD", "SC", "YOU", "FOR", "ARE", "WAS", "WHO", "WHY", "HOW",
-            "OUT", "OWN",
-        }
-        seen_betray: set[tuple[str, str, str]] = set()
-        betrayals = 0
-        for e in events:
-            if e.get("type") != "agent_messages":
-                continue
-            phase = e.get("phase", "")
-            speaker = e.get("power", "")
-            speaker_orders = orders_by_pp_phase.get(phase, {}).get(speaker, [])
-            for _, text in (e.get("messages", {}) or {}).items():
-                if not promise_re.search(text):
-                    continue
-                provs = {
-                    p for p in re.findall(r"\b([A-Z]{3})\b", text)
-                    if p not in stop_words
-                }
-                for prov in provs:
-                    key = (phase, speaker, prov)
-                    if key in seen_betray:
-                        continue
-                    for o in speaker_orders:
-                        m = re.match(r"[AF] \S+\s*-\s*(\S+)", o)
-                        if m and m.group(1).split("/")[0] == prov:
-                            betrayals += 1
-                            seen_betray.add(key)
-                            break
-
-        # Append in the desired display order.
-        outcomes_rows.append(("Phases played", str(run_ended.get("phases_played", "?"))))
-        if total_orders > 0:
-            outcomes_rows.append(("Total number of orders", str(total_orders)))
-        if total_msgs > 0:
-            outcomes_rows.append(("Negotiation messages", str(total_msgs)))
-            # Sub-metrics of negotiation behavior, all reported as a share
-            # of total messages. Marked as sub-rows so the index renders
-            # them indented under Negotiation messages.
-            cond_pct = 100 * cond_msgs / total_msgs
-            outcomes_rows.append(("Conditional bargaining", f"{cond_pct:.1f}%", True))
-            question_pct = 100 * question_msgs / total_msgs
-            outcomes_rows.append(("Questions asked", f"{question_pct:.1f}%", True))
-            alliance_pct = 100 * alliance_msgs / total_msgs
-            outcomes_rows.append(("Alliances", f"{alliance_pct:.1f}%", True))
-            if betrayals > 0:
-                betrayal_pct = 100 * betrayals / total_msgs
-                outcomes_rows.append(("Betrayals", f"{betrayal_pct:.1f}%", True))
-        if bounces or dislodgements or land_turnover:
-            outcomes_rows.append(("Bounces", str(bounces)))
-            if land_turnover > 0 and land:
-                outcomes_rows.append(("Land turnover", str(land_turnover)))
-            outcomes_rows.append(("Dislodgements", str(dislodgements)))
-        if builds or disbands:
-            outcomes_rows.append(("Builds", str(builds)))
-            outcomes_rows.append(("Disbands", str(disbands)))
-        if total_orders > 0:
-            def _pct(n: int) -> str:
-                return f"{100 * n / total_orders:.1f}%"
-            outcomes_rows.append(("Hold rate", _pct(total_holds)))
-            outcomes_rows.append(("Support orders", _pct(total_supports)))
-            outcomes_rows.append(("Support orders (move)", _pct(support_moves)))
-            outcomes_rows.append(("Support orders (hold)", _pct(support_holds)))
-            if support_moves:
-                outcomes_rows.append(
-                    ("Effective move-support", f"{100 * support_eff / support_moves:.1f}%")
-                )
-            outcomes_rows.append(("Convoy orders", _pct(total_convoys)))
-            outcomes_rows.append(("Illegal orders", _pct(illegal_orders)))
-            outcomes_rows.append(("Adjacency errors", _pct(adjacency_errors)))
-
-    else:
-        outcomes_rows.append(("Run state", "<i>incomplete (no run_ended event)</i>"))
+    outcomes_rows = _compute_outcomes(events, run_ended)
 
     # Final standings rendered as a horizontal bar chart in the right
     # column. Sorted descending by SC count (best on top), bars run

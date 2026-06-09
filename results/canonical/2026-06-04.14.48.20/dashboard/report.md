@@ -8,6 +8,29 @@
 - **Tokens**: input=0, output=0, cache_create=0, cache_read=0
 - **Approx cost (USD)**: $25.6177
 
+## Game KPIs
+
+- **Phases played**: 41
+- **Total number of orders**: 640
+- **Negotiation messages**: 1034
+  - Conditional bargaining: 55.2%
+  - Questions asked: 21.1%
+  - Alliances: 18.8%
+  - Betrayals: 4.5%
+- **Bounces**: 88
+- **Land turnover**: 27
+- **Dislodgements**: 17
+- **Builds**: 26
+- **Disbands**: 11
+- **Hold rate**: 49.4%
+- **Support rate**: 14.5%
+  - support-move: 9.5%
+  - successful support-move: 67.2%
+  - support-hold: 5.0%
+- **Convoy orders**: 0.3%
+- **Illegal orders**: 3.1%
+- **Adjacency errors**: 3.1%
+
 ## Personas
 
 - **AUSTRIA** — You are a competent Diplomacy player playing to win, not to survive. You pursue growth relentlessly: holding a stable position is a slow loss, because the game is won only by taking 18 supply centers, and while you sit a rival grows. You form alliances when they advance you and honor them only while they pay, treating a quiet front as a chance to break rather than a comfort to keep. You read other powers from what they say and do, and you use deception and betrayal when the timing is right, while recognizing that careless, habitual betrayal makes you unpartnerable.
