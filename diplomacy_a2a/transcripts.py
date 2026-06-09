@@ -1262,11 +1262,82 @@ def _adjustments_chart(
     return "\n".join(parts)
 
 
+def _signed_line_chart(
+    title: str,
+    series: dict[str, list[float]],
+    x_labels: list[str],
+    *,
+    width: int = 966,
+    height: int = 200,
+) -> str:
+    """Line chart for a signed cumulative index: one polyline per power colored
+    from POWER_COLORS, a zero baseline, and an auto y-range from the data (so
+    curves can fall below zero). Shares the SC trajectory's x geometry (same
+    width and left/right padding) so it aligns directly beneath it; a dot with
+    the final value sits at the end of each curve.
+    """
+    n = len(x_labels)
+    if n < 2 or not series:
+        return ""
+    pad_l, pad_r, pad_t, pad_b = 46, 12, 20, 62
+    plot_w = width - pad_l - pad_r
+    plot_h = height - pad_t - pad_b
+    xs = [pad_l + i * plot_w / (n - 1) for i in range(n)]
+    vals = [v for pts in series.values() for v in pts] or [0]
+    vmax = max(max(vals), 0)
+    vmin = min(min(vals), 0)
+    span = (vmax - vmin) or 1
+
+    def y_for(v: float) -> float:
+        return pad_t + (vmax - v) / span * plot_h
+
+    parts: list[str] = [
+        f"<svg viewBox='0 0 {width} {height}' class='kpi-svg' "
+        f"xmlns='http://www.w3.org/2000/svg'>",
+        f"<text x='{width/2:.0f}' y='14' text-anchor='middle' class='kpi-title'>{title}</text>",
+        f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{height-pad_b}' class='kpi-axis'/>",
+        f"<line x1='{pad_l}' y1='{y_for(0):.1f}' x2='{width-pad_r}' y2='{y_for(0):.1f}' class='kpi-axis'/>",
+    ]
+    for v in (vmax, 0, vmin):
+        y = y_for(v)
+        parts.append(
+            f"<line x1='{pad_l-3}' y1='{y:.1f}' x2='{pad_l}' y2='{y:.1f}' class='kpi-axis'/>"
+        )
+        parts.append(
+            f"<text x='{pad_l-5}' y='{y+3:.1f}' text-anchor='end' class='kpi-tick'>{int(round(v))}</text>"
+        )
+    for i, lbl in enumerate(x_labels):
+        x, ty = xs[i], height - pad_b + 5
+        parts.append(
+            f"<text x='{x:.1f}' y='{ty:.1f}' text-anchor='end' class='kpi-tick' "
+            f"transform='rotate(-90 {x:.1f},{ty:.1f})'>{lbl}</text>"
+        )
+    for power in sorted(series.keys()):
+        pts = series[power]
+        color = POWER_COLORS.get(power, "#777")
+        coords = " ".join(f"{xs[i]:.1f},{y_for(pts[i]):.1f}" for i in range(len(pts)))
+        parts.append(
+            f"<polyline points='{coords}' fill='none' stroke='{color}' stroke-width='1.3'/>"
+        )
+        i = len(pts) - 1
+        cx, cy = xs[i], y_for(pts[i])
+        tip = f"{power.title()}: {int(round(pts[i])):+d}"
+        parts.append(
+            f"<g class='dot-wrap'><circle cx='{cx:.1f}' cy='{cy:.1f}' r='9' class='dot-hit'/>"
+            f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='3' fill='{color}' stroke='white' "
+            f"stroke-width='0.8'><title>{tip}</title></circle></g>"
+        )
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
 def _kpi_charts_for_phase(
     phase_order: list[str],
     centers_by_phase: dict[str, dict[str, int]],
     up_to: str,
     adjustments_by_phase: dict[str, dict[str, int]] | None = None,
+    aggression_by_phase: dict[str, dict[str, int]] | None = None,
+    defense_by_phase: dict[str, dict[str, int]] | None = None,
 ) -> str:
     """Build the SC-count KPI chart + a shared legend for a movement-phase
     slide, showing the running history up to and including `up_to`. When
@@ -1295,14 +1366,23 @@ def _kpi_charts_for_phase(
         width=966, height=414,
     )
     legend = _kpi_legend(powers)
-    adj_html = ""
+    extra = ""
     if adjustments_by_phase:
         adj_for = {
             ph: adjustments_by_phase[ph] for ph in phases if ph in adjustments_by_phase
         }
-        adj_html = _adjustments_chart(phases, adj_for, powers)
+        extra += _adjustments_chart(phases, adj_for, powers)
+    for idx_data, title in (
+        (aggression_by_phase, "Aggression index (cumulative)"),
+        (defense_by_phase, "Defense index (cumulative)"),
+    ):
+        if idx_data:
+            idx_series = {
+                p: [idx_data.get(ph, {}).get(p, 0) for ph in phases] for p in powers
+            }
+            extra += _signed_line_chart(title, idx_series, phases)
     return (
-        f"<div class='kpi-row'><div class='kpi-stack'>{sc_chart}{adj_html}</div>"
+        f"<div class='kpi-row'><div class='kpi-stack'>{sc_chart}{extra}</div>"
         f"{legend}</div>"
     )
 
@@ -1509,6 +1589,107 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 adjustments_by_phase.setdefault(e.get("phase", ""), {})[
                     e.get("power", "")
                 ] = net
+
+    # Aggression and defense indices, accumulated per power per phase, for the
+    # trajectory charts. Aggression scores supply-center swings: +2 for taking
+    # an occupied center (dislodging a defender), +1 for an uncontested one;
+    # -1 for losing a center you garrisoned, -2 for losing an undefended one.
+    # Defense scores units under attack each movement phase: +2/+1 for a unit
+    # that held against a supported/unsupported attack, -2/-1 for a unit
+    # dislodged on a supply center / elsewhere. Both are cumulative net.
+    owner_snaps: list[tuple[str, dict[str, str]]] = []  # (phase, {sc_base: power})
+    occ_by_phase: dict[str, dict[str, str]] = {}        # phase -> {prov_base: power}
+    entering_units: dict[str, dict[str, tuple[str, str]]] = {}  # next_phase -> {base: (power, unit)}
+    sc_set: set[str] = set()
+    for e in events:
+        if e.get("type") != "phase_resolved":
+            continue
+        rp = e.get("resolved_phase", "")
+        owners: dict[str, str] = {}
+        for power, provs in (e.get("centers", {}) or {}).items():
+            for p in provs:
+                base = p.split("/")[0]
+                owners[base] = power
+                sc_set.add(base)
+        owner_snaps.append((rp, owners))
+        occ: dict[str, str] = {}
+        ent: dict[str, tuple[str, str]] = {}
+        for power, units in (e.get("units", {}) or {}).items():
+            for u in units:
+                toks = u.split()
+                if len(toks) >= 2:
+                    base = toks[1].split("/")[0]
+                    occ[base] = power
+                    ent[base] = (power, u)
+        occ_by_phase[rp] = occ
+        entering_units[e.get("next_phase", "")] = ent
+
+    phase_seq = [p for p, _ in owner_snaps]
+    powers_all = sorted({pw for _, ow in owner_snaps for pw in ow.values()})
+
+    agg_delta: dict[str, dict[str, int]] = {}
+    for i in range(1, len(owner_snaps)):
+        prev_ph, prev_ow = owner_snaps[i - 1]
+        cur_ph, cur_ow = owner_snaps[i]
+        prev_occ = occ_by_phase.get(prev_ph, {})
+        d: dict[str, int] = {}
+        for sc in set(prev_ow) | set(cur_ow):
+            a, b = prev_ow.get(sc), cur_ow.get(sc)
+            if a == b:
+                continue
+            if b is not None:
+                d[b] = d.get(b, 0) + (2 if prev_occ.get(sc) is not None else 1)
+            if a is not None:
+                d[a] = d.get(a, 0) + (-1 if prev_occ.get(sc) == a else -2)
+        if d:
+            agg_delta[cur_ph] = d
+
+    moves_by_phase: dict[str, dict[str, list[str]]] = {}  # phase -> dest_base -> [mover]
+    supp_by_phase: dict[str, dict[str, int]] = {}         # phase -> dest_base -> support count
+    for e in events:
+        if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
+            continue
+        ph = e.get("phase", "")
+        mover = e.get("power", "")
+        mv = moves_by_phase.setdefault(ph, {})
+        sp = supp_by_phase.setdefault(ph, {})
+        for o in e.get("valid", []):
+            if " S " in o:
+                sup = o.split(" S ", 1)[1].strip()
+                if " - " in sup:
+                    dest = sup.split(" - ", 1)[1].split()[0].split("/")[0]
+                    sp[dest] = sp.get(dest, 0) + 1
+            elif " - " in o and " C " not in o:
+                dest = o.split(" - ", 1)[1].split()[0].split("/")[0]
+                mv.setdefault(dest, []).append(mover)
+
+    def_delta: dict[str, dict[str, int]] = {}
+    for ph, mv in moves_by_phase.items():
+        pre = entering_units.get(ph, {})
+        res = results_by_phase.get(ph, {})
+        sp = supp_by_phase.get(ph, {})
+        d = {}
+        for base, (owner, unit) in pre.items():
+            if not any(pw != owner for pw in mv.get(base, [])):
+                continue
+            if any("dislodged" in t for t in res.get(unit, [])):
+                d[owner] = d.get(owner, 0) + (-2 if base in sc_set else -1)
+            else:
+                d[owner] = d.get(owner, 0) + (2 if sp.get(base, 0) > 0 else 1)
+        if d:
+            def_delta[ph] = d
+
+    def _cumulative(delta: dict[str, dict[str, int]]) -> dict[str, dict[str, int]]:
+        cum: dict[str, dict[str, int]] = {}
+        run = {p: 0 for p in powers_all}
+        for ph in phase_seq:
+            for p, dv in delta.get(ph, {}).items():
+                run[p] = run.get(p, 0) + dv
+            cum[ph] = dict(run)
+        return cum
+
+    aggression_by_phase = _cumulative(agg_delta)
+    defense_by_phase = _cumulative(def_delta)
 
     # Build the ordered slide list. Slide 0 is the opening board; slide k>=1
     # is phases[k-1]. The negotiation before movement phase P is shown on the
@@ -1742,7 +1923,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     phase_order = [ph["short"] for ph in phases]
     if phase_order:
         full_chart = _kpi_charts_for_phase(
-            phase_order, centers_by_phase, phase_order[-1], adjustments_by_phase
+            phase_order, centers_by_phase, phase_order[-1],
+            adjustments_by_phase, aggression_by_phase, defense_by_phase,
         )
         if full_chart:
             index_body.append("<h2>Supply center trajectory</h2>")
