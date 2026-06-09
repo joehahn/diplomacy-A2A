@@ -803,6 +803,7 @@ thinking off.
 | Support bounced % | 14.8 | 15.8 | 0.0 | 29.4 | 27.9 | 26.0 |
 | Support uncoord % | 7.4 | 7.9 | 3.6 | 8.8 | 4.9 | 8.2 |
 | Convoy % | 2.6 | 0.5 | 1.6 | 1.6 | 0.3 | 2.0 |
+| Self-bounces | 4 | 0 | 11 | 22 | 1 | 16 |
 | **Negotiation** | | | | | | |
 | Messages | 1359 | 1501 | 981 | 1378 | 1034 | 1309 |
 | Bargaining % | 48.5 | 42.1 | 31.7 | 18.0 | 55.2 | 25.7 |
@@ -843,6 +844,15 @@ thinking off.
   its supports were never contested. Uncoordinated, the self-coordination
   blunder, is a sparse 4-9% on tiny per-game counts, so n=1 noise here, useful
   only as a floor detector across many seeds.
+- **Self-bounces (spatial coherence):** a legal move that bounces into a square
+  your own side occupies, a self-standoff, so it never shows as illegal. It is
+  orthogonal to the other competence metrics and exposes a different failure:
+  Gemini (22) and Opus (16) self-bounce the most despite the cleanest illegal
+  rates and the strongest coordination, so they follow the rules and coordinate
+  but lose track of where their own units are; Sonnet (1) and MiMo (0) have the
+  best spatial self-coherence. A frontier model self-bouncing 16 times (e.g.
+  Turkey ordering `A SMY - ANK` into its own held `F ANK` in S1901M) is the kind
+  of basic blunder a novice human avoids.
 - **Board (color):** MiMo plays the most contested board of the cheap tier (Land
   turnover 24, vs DeepSeek 12 and Haiku 7, near Sonnet's 27); Haiku is the most
   static (turnover 7). Higher N_eff tends to track a quieter board.
@@ -1037,6 +1047,16 @@ slideshow:
   low defense (a "glass cannon"), Russia 5th with the highest defense (a
   "turtle"). All three are n=1 per game and, in self-play, reflect the seat's
   situation under one model, not cross-model skill.
+- **Self-bounces** (index Outcomes, sub-row of Bounces; comparison table):
+  count of move orders that bounced into a province the moving power occupies
+  after resolution, i.e. a unit ordered into its own held square, or two of a
+  power's units ordered into the same square so one bounces. Detected as a move
+  whose unit is marked `bounce` in `results` and whose destination base is held
+  by that same power in the post-resolution `units`. A legal order, so it never
+  appears in `illegal %`; it isolates the self-inflicted slice of the raw bounce
+  count and measures spatial self-coherence. Orthogonal to rule-following and
+  coordination: cleanest-on-illegal models (Gemini, Opus) can still self-bounce
+  the most.
 
 Behavioral metrics (planned, axis B–D dependent):
 - **Promise→action fidelity**: parse stated intentions in negotiation

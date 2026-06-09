@@ -569,6 +569,36 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
                     else:
                         support_holds += 1
 
+        # Pass 2e: self-bounces. A move that bounced into a province the same
+        # power occupies after resolution (moving into your own unit, or two of
+        # your units competing for one square). A legal but wasted self-standoff
+        # that measures spatial self-coherence rather than rule-following.
+        self_bounces = 0
+        sb_post: dict[str, dict[str, str]] = {}
+        sb_res: dict[str, dict] = {}
+        for e in events:
+            if e.get("type") == "phase_resolved":
+                rp = e.get("resolved_phase", "")
+                sb_res[rp] = e.get("results", {}) or {}
+                sb_occ: dict[str, str] = {}
+                for pw, units in (e.get("units", {}) or {}).items():
+                    for u in units:
+                        t = u.split()
+                        if len(t) >= 2:
+                            sb_occ[t[1].split("/")[0]] = pw
+                sb_post[rp] = sb_occ
+        for e in events:
+            if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
+                ph, power = e.get("phase", ""), e.get("power", "")
+                res, occ = sb_res.get(ph, {}), sb_post.get(ph, {})
+                for o in e.get("valid", []):
+                    if " - " not in o or " S " in o or " C " in o:
+                        continue
+                    unit = o.split(" - ", 1)[0].strip()
+                    dest = o.split(" - ", 1)[1].split()[0].split("/")[0]
+                    if any("bounce" in t for t in res.get(unit, [])) and occ.get(dest) == power:
+                        self_bounces += 1
+
         # Pass 3: negotiation density. Total messages exchanged across the
         # game, plus the share that contain conditional-bargaining language
         # (conditional offers) and the share that contain alliance / coalition
@@ -669,6 +699,7 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
                 outcomes_rows.append(("Betrayals", f"{betrayal_pct:.1f}%", True))
         if bounces or dislodgements or land_turnover:
             outcomes_rows.append(("Bounces", str(bounces)))
+            outcomes_rows.append(("self-bounces", str(self_bounces), True))
             if land_turnover > 0 and land:
                 outcomes_rows.append(("Land turnover", str(land_turnover)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))

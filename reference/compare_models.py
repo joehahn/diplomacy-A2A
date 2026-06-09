@@ -178,6 +178,42 @@ def support_breakdown(events: list[dict]) -> tuple[int, int, int, int]:
     return move_s, hold_s, eff, uncoord
 
 
+def self_bounces(events: list[dict]) -> int:
+    """Count self-inflicted standoffs: a power's move that bounced into a
+    province its own side occupies after the phase resolves (moving into your
+    own unit, or two of your units competing for one square). A legal order, so
+    it never shows as illegal; it measures spatial self-coherence, the kind of
+    blunder a careful player avoids.
+    """
+    post_occ: dict[str, dict[str, str]] = {}
+    results: dict[str, dict] = {}
+    for e in events:
+        if e.get("type") == "phase_resolved":
+            rp = e.get("resolved_phase", "")
+            results[rp] = e.get("results", {}) or {}
+            occ: dict[str, str] = {}
+            for pw, units in (e.get("units", {}) or {}).items():
+                for u in units:
+                    t = u.split()
+                    if len(t) >= 2:
+                        occ[t[1].split("/")[0]] = pw
+            post_occ[rp] = occ
+    n = 0
+    for e in events:
+        if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
+            continue
+        ph, power = e.get("phase", ""), e.get("power", "")
+        res, occ = results.get(ph, {}), post_occ.get(ph, {})
+        for o in e.get("valid", []):
+            if " - " not in o or " S " in o or " C " in o:
+                continue
+            unit = o.split(" - ", 1)[0].strip()
+            dest = o.split(" - ", 1)[1].split()[0].split("/")[0]
+            if any("bounce" in t for t in res.get(unit, [])) and occ.get(dest) == power:
+                n += 1
+    return n
+
+
 def n_eff(centers: dict[str, list[str]]) -> float:
     """Effective number of powers: (sum SC)^2 / sum(SC^2), in [1, 7].
 
@@ -314,6 +350,7 @@ def metrics(events: list[dict]) -> dict:
         "supp_bounced": pct(supp_move - supp_eff - supp_uncoord, supp_move),
         "supp_uncoord": pct(supp_uncoord, supp_move),
         "convoys": pct(convoys, total),
+        "self_bounces": self_bounces(events),
         "msgs": msgs,
         "cond": pct(cond, msgs),
         "alliance": pct(alliance, msgs),
@@ -344,6 +381,7 @@ ROWS = [
     ("Support bounced %", "supp_bounced", "{:.1f}"),
     ("Support uncoord %", "supp_uncoord", "{:.1f}"),
     ("Convoy %", "convoys", "{:.1f}"),
+    ("Self-bounces", "self_bounces", "{}"),
     ("Negotiation", None, None),
     ("Messages", "msgs", "{}"),
     ("Bargaining %", "cond", "{:.1f}"),

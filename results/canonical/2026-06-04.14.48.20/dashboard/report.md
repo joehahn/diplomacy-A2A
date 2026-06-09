@@ -18,6 +18,7 @@
   - Alliances: 18.8%
   - Betrayals: 4.5%
 - **Bounces**: 88
+  - self-bounces: 1
 - **Land turnover**: 27
 - **Dislodgements**: 17
 - **Builds**: 26
