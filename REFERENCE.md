@@ -777,30 +777,29 @@ the Haiku and DeepSeek sides are research runs kept in gitignored `scratch/` and
 likely to be deleted once the cheap-model question is settled, so the table
 below is the preserved result.
 
-| Metric | claude-sonnet-4-6 | claude-haiku-4-5 | deepseek/deepseek-v4-flash |
-|--------|-------------------|------------------|----------------------------|
+| Metric | deepseek/deepseek-v4-flash | claude-haiku-4-5 | claude-sonnet-4-6 |
+|--------|----------------------------|------------------|-------------------|
 | **Cost & runtime** | | | |
-| Cost (USD) | $25.62 | $8.05 | $1.17 |
-| Wall-clock (min) | 34.0 | 21.8 | 54.5 |
-| Phases played | 41 | 32 | 36 |
+| Cost (USD) | $1.17 | $8.05 | $25.62 |
+| Wall-clock (min) | 54.5 | 21.8 | 34.0 |
+| Phases played | 36 | 32 | 41 |
 | **Board** | | | |
-| N_eff (final) | 5.61 | 6.45 | 6.02 |
-| Max SC (final) | 8 | 6 | 9 |
-| Survivors | 7 | 7 | 7 |
-| Land turnover | 27 | 7 | 12 |
+| N_eff (final) | 6.02 | 6.45 | 5.61 |
+| Max SC (final) | 9 | 6 | 8 |
+| Land turnover | 12 | 7 | 27 |
 | **Competence** | | | |
-| Total orders | 640 | 563 | 626 |
-| Illegal % | 3.1 | 11.0 | 7.0 |
-| Adjacency % | 3.1 | 10.8 | 6.4 |
-| Dropped turns % | 0.2 | 4.4 | 0.7 |
-| Hold % | 49.4 | 48.1 | 59.4 |
-| Support % | 14.5 | 6.9 | 7.5 |
-| Convoy % | 0.3 | 1.6 | 2.6 |
+| Total orders | 626 | 563 | 640 |
+| Illegal % | 7.0 | 11.0 | 3.1 |
+| Adjacency % | 6.4 | 10.8 | 3.1 |
+| Dropped turns % | 0.7 | 4.4 | 0.2 |
+| Hold % | 59.4 | 48.1 | 49.4 |
+| Support % | 7.5 | 6.9 | 14.5 |
+| Convoy % | 2.6 | 1.6 | 0.3 |
 | **Negotiation** | | | |
-| Messages | 1034 | 981 | 1359 |
-| Bargaining % | 55.2 | 31.7 | 48.5 |
-| Alliances % | 18.8 | 16.2 | 26.3 |
-| Betrayals | 47 | 5 | 37 |
+| Messages | 1359 | 981 | 1034 |
+| Bargaining % | 48.5 | 31.7 | 55.2 |
+| Alliances % | 26.3 | 16.2 | 18.8 |
+| Betrayals | 37 | 5 | 47 |
 
 **Reading.**
 

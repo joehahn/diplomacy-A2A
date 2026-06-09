@@ -10,8 +10,8 @@ a handful of 10-year games.
 Each argument is a run directory containing ``transcript.jsonl`` (or the file
 itself). Metrics fall in three blocks:
 
-  Board        N_eff, max SC, survivors, centers held. One reading per game,
-               so treat as color at small sample sizes.
+  Board        N_eff, max SC, Land turnover. One reading per game, so treat
+               as color at small sample sizes.
   Competence   per-order rates aggregated over hundreds of orders inside each
                game; these separate models even at one game apiece.
   Negotiation  message-derived signals; the project's actual deliverable, but
@@ -185,7 +185,6 @@ def metrics(events: list[dict]) -> dict:
     neff_final = n_eff(final_centers) if final_centers else 0.0
     sc_counts = {p: len(v) for p, v in final_centers.items()}
     max_sc = max(sc_counts.values(), default=0)
-    survivors = sum(1 for c in sc_counts.values() if c > 0)
     turnover = land_turnover(events)
 
     # --- negotiation signals over all messages ---
@@ -237,7 +236,6 @@ def metrics(events: list[dict]) -> dict:
         "elapsed_min": (run_ended.get("elapsed_seconds", 0) or 0) / 60,
         "neff_final": neff_final,
         "max_sc": max_sc,
-        "survivors": survivors,
         "turnover": turnover,
         "orders": total,
         "illegal": pct(illegal, total),
@@ -262,7 +260,6 @@ ROWS = [
     ("Board", None, None),
     ("N_eff (final)", "neff_final", "{:.2f}"),
     ("Max SC (final)", "max_sc", "{}"),
-    ("Survivors", "survivors", "{}"),
     ("Land turnover", "turnover", "{}"),
     ("Competence", None, None),
     ("Total orders", "orders", "{}"),
@@ -307,6 +304,7 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 1
     rows = [metrics(load_events(a)) for a in argv]
+    rows.sort(key=lambda r: r["cost"])  # columns ordered cheapest to priciest
     print(render(rows))
     print()
     print("N_eff and dropped-turns are reference-only; all other metrics mirror")
