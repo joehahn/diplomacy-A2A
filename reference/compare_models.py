@@ -29,6 +29,11 @@ import re
 import sys
 from pathlib import Path
 
+# Allow running as a script from anywhere: put the repo root on the path so the
+# project package imports regardless of the current directory.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from diplomacy_a2a.runner import _estimate_cost  # noqa: E402
+
 # Order/message regexes lifted verbatim from the dashboard so the numbers match.
 COND_RE = re.compile(r"\b(if you|if I|in exchange|in return|provided that)\b", re.I)
 ALLIANCE_RE = re.compile(
@@ -230,7 +235,8 @@ def metrics(events: list[dict]) -> dict:
     return {
         "model": run_started.get("model", "?"),
         "phases": run_ended.get("phases_played", "?"),
-        "cost": run_ended.get("cost_usd", 0.0),
+        "cost": _estimate_cost(run_ended.get("tokens_by_model", {}) or {}),
+        "elapsed_min": (run_ended.get("elapsed_seconds", 0) or 0) / 60,
         "neff_final": neff_final,
         "neff_min": neff_min,
         "max_sc": max_sc,
@@ -253,6 +259,10 @@ def metrics(events: list[dict]) -> dict:
 
 # (label, key, formatter). None label starts a new section header.
 ROWS = [
+    ("Cost & runtime", None, None),
+    ("Cost (USD)", "cost", "${:.2f}"),
+    ("Wall-clock (min)", "elapsed_min", "{:.1f}"),
+    ("Phases played", "phases", "{}"),
     ("Board", None, None),
     ("N_eff (final)", "neff_final", "{:.2f}"),
     ("N_eff (min over game)", "neff_min", "{:.2f}"),
