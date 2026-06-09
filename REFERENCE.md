@@ -813,8 +813,11 @@ thinking off.
 
 - **Cost and speed:** six tiers, DeepSeek $1.17, MiMo $1.66, Haiku $8.05, Gemini
   $17.35, Sonnet $25.62, and Opus the frontier outlier at $184.16, about 7x
-  Sonnet (well above the ~5x its per-token rates suggest, because Opus emits more
-  output at $75/M and its growing dialogue/strategy context is less cacheable).
+  Sonnet (above the ~5x its per-token rates suggest: ~79% of the bill is fresh
+  input at $15/M. Opus's chattier negotiation (1309 vs 1034 messages) and ~2x
+  longer strategy notes accumulate into a larger running context that is re-sent
+  on every later call, inflating input across the game; output is only ~6% above
+  Sonnet's, not the driver).
   Gemini is the fastest (9.0 min, reasoning minimized); DeepSeek the slowest
   (54.5 min: no gateway prompt caching, higher per-call latency, retries).
 - **Competence (trustworthy):** Gemini is the cleanest budget-or-mid player
