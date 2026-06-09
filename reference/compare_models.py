@@ -186,7 +186,6 @@ def metrics(events: list[dict]) -> dict:
     sc_counts = {p: len(v) for p, v in final_centers.items()}
     max_sc = max(sc_counts.values(), default=0)
     survivors = sum(1 for c in sc_counts.values() if c > 0)
-    held = sum(sc_counts.values())
     turnover = land_turnover(events)
 
     # --- negotiation signals over all messages ---
@@ -239,7 +238,6 @@ def metrics(events: list[dict]) -> dict:
         "neff_final": neff_final,
         "max_sc": max_sc,
         "survivors": survivors,
-        "held": held,
         "turnover": turnover,
         "orders": total,
         "illegal": pct(illegal, total),
@@ -265,7 +263,6 @@ ROWS = [
     ("N_eff (final)", "neff_final", "{:.2f}"),
     ("Max SC (final)", "max_sc", "{}"),
     ("Survivors", "survivors", "{}"),
-    ("Centers held /34", "held", "{}"),
     ("Land turnover", "turnover", "{}"),
     ("Competence", None, None),
     ("Total orders", "orders", "{}"),

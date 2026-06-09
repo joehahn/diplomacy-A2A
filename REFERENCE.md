@@ -787,7 +787,6 @@ question is settled, so the table below is the preserved result.
 | N_eff (final) | 5.61 | 6.02 |
 | Max SC (final) | 8 | 9 |
 | Survivors | 7 | 7 |
-| Centers held /34 | 34 | 34 |
 | Land turnover | 27 | 12 |
 | **Competence** | | |
 | Total orders | 640 | 626 |
