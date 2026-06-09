@@ -26,6 +26,7 @@
 - **Support rate**: 14.5%
   - support-move: 9.5%
   - successful support-move: 67.2%
+  - bounced support-move: 27.9%
   - uncoordinated support-move: 4.9%
   - support-hold: 5.0%
 - **Convoy orders**: 0.3%

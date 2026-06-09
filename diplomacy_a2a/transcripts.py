@@ -682,9 +682,17 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
             outcomes_rows.append(("Support rate", _pct(total_supports)))
             outcomes_rows.append(("support-move", _pct(support_moves), True))
             if support_moves:
+                # Three mutually-exclusive outcomes of a move-support, summing
+                # to 100% of move-supports: it landed, it was opposed (bounced
+                # or cut), or it backed a move that was never ordered.
+                support_bounced = support_moves - support_eff - support_uncoord
                 outcomes_rows.append(
                     ("successful support-move",
                      f"{100 * support_eff / support_moves:.1f}%", True)
+                )
+                outcomes_rows.append(
+                    ("bounced support-move",
+                     f"{100 * support_bounced / support_moves:.1f}%", True)
                 )
                 outcomes_rows.append(
                     ("uncoordinated support-move",

@@ -797,6 +797,7 @@ reasoning models run with reasoning minimized (`effort: minimal`).
 | Support move % | 4.3 | 6.0 | 5.0 | 5.3 | 9.5 |
 | Support hold % | 3.2 | 7.6 | 2.0 | 14.8 | 5.0 |
 | Support eff % | 77.8 | 76.3 | 96.4 | 61.8 | 67.2 |
+| Support bounced % | 14.8 | 15.8 | 0.0 | 29.4 | 27.9 |
 | Support uncoord % | 7.4 | 7.9 | 3.6 | 8.8 | 4.9 |
 | Convoy % | 2.6 | 0.5 | 1.6 | 1.6 | 0.3 |
 | **Negotiation** | | | | | |
@@ -820,12 +821,13 @@ reasoning models run with reasoning minimized (`effort: minimal`).
   move-supports (backing an attack) and hold-supports (backing a unit in place).
   Sonnet's coordination is the most offensive (move 9.5%); Gemini's high Support
   is mostly defensive (hold 14.8% vs move 5.3%), so it builds walls more than it
-  backs attacks. Effective move-support (did the backed attack succeed) runs
-  62-78% across the field; Haiku's 96% is inflated by an inert board where its
-  few supported moves were uncontested. Support uncoord % (a self-coordination
-  blunder: backing a move your own side never ordered) is a sparse signal,
-  4-9% on tiny per-game counts, so it is n=1 noise here and would only matter
-  as a floor detector across many seeds.
+  backs attacks. Each move-support has one of three outcomes that partition it
+  and sum to 100%: eff/successful (the attack landed), bounced (ordered but
+  opposed or cut), or uncoordinated (backing a move that was never ordered).
+  Successful runs 62-78%; Haiku's 96% with 0% bounced confirms its inert board,
+  its supports were never contested. Uncoordinated, the self-coordination
+  blunder, is a sparse 4-9% on tiny per-game counts, so n=1 noise here, useful
+  only as a floor detector across many seeds.
 - **Board (color):** MiMo plays the most contested board of the cheap tier (Land
   turnover 24, vs DeepSeek 12 and Haiku 7, near Sonnet's 27); Haiku is the most
   static (turnover 7). Higher N_eff tends to track a quieter board.
