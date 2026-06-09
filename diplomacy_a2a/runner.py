@@ -59,6 +59,8 @@ _RATE_TABLE = {
     "deepseek/deepseek-v4-flash": {"input": 0.0983, "output": 0.1966, "cache_create": 0.0983, "cache_read": 0.0098},
     "google/gemini-3.5-flash":    {"input": 1.50, "output": 9.0, "cache_create": 1.50, "cache_read": 0.15},
     "moonshotai/kimi-k2.6":       {"input": 0.68, "output": 3.42, "cache_create": 0.68, "cache_read": 0.068},
+    "qwen/qwen3.5-flash-02-23":   {"input": 0.065, "output": 0.260, "cache_create": 0.065, "cache_read": 0.0065},
+    "xiaomi/mimo-v2.5":           {"input": 0.140, "output": 0.280, "cache_create": 0.140, "cache_read": 0.014},
 }
 
 
