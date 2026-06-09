@@ -516,12 +516,14 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
 
         # Pass 2d: support breakdown. Split support orders into move-supports
         # (offensive: backing an attack, "X S Y - Z") and hold-supports
-        # (defensive: backing a unit in place, "X S Y"), and count the
-        # move-supports whose supported move succeeded: the supported unit is
-        # not bounced/voided/dislodged and lands at its destination in the
-        # post-resolution board.
-        support_moves = support_holds = support_eff = 0
+        # (defensive: backing a unit in place, "X S Y"). Among move-supports,
+        # count those whose supported move succeeded (the supported unit is not
+        # bounced/voided/dislodged and lands at its destination) and those that
+        # are uncoordinated (the supported move "Y - Z" was never ordered: a
+        # self-coordination blunder, backing a move your own side never made).
+        support_moves = support_holds = support_eff = support_uncoord = 0
         _resolved: dict[str, tuple[dict, set]] = {}
+        _move_targets: dict[str, set] = {}
         for e in events:
             if e.get("type") == "phase_resolved":
                 res = e.get("results", {}) or {}
@@ -532,9 +534,18 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
                         if len(toks) >= 2:
                             locs.add((toks[0], toks[1].split("/")[0]))
                 _resolved[e.get("resolved_phase", "")] = (res, locs)
+            elif e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
+                tgt = _move_targets.setdefault(e.get("phase", ""), set())
+                for o in e.get("valid", []):
+                    if " - " in o and " S " not in o and " C " not in o:
+                        left, right = o.split(" - ", 1)
+                        lt, rt = left.split(), right.split()
+                        if len(lt) >= 2 and rt:
+                            tgt.add((lt[0], lt[1].split("/")[0], rt[0].split("/")[0]))
         for e in events:
             if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
                 res, locs = _resolved.get(e.get("phase", ""), ({}, set()))
+                tgt = _move_targets.get(e.get("phase", ""), set())
                 for o in e.get("valid", []):
                     parts = o.split(" S ")
                     if len(parts) != 2:
@@ -543,6 +554,10 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
                     if " - " in supported:
                         support_moves += 1
                         unit, dest = (s.strip() for s in supported.split(" - ", 1))
+                        ut = unit.split()
+                        if len(ut) >= 2 and (
+                            ut[0], ut[1].split("/")[0], dest.split("/")[0]) not in tgt:
+                            support_uncoord += 1
                         failed = any(
                             tok in ("bounce", "void", "dislodged")
                             for tok in res.get(unit, ["void"])
@@ -670,6 +685,10 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
                 outcomes_rows.append(
                     ("successful support-move",
                      f"{100 * support_eff / support_moves:.1f}%", True)
+                )
+                outcomes_rows.append(
+                    ("uncoordinated support-move",
+                     f"{100 * support_uncoord / support_moves:.1f}%", True)
                 )
             outcomes_rows.append(("support-hold", _pct(support_holds), True))
             outcomes_rows.append(("Convoy orders", _pct(total_convoys)))

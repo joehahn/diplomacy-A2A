@@ -114,16 +114,19 @@ def land_turnover(events: list[dict]) -> int:
     return total
 
 
-def support_breakdown(events: list[dict]) -> tuple[int, int, int]:
-    """(move-supports, hold-supports, effective move-supports) over movement phases.
+def support_breakdown(events: list[dict]) -> tuple[int, int, int, int]:
+    """(move-supports, hold-supports, effective, uncoordinated) over movement phases.
 
     A support order ("X S Y - Z") is a move-support (offensive: backing an
     attack); "X S Y" is a hold-support (defensive: backing a unit in place). A
     move-support is effective when its supported move succeeds: the supported
     unit is not bounced/voided/dislodged and lands at its destination in the
-    post-resolution board.
+    post-resolution board. It is uncoordinated when the supported move was never
+    actually ordered (the unit Y was not ordered "Y - Z"): a self-coordination
+    blunder, backing a move your own side never made.
     """
     resolved: dict[str, tuple[dict, set]] = {}
+    move_targets: dict[str, set] = {}
     for e in events:
         if e.get("type") == "phase_resolved":
             res = e.get("results", {}) or {}
@@ -134,11 +137,20 @@ def support_breakdown(events: list[dict]) -> tuple[int, int, int]:
                     if len(t) >= 2:
                         locs.add((t[0], t[1].split("/")[0]))
             resolved[e.get("resolved_phase", "")] = (res, locs)
-    move_s = hold_s = eff = 0
+        elif e.get("type") == "orders_submitted" and e.get("phase", "").endswith("M"):
+            tgt = move_targets.setdefault(e.get("phase", ""), set())
+            for o in e.get("valid", []):
+                if " - " in o and " S " not in o and " C " not in o:
+                    left, right = o.split(" - ", 1)
+                    lt, rt = left.split(), right.split()
+                    if len(lt) >= 2 and rt:
+                        tgt.add((lt[0], lt[1].split("/")[0], rt[0].split("/")[0]))
+    move_s = hold_s = eff = uncoord = 0
     for e in events:
         if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
             continue
         res, locs = resolved.get(e.get("phase", ""), ({}, set()))
+        tgt = move_targets.get(e.get("phase", ""), set())
         for o in e.get("valid", []):
             parts = o.split(" S ")
             if len(parts) != 2:
@@ -147,6 +159,10 @@ def support_breakdown(events: list[dict]) -> tuple[int, int, int]:
             if " - " in supported:
                 move_s += 1
                 unit, dest = (s.strip() for s in supported.split(" - ", 1))
+                ut = unit.split()
+                if len(ut) >= 2 and (
+                    ut[0], ut[1].split("/")[0], dest.split("/")[0]) not in tgt:
+                    uncoord += 1
                 failed = any(
                     tok in ("bounce", "void", "dislodged")
                     for tok in res.get(unit, ["void"])
@@ -159,7 +175,7 @@ def support_breakdown(events: list[dict]) -> tuple[int, int, int]:
                     eff += 1
             else:
                 hold_s += 1
-    return move_s, hold_s, eff
+    return move_s, hold_s, eff, uncoord
 
 
 def n_eff(centers: dict[str, list[str]]) -> float:
@@ -277,7 +293,7 @@ def metrics(events: list[dict]) -> dict:
     def pct(n: int, d: int) -> float:
         return 100 * n / d if d else 0.0
 
-    supp_move, supp_hold, supp_eff = support_breakdown(events)
+    supp_move, supp_hold, supp_eff, supp_uncoord = support_breakdown(events)
     return {
         "model": run_started.get("model", "?"),
         "phases": run_ended.get("phases_played", "?"),
@@ -295,6 +311,7 @@ def metrics(events: list[dict]) -> dict:
         "supp_move": pct(supp_move, total),
         "supp_hold": pct(supp_hold, total),
         "supp_eff": pct(supp_eff, supp_move),
+        "supp_uncoord": pct(supp_uncoord, supp_move),
         "convoys": pct(convoys, total),
         "msgs": msgs,
         "cond": pct(cond, msgs),
@@ -323,6 +340,7 @@ ROWS = [
     ("Support move %", "supp_move", "{:.1f}"),
     ("Support hold %", "supp_hold", "{:.1f}"),
     ("Support eff %", "supp_eff", "{:.1f}"),
+    ("Support uncoord %", "supp_uncoord", "{:.1f}"),
     ("Convoy %", "convoys", "{:.1f}"),
     ("Negotiation", None, None),
     ("Messages", "msgs", "{}"),
