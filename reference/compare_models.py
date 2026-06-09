@@ -56,6 +56,31 @@ def load_events(arg: str) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
+def land_turnover(snapshots: list[dict[str, list[str]]]) -> int:
+    """Total supply-center ownership changes across the game.
+
+    For each consecutive pair of center snapshots, count the centers whose
+    owner changed (a neutral center counts as its own owner state, so both
+    captures of neutrals and transfers between powers are counted). A high
+    total means a churning, contested board; a low total means a static one.
+    This is the activity signal that disambiguates a balanced-and-dynamic
+    game from a balanced-but-inert one, so it pairs with N_eff.
+    """
+    total = 0
+    prev: dict[str, str] | None = None
+    for snap in snapshots:
+        owner: dict[str, str] = {}
+        for power, provs in snap.items():
+            for prov in provs:
+                owner[prov] = power
+        if prev is not None:
+            for prov in set(prev) | set(owner):
+                if prev.get(prov) != owner.get(prov):
+                    total += 1
+        prev = owner
+    return total
+
+
 def n_eff(centers: dict[str, list[str]]) -> float:
     """Effective number of powers: (sum SC)^2 / sum(SC^2), in [1, 7].
 
@@ -130,6 +155,7 @@ def metrics(events: list[dict]) -> dict:
     max_sc = max(sc_counts.values(), default=0)
     survivors = sum(1 for c in sc_counts.values() if c > 0)
     held = sum(sc_counts.values())
+    turnover = land_turnover(centers_snaps)
 
     # --- negotiation signals over all messages ---
     msgs = cond = alliance = 0
@@ -182,6 +208,7 @@ def metrics(events: list[dict]) -> dict:
         "max_sc": max_sc,
         "survivors": survivors,
         "held": held,
+        "turnover": turnover,
         "orders": total,
         "illegal": pct(illegal, total),
         "adjacency": pct(adjacency, total),
@@ -204,6 +231,7 @@ ROWS = [
     ("Max SC (final)", "max_sc", "{}"),
     ("Survivors", "survivors", "{}"),
     ("Centers held /34", "held", "{}"),
+    ("Land turnover (SC changes)", "turnover", "{}"),
     ("Competence", None, None),
     ("Total orders", "orders", "{}"),
     ("Illegal %", "illegal", "{:.1f}"),
