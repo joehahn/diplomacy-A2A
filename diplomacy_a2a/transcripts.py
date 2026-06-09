@@ -1171,14 +1171,106 @@ def _kpi_legend(powers: list[str]) -> str:
     return "<div class='kpi-legend'>" + "".join(rows) + "</div>"
 
 
+def _adjustments_chart(
+    phases: list[str],
+    adj_by_phase: dict[str, dict[str, int]],
+    powers: list[str],
+    *,
+    width: int = 966,
+    height: int = 168,
+) -> str:
+    """Diverging bar chart of per-year adjustments: builds above the zero line,
+    disbands below, one bar per power colored from POWER_COLORS. Shares the SC
+    trajectory's x-axis (same `phases` and width) so it aligns directly beneath
+    it; bars appear only at the adjustment (Winter) phases. `adj_by_phase` maps
+    an adjustment-phase short to {power: net}, net>0 builds, net<0 disbands.
+    """
+    n = len(phases)
+    if n < 2 or not adj_by_phase:
+        return ""
+    pad_l, pad_r, pad_t, pad_b = 46, 12, 20, 56
+    plot_w = width - pad_l - pad_r
+    plot_h = height - pad_t - pad_b
+    xs = [pad_l + i * plot_w / (n - 1) for i in range(n)]
+    zero_y = pad_t + plot_h / 2
+    vmax = max(1, max(abs(v) for d in adj_by_phase.values() for v in d.values()))
+
+    def y_for(v: float) -> float:
+        return zero_y - (v / vmax) * (plot_h / 2)
+
+    sorted_powers = sorted(powers)
+    n_pow = len(sorted_powers)
+    pidx = {p: i for i, p in enumerate(sorted_powers)}
+    bar_w = 2.6
+
+    parts: list[str] = [
+        f"<svg viewBox='0 0 {width} {height}' class='kpi-svg' "
+        f"xmlns='http://www.w3.org/2000/svg'>",
+        f"<text x='{width/2:.0f}' y='14' text-anchor='middle' class='kpi-title'>"
+        f"Adjustments (builds up, disbands down)</text>",
+        f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{height-pad_b}' class='kpi-axis'/>",
+        f"<line x1='{pad_l}' y1='{zero_y:.1f}' x2='{width-pad_r}' y2='{zero_y:.1f}' class='kpi-axis'/>",
+    ]
+    for v in (vmax, 0, -vmax):
+        y = y_for(v)
+        parts.append(
+            f"<line x1='{pad_l-3}' y1='{y:.1f}' x2='{pad_l}' y2='{y:.1f}' class='kpi-axis'/>"
+        )
+        lbl = f"+{int(v)}" if v > 0 else str(int(v))
+        parts.append(
+            f"<text x='{pad_l-5}' y='{y+3:.1f}' text-anchor='end' class='kpi-tick'>{lbl}</text>"
+        )
+    # x ticks/labels only at adjustment phases (where bars live)
+    for i, ph in enumerate(phases):
+        if ph not in adj_by_phase:
+            continue
+        x, ty = xs[i], height - pad_b + 5
+        parts.append(
+            f"<line x1='{x:.1f}' y1='{height-pad_b}' x2='{x:.1f}' y2='{height-pad_b+2}' class='kpi-axis'/>"
+        )
+        parts.append(
+            f"<text x='{x:.1f}' y='{ty:.1f}' text-anchor='end' class='kpi-tick' "
+            f"transform='rotate(-90 {x:.1f},{ty:.1f})'>{ph}</text>"
+        )
+    # Bars grouped per power around each adjustment-phase tick.
+    for i, ph in enumerate(phases):
+        d = adj_by_phase.get(ph)
+        if not d:
+            continue
+        for p, net in d.items():
+            if not net:
+                continue
+            color = POWER_COLORS.get(p, "#777")
+            bx = xs[i] + (pidx.get(p, 0) - (n_pow - 1) / 2) * bar_w
+            y1 = y_for(net)
+            top = min(zero_y, y1)
+            h = max(1.0, abs(y1 - zero_y))
+            tip = f"{p.title()}: {'+' if net > 0 else ''}{net}"
+            tip_w = max(60, len(tip) * 6 + 10)
+            tip_dx = -tip_w - 6 if bx + tip_w + 10 > width else 6
+            parts.append(
+                f"<g class='dot-wrap'>"
+                f"<rect x='{bx-bar_w/2:.1f}' y='{top:.1f}' width='{bar_w:.1f}' height='{h:.1f}' "
+                f"fill='{color}'><title>{tip}</title></rect>"
+                f"<g class='dot-tip' transform='translate({bx:.1f},{top:.1f})'>"
+                f"<rect x='{tip_dx}' y='-22' width='{tip_w}' height='18' rx='3' class='dot-tip-bg'/>"
+                f"<text x='{tip_dx + 5}' y='-10' class='dot-tip-text'>{tip}</text></g></g>"
+            )
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
 def _kpi_charts_for_phase(
     phase_order: list[str],
     centers_by_phase: dict[str, dict[str, int]],
     up_to: str,
+    adjustments_by_phase: dict[str, dict[str, int]] | None = None,
 ) -> str:
     """Build the SC-count KPI chart + a shared legend for a movement-phase
-    slide, showing the running history up to and including `up_to`. Returns
-    empty string if there aren't enough points.
+    slide, showing the running history up to and including `up_to`. When
+    `adjustments_by_phase` is given, a per-year builds/disbands bar chart is
+    appended below, sharing the SC chart's x-axis. Returns empty string if
+    there aren't enough points.
     """
     if up_to not in phase_order:
         return ""
@@ -1201,7 +1293,13 @@ def _kpi_charts_for_phase(
         width=966, height=414,
     )
     legend = _kpi_legend(powers)
-    return f"<div class='kpi-row'>{sc_chart}{legend}</div>"
+    adj_html = ""
+    if adjustments_by_phase:
+        adj_for = {
+            ph: adjustments_by_phase[ph] for ph in phases if ph in adjustments_by_phase
+        }
+        adj_html = _adjustments_chart(phases, adj_for, powers)
+    return f"<div class='kpi-row'>{sc_chart}{legend}</div>{adj_html}"
 
 
 # Coloring in the "What happened" narration:
@@ -1388,6 +1486,24 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "valid": e.get("valid", []),
                 "invalid": e.get("invalid", []),
             }
+
+    # Per-adjustment-phase net builds/disbands per power, for the adjustments
+    # bar chart under the SC trajectory. Net > 0 is builds, < 0 disbands (a
+    # power does only one or the other in a given Winter).
+    adjustments_by_phase: dict[str, dict[str, int]] = {}
+    for e in events:
+        if e.get("type") == "orders_submitted" and e.get("phase", "").endswith("A"):
+            net = 0
+            for o in e.get("valid", []):
+                toks = o.split()
+                if toks and toks[-1] == "B":
+                    net += 1
+                elif toks and toks[-1] == "D":
+                    net -= 1
+            if net:
+                adjustments_by_phase.setdefault(e.get("phase", ""), {})[
+                    e.get("power", "")
+                ] = net
 
     # Build the ordered slide list. Slide 0 is the opening board; slide k>=1
     # is phases[k-1]. The negotiation before movement phase P is shown on the
@@ -1620,7 +1736,9 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     # charts; passing the last phase as the cut-off plots the whole arc.
     phase_order = [ph["short"] for ph in phases]
     if phase_order:
-        full_chart = _kpi_charts_for_phase(phase_order, centers_by_phase, phase_order[-1])
+        full_chart = _kpi_charts_for_phase(
+            phase_order, centers_by_phase, phase_order[-1], adjustments_by_phase
+        )
         if full_chart:
             index_body.append("<h2>Supply center trajectory</h2>")
             index_body.append(full_chart)
@@ -1714,7 +1832,9 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         kpi_html: list[str] = []
         short = sl.get("short", "")
         if short.endswith("M"):
-            charts_html = _kpi_charts_for_phase(phase_order, centers_by_phase, short)
+            charts_html = _kpi_charts_for_phase(
+                phase_order, centers_by_phase, short, adjustments_by_phase
+            )
             if charts_html:
                 kpi_html.append(charts_html)
 
