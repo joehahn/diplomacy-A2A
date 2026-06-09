@@ -183,7 +183,6 @@ def metrics(events: list[dict]) -> dict:
     ]
     final_centers = centers_snaps[-1] if centers_snaps else {}
     neff_final = n_eff(final_centers) if final_centers else 0.0
-    neff_min = min((n_eff(c) for c in centers_snaps if c), default=0.0)
     sc_counts = {p: len(v) for p, v in final_centers.items()}
     max_sc = max(sc_counts.values(), default=0)
     survivors = sum(1 for c in sc_counts.values() if c > 0)
@@ -238,7 +237,6 @@ def metrics(events: list[dict]) -> dict:
         "cost": _estimate_cost(run_ended.get("tokens_by_model", {}) or {}),
         "elapsed_min": (run_ended.get("elapsed_seconds", 0) or 0) / 60,
         "neff_final": neff_final,
-        "neff_min": neff_min,
         "max_sc": max_sc,
         "survivors": survivors,
         "held": held,
@@ -265,7 +263,6 @@ ROWS = [
     ("Phases played", "phases", "{}"),
     ("Board", None, None),
     ("N_eff (final)", "neff_final", "{:.2f}"),
-    ("N_eff (min over game)", "neff_min", "{:.2f}"),
     ("Max SC (final)", "max_sc", "{}"),
     ("Survivors", "survivors", "{}"),
     ("Centers held /34", "held", "{}"),

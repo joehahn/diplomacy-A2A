@@ -785,7 +785,6 @@ question is settled, so the table below is the preserved result.
 | Phases played | 41 | 36 |
 | **Board** | | |
 | N_eff (final) | 5.61 | 6.02 |
-| N_eff (min over game) | 5.61 | 5.78 |
 | Max SC (final) | 8 | 9 |
 | Survivors | 7 | 7 |
 | Centers held /34 | 34 | 34 |
