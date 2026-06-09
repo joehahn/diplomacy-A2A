@@ -70,11 +70,11 @@ def _add_run_args(p: argparse.ArgumentParser) -> None:
                         "Example: --power-model TURKEY=claude-opus-4-7 while everyone "
                         "else stays on Sonnet. Plumbing for the axis-A controlled "
                         "experiment.")
-    p.add_argument("--memory", type=int, default=3, metavar="N",
+    p.add_argument("--memory", type=int, default=2, metavar="N",
                    help="default per-agent memory: each agent remembers the last N "
                         "movement turns — covers the 'What happened' narration, the "
                         "agent's own strategy notes, and its visible dialogue history "
-                        "(default: 3). Use 0 for a fully memoryless agent.")
+                        "(default: 2). Use 0 for a fully memoryless agent.")
     p.add_argument("--power-memory", action="append", default=[], metavar="POWER=N",
                    help="override the memory depth (in movement turns) for one power "
                         "(repeatable). Example: --power-memory TURKEY=10 lets Turkey "

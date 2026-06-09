@@ -145,7 +145,7 @@ def run_game(
     log_prompts_years: int = 1,  # how many opening years to log when log_prompts is on
     enable_strategy: bool = True,  # per-power 1-2 sentence strategy notes (hardwired on)
     power_clients: dict[str, LLMClient] | None = None,  # per-power model overrides (axis A)
-    memory: int = 3,  # default per-agent memory: last N movement turns recalled
+    memory: int = 2,  # default per-agent memory: last N movement turns recalled
     power_memory: dict[str, int] | None = None,  # per-power memory overrides
     adjacency_table: bool = True,  # include the standard-map adjacency table in the cached prefix
     render: bool = True,  # also derive maps/report/HTML from the transcript at end

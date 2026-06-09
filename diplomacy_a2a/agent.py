@@ -111,7 +111,7 @@ class Agent:
         persona: str,
         client: LLMClient,
         rules: str | None = None,
-        memory: int = 3,
+        memory: int = 2,
         adjacency_table: bool = True,
     ) -> None:
         self.power = power
