@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset='utf-8'><title>Negotiation — SPRING 1903 MOVEMENT (S1903M) — 2026-06-09.17.03.53</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px;
+       margin: 0 auto; padding: 20px; color: #222; }
+h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
+h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
+.meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+.settings-outcomes { display: flex; gap: 28px; flex-wrap: wrap;
+                     align-items: flex-start; margin: 28px 0 20px; }
+.so-col { flex: 0 1 auto; min-width: 0; }
+.so-chart-col { flex: 1 1 320px; }
+.so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 700;
+              text-transform: uppercase; letter-spacing: 0.04em; color: #333; }
+.standings-svg { width: 100%; max-width: 340px; height: auto; }
+.standings-label { font: 12px -apple-system, system-ui, sans-serif;
+                   font-weight: 600; }
+.standings-count { font: 12px -apple-system, system-ui, sans-serif;
+                   fill: #333; font-weight: 600; }
+table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
+table.settings tr.subrow th { padding-left: 18px; color: #888; font-weight: 400; }
+table.settings tr.subrow td { color: #555; }
+table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
+                                       vertical-align: top; }
+table.settings th { font-weight: 600; color: #555; white-space: nowrap;
+                    min-width: 160px; }
+table.settings td { color: #222; }
+nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
+      gap: 8px; }
+nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
+                   font-size: 0.95em; }
+nav a { background: #eef; color: #224; }
+nav a:hover { background: #dde; }
+nav span.disabled { background: #f5f5f5; color: #bbb; }
+img.map { max-width: 100%; border: 1px solid #ddd; }
+h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em; }
+h3.retreats-cap { margin: 14px 0 4px 0; font-size: 0.8em; color: #888;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
+          margin: 12px 0; font-size: 0.9em; }
+.orders .power { margin: 4px 0; }
+.orders .power b { display: inline-block; min-width: 80px; }
+.invalid { color: #c33; }
+ol.phases { line-height: 1.8; }
+.legend { font-size: 0.78em; color: #666; margin: 6px 0 10px; }
+.legend .chip { display: inline-block; padding: 1px 8px; margin: 2px 4px 2px 0;
+                border-radius: 10px; color: #fff; font-weight: 600; }
+.thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
+.thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
+.thread-head .arr { color: #aaa; font-weight: 400; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-items: start; }
+.bubble { padding: 7px 11px; border-radius: 12px; border-top-left-radius: 3px;
+          background: #f6f6f8; border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.empty { background: none; border: none; }
+.bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
+                 letter-spacing: 0.02em; }
+.bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
+               margin-left: 6px; font-weight: 700; }
+.bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
+.kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+           margin: 10px 0; }
+.kpi-stack { flex: 0 1 966px; min-width: 0; max-width: 1035px;
+             display: flex; flex-direction: column; gap: 4px; }
+.kpi-scatter { flex: 0 1 640px; min-width: 0; }
+.kpi-svg { display: block; width: 100%; max-width: 1035px; height: auto;
+           background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
+.kpi-svg .dot-wrap:hover circle:nth-child(2) { r: 4.5; }
+.kpi-svg .dot-tip { opacity: 0; pointer-events: none; }
+.kpi-svg .dot-wrap:hover .dot-tip { opacity: 1; }
+.kpi-svg .dot-tip-bg { fill: #222; fill-opacity: 0.92; }
+.kpi-svg .dot-tip-text { fill: #fff; font: 11px -apple-system, system-ui, sans-serif; }
+.kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
+.kpi-axis { stroke: #bbb; stroke-width: 0.6; }
+.kpi-tick { font-size: 9px; fill: #888; }
+.kpi-axis-label { font-size: 9.5px; fill: #666; font-weight: 500; }
+.kpi-legend { flex: 0 0 auto; font-size: 0.78em; line-height: 1.6;
+              padding: 6px 10px; background: #fafafa; border: 1px solid #eee;
+              border-radius: 4px; }
+.kpi-legend .leg-row { display: flex; align-items: center; gap: 6px; }
+.kpi-legend .leg-swatch { display: inline-block; width: 14px; height: 8px;
+                          border-radius: 2px; flex: 0 0 auto; }
+.kpi-legend .leg-label { font-weight: 600; color: #444; }
+.narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
+        margin: 10px 0; font-size: 0.9em; }
+.narr .nrow { margin: 4px 0; line-height: 1.4; }
+.narr .nrow > b:first-child { display: inline-block; min-width: 78px; }
+.orders-link { display: inline-block; margin: 2px 0 12px; padding: 4px 11px; font-size: 0.85em;
+               background: #eef; color: #224; border-radius: 4px; text-decoration: none; }
+.orders-link:hover { background: #dde; }
+.modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; }
+.modal:target { display: block; }
+.modal-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+                  background: rgba(0, 0, 0, 0.45); }
+.modal-card { position: relative; margin: 6vh auto; background: #fff; max-width: 620px;
+              max-height: 82vh; overflow: auto; padding: 14px 22px 20px; border-radius: 8px;
+              box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.modal-card h2 { margin-top: 4px; }
+.modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
+               color: #999; text-decoration: none; }
+.modal-close:hover { color: #333; }
+.commentary { background: #f0f4ff; border-left: 3px solid #7a8fd8; padding: 10px 14px;
+              margin: 14px 0; font-size: 0.92em; line-height: 1.5; font-style: italic;
+              color: #333; }
+.commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
+                      text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
+                      display: block; margin-bottom: 6px; }
+.commentary .clist { margin: 0; padding-left: 20px; }
+.commentary .clist li { margin: 5px 0; }
+.nego-link { display: inline-block; margin: 14px 0; padding: 9px 16px; font-size: 0.95em;
+             font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
+             border-radius: 6px; text-decoration: none; }
+.nego-link:hover { background: #fde0ec; }
+.narr .r-fail { color: #0a8fa8; }
+.narr .r-bad { color: #c0392b; }
+.narr .r-warn { color: #c77a0a; }
+.strategies { background: #fbf6ee; border-left: 3px solid #d8b870; padding: 8px 14px;
+              margin: 14px 0; font-size: 0.92em; }
+.strategies summary { cursor: pointer; }
+.strategies .slist { margin-top: 8px; }
+.strategies .srow { padding: 6px 0; border-top: 1px dotted #e8d8b8; }
+.strategies .srow:first-child { border-top: none; }
+.strategies .srow b { display: inline-block; min-width: 78px; }
+.strategies .sline { margin: 3px 0 3px 80px; line-height: 1.4; }
+.strategies .stag { display: inline-block; font-size: 0.72em; font-weight: 700;
+                    text-transform: uppercase; color: #8a6a2e; min-width: 56px;
+                    margin-right: 6px; letter-spacing: 0.04em; }
+</style>
+</head><body>
+<nav><a href='S1903M.html'>← back to SPRING 1903 MOVEMENT (S1903M)</a><a href='index.html'>index</a></nav>
+<h2>Negotiation before SPRING 1903 MOVEMENT</h2>
+<div class='legend'><span class='chip' style='background:#c0392b'>AUSTRIA</span> <span class='chip' style='background:#2c5fa8'>ENGLAND</span> <span class='chip' style='background:#1f8aa8'>FRANCE</span> <span class='chip' style='background:#555555'>GERMANY</span> <span class='chip' style='background:#2e8b57'>ITALY</span> <span class='chip' style='background:#7d3c98'>RUSSIA</span> <span class='chip' style='background:#cc8a00'>TURKEY</span></div>
+<div class='pair-filter'>
+<h3>Filter to one pair</h3>
+<p class='hint'>Click any cell to show only that pair's conversation. The diagonal cells are each power's own row/column label.</p>
+<table class='pair-grid'>
+<thead><tr><th></th><th>AUS</th><th>ENG</th><th>FRA</th><th>GER</th><th>ITA</th><th>RUS</th><th>TUR</th></tr></thead><tbody>
+<tr><th>AUS</th><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-AUSTRIA-FRANCE'>·</a></td><td><a href='#pair-AUSTRIA-GERMANY'>·</a></td><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td></tr>
+<tr><th>ENG</th><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td class='diag'>—</td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>FRA</th><td><a href='#pair-AUSTRIA-FRANCE'>·</a></td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td class='diag'>—</td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td></tr>
+<tr><th>GER</th><td><a href='#pair-AUSTRIA-GERMANY'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>ITA</th><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td class='diag'>—</td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ITALY-TURKEY'>·</a></td></tr>
+<tr><th>RUS</th><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td class='diag'>—</td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td></tr>
+<tr><th>TUR</th><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ITALY-TURKEY'>·</a></td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td><td class='diag'>—</td></tr>
+</tbody></table>
+<a class='clear' href='#'>Show all pairs</a>
+</div>
+<div class='thread' id='pair-AUSTRIA-GERMANY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → GERMANY<span class='rnd'>R1</span></div><div class='btext'>Keep the Baltic hammer falling on Russia — Sweden and Bothnia are where he bleeds. I'm holding Galicia forward to pin Warsaw so he can't shuffle fleets north against you. Our Bohemia/Tyrolia border stays quiet from me; press his north and we both grow off Russia.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Keep hammering Warsaw and Rumania — Russia's pinned. I'm pushing A MUN - SIL to threaten his Prussia/Warsaw line from the northwest while England and I finally crack Sweden. Press A GAL - WAR now and his whole northern position folds between us.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Keep cracking Sweden and push A MUN - SIL on his Prussia/Warsaw line — I'm holding Galicia forward so Russia can't shuffle north. Bohemia/Tyrolia stays quiet from me. The faster his north folds, the faster we both feed.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>I'm cracking Sweden with England and pushing A MUN - SIL on Russia's Prussia/Warsaw line. Press A GAL - WAR now — with his fleets pinned in the Baltic he can't hold Warsaw against both of us.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → GERMANY<span class='rnd'>R3</span></div><div class='btext'>I'm flipping south against Turkey this turn — A GAL backs Russia retaking Rumania, not pinning Warsaw. Keep cracking Sweden and push A MUN - SIL; Russia's now squeezed between your Baltic and my Balkan pressure on Turkey. Bohemia/Tyrolia stays quiet from me.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>Executing: A MUN - SIL on Russia's Prussia/Warsaw line while England and I crack Sweden. Press A GAL - WAR now — with his fleets pinned defending the Baltic, Warsaw folds between us. Bohemia/Tyrolia stays quiet from me.</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-ITALY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R1</span></div><div class='btext'>DMZ holds firm from my side — F TRI stays home, F GRE on the eastern front, nothing toward Venice or the Ionian. On the Lepanto: Turkey just grabbed Rumania, so the real target is now his Bulgaria/Aegean, not my Greece — landing in GRE puts your army beside my units with no Turk to fight. Convoy toward the Aegean/Turkish coast instead and I'll back you in; keep ION clear this spring.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Time for the real Lepanto. Turkey took Rumania, not you — you're at five and Turkey's the eastern giant now. I want to convoy A TUN east toward Greece/Aegean against Turkey THIS spring, but I need F GRE to move off Greece (toward AEG or ALB against Turkey) so I can land there with your support, not contest you. Confirm you'll vacate Greece and back my convoy into it, and I commit fully east against Turkey.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R2</span></div><div class='btext'>I'll work the Lepanto, but I'm not vacating Greece to put your army on my center this turn — too fast. Instead: I move F GRE - AEG against Turkey's fleet, you convoy A TUN toward ALB or the Ionian to press his Balkan/Aegean flank, and I back your landing on a Turkish coast, not on GRE. Confirm ION goes east at Turkey, not into the Adriatic.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>Straight talk: you keep telling me to convoy 'toward the Aegean' but that lands me beside Turkey's fleets with no Austrian support and Greece still yours — that's not a Lepanto, that's me throwing units away for your benefit. If the deal is real, support my convoyed army INTO a Turkish center next spring with F GRE actively. Otherwise I read your Greece-holding as blocking me, and Greece becomes my target, not Turkey's.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R3</span></div><div class='btext'>Real Lepanto, now: I move F GRE - AEG against Turkey's fleet and A SER threatens BUL. Convoy A TUN toward the Ionian/Aegean against Turkey this spring and I back your landing on a Turkish coast next turn — Greece stays the anchor, not your target. ION goes east, not Adriatic.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>Straight: you won't vacate Greece and won't support my landing, so I'm done sitting. F ION moves to the Adriatic this spring — call it leaning on Russia's enemies if you like, but understand it's parked beside your Trieste. Vacate Greece next turn and back a real landing, or I treat your fleets as my expansion lane.</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-RUSSIA'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Turkey has Rumania and a Black Sea fleet now — exactly the overreach I warned of, and he'll turn it on both of us. I'm willing to ease Galicia pressure and point south at Turkey instead if you'll commit A WAR/SEV against Rumania rather than at me. Tell me concretely where your southern units move and we can flip on Turkey together.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Turkey broke the DMZ and grabbed my Rumania — exactly the overreach you warned of, and that fleet turns on Trieste next. Help me take it back: support my F SEV - RUM with A GAL or A SER, and I'll keep Galicia quiet and point everything at Turkey with you. We squeeze Turkey together or he eats us both piecemeal.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Deal: I hold A GAL off Warsaw and point south — but I won't support F SEV - RUM blind. You drive F SEV - RUM yourself; I'll add A SER - BUL to threaten Turkey's Bulgaria and pull his attention off SEV. If you commit A WAR to defend SEV instead of eyeing Galicia, we squeeze Turkey together this turn.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>Deal. F SEV moves to RUM this turn — support it with A GAL - RUM or A SER - RUM and we take it back together. I'll keep A WAR off Galicia entirely so you can swing south freely. Confirm which unit backs the RUM attack so I don't waste F SEV.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>Committed: A GAL S F SEV - RUM. You drive F SEV - RUM and we take it back together this turn. Keep A WAR off Galicia as promised and point it south; I'm flipping fully on Turkey with you now.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>Concrete: I drive F SEV - RUM and keep A WAR off Galicia entirely. But F SEV alone bounces Turkey's A RUM — I need A GAL - RUM to actually support my attack, not just A SER - BUL as a distraction. Order A GAL S F SEV - RUM and we take Rumania back this turn; A SER - BUL on top to pin his Bulgaria is a bonus. Confirm A GAL backs RUM.</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-TURKEY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Rumania fell clean — good work. I'm pushing A GAL toward Warsaw this year to keep Russia bleeding south; keep your Black Sea fleet pointed at Sevastopol, not my Greece or the Aegean approaches, and we stay clean. Confirm BLA/RUM stay east and don't drift toward the straits near my Greek waters.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Rumania fell — clean work. Now I drive on Sevastopol: F BLA supports A RUM into SEV this turn. To make it land, push A GAL on Warsaw or into UKR so Russia can't slide A WAR to defend SEV's flank. Bulgaria and the south stay mine; once SEV cracks Russia is finished in the east.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R2</span></div><div class='btext'>I'll keep A GAL pinning Warsaw for you this turn as cover — but understand your Black Sea fleet near my Greek waters makes me nervous. Keep F BLA on SEV and RUM east; if it drifts toward the straits or AEG I read it as a move on me and I flip. Take Sevastopol and we stay clean.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>I'm committing A RUM - SEV with F BLA S A RUM - SEV this turn. To land it, push A GAL into UKR or onto Warsaw so Russia's A WAR can't slide to defend Sevastopol. Confirm GAL pins west and Sevastopol cracks — Bulgaria and the straits stay clear of your Greece.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R3</span></div><div class='btext'>You overreached for Sevastopol and that fleet was always coming for my Greek waters next. I'm not pinning Warsaw for you — A GAL backs Russia retaking Rumania and A SER threatens your Bulgaria. Pull F BLA back to defend or lose ground on two fronts.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>Final: I drive A RUM - SEV with F BLA S A RUM - SEV this turn. Push A GAL into UKR so A WAR can't slide to defend Sevastopol — that's what makes it crack. F BLA and RUM stay east, nowhere near Greece or the Aegean. Confirm GAL hits UKR and Sevastopol falls clean.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-FRANCE'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Channel stays a quiet DMZ as always — no English unit anywhere near it or Belgium, your eastern flank with me is completely clear. I'm throwing everything north at Russia's Sweden again this turn with German help. If it cracks I'll have momentum to press his northern centers; keep me posted if you put a fleet toward the Baltic via Germany as you floated.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Belgium's banked and my fleets stay out of ENG and NTH as promised — your north stays clear from me all year. How's the Sweden/Norway line against Russia? If you still can't crack Sweden, I can route a fleet toward the Baltic via Germany to pin Russia's northern fleets while you break through.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R2</span></div><div class='btext'>North line is set — Germany cuts Russia's Bothnia, I take Sweden with two units. If it lands I'll have a fifth center and real momentum against Russia's north. A Baltic fleet from you via Germany next year would pin his Bothnia/Prussia and let me drive toward STP; pencil that in for 1904.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Sweden's been a wall for you two years running — if it holds again, I'll commit a fleet toward the Baltic via Germany next year to pin Russia's northern fleets while you break through. Keep your north pointed at Sweden; my Channel stays empty all year as always.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R3</span></div><div class='btext'>Channel stays empty from me all year as always — your eastern flank is clear. I'm cracking Sweden this turn with German support; if it lands I'll have momentum north against Russia. Pencil in that Baltic fleet via Germany for 1904 to pin Russia's Bothnia while I drive on STP.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>Final: my fleets stay out of ENG and NTH all year, A BEL holds Belgium, nothing near your north. Break Sweden with Germany cutting Bothnia — if it holds again, I'll route a Baltic fleet via Germany in 1904 to pin Russia while you push STP.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-GERMANY'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R1</span></div><div class='btext'>Time to finally crack Sweden. Clean line: I move A NWY - SWE with F SKA S A NWY - SWE (two on me), you send F BAL - BOT to cut Russia's Bothnia support, and add F DEN S A NWY - SWE. That's three vs his cut-off lone A SWE — it falls and I take it. Confirm BAL cuts BOT and DEN supports my army, not your own fleet into Sweden.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Sweden keeps surviving on F BOT's support. This turn the clean line: I send F BAL - BOT to cut Russia's Bothnia support, you move A NWY - SWE backed by F SKA S A NWY - SWE — two on Sweden vs his now-unsupported army. You take Sweden, I keep cutting BOT. Confirm A NWY - SWE and F SKA supports it.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Locked: I order A NWY - SWE with F SKA S A NWY - SWE, you send F BAL - BOT to cut Russia's Bothnia support. With BOT cut, my two beats his lone army and Sweden is mine. Critical — make sure BAL goes to BOT (cutting the support), not to SWE, or my army bounces. Confirm BAL - BOT this turn.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Locked: I send F BAL - BOT to cut Russia's Bothnia support and add F DEN S A NWY - SWE. You move A NWY - SWE with F SKA S A NWY - SWE — three on his cut-off army, Sweden falls to you. I take the Baltic foothold at Bothnia and we both squeeze his north next year.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R3</span></div><div class='btext'>Final lock: I order A NWY - SWE and F SKA S A NWY - SWE. You send F BAL - BOT to cut Russia's Bothnia support AND F DEN S A NWY - SWE. With BOT cut and DEN backing my army, Sweden falls clean and I bank a fifth center. Critical: BAL must go to BOT, not SWE, or my army bounces against your own fleet.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>Locked: F BAL - BOT cuts Russia's Bothnia support, F DEN S A NWY - SWE for extra weight. You move A NWY - SWE with F SKA S A NWY - SWE — three on his cut-off army, Sweden is yours. Confirmed on my side, executing now.</div></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-GERMANY'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R1</span></div><div class='btext'>As agreed, I'm freeing a unit toward the eastern press — A Gas pushes to Burgundy this spring to stage toward Silesia/Munich-line for our Warsaw drive. Burgundy is just a staging point against Russia, nothing aimed at your Munich. Confirm you're still all-in on the Baltic so I commit cleanly. Do you want me aimed at Silesia or Warsaw next?</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Time to open the eastern press as we discussed. I'm moving A MUN - SIL this turn to pressure Russia's Prussia/Warsaw line. Slide a Burgundy/eastern unit toward Silesia/Munich support so we can drive Warsaw together next turn — Russia's collapsing south against Austria and can't hold both ends.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Good — you take SIL, I stage A Gas to Burgundy this turn pointed at the Silesia/Warsaw line, not your Munich. Next turn I can support your drive on Warsaw directly. Confirm Munich is empty after your SIL move so Burgundy and Munich don't read as a bounce, and tell me whether you want my next unit at Silesia or backing Prussia.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R2</span></div><div class='btext'>Aim at Silesia. I'm moving A MUN - SIL this turn to threaten Prussia/Warsaw; you bring A BUR toward Munich-line to backfill and support my Silesia hold next turn, then we drive Warsaw together. Confirm Burgundy stays a staging point and nothing touches Munich.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R3</span></div><div class='btext'>Locked: A GAS - BUR this turn as a staging point, nothing touches Munich, no support cut on your SIL move. Confirm A MUN - SIL lands so Burgundy stages clean. Next turn I bring Burgundy toward Silesia to back your hold, then we drive Warsaw together.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R3</span></div><div class='btext'>Locked: A MUN - SIL this turn, Munich vacated so Burgundy and Munich don't read as a bounce. You stage A GAS - BUR pointed at Silesia/Warsaw, nothing toward Munich. Next turn we drive Warsaw together with your Burgundy unit backing my Silesia hold.</div></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-ITALY'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R1</span></div><div class='btext'>Border stays frozen — nothing toward Piedmont or the Tyrrhenian, my forces face north and east. Watch Austria: he's at 5 and sitting on Greece/Trieste fleets. If he grabs more and runs ahead, flag me the turn you stab and I'll keep Marseille dead quiet so you commit fully east.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Border stays frozen from me — nothing toward Piedmont or the Tyrrhenian this spring, my whole force commits east. Keep Marseille dead quiet and we both grow clean: I'm finally launching against the eastern powers and need my western flank locked. How's Belgium and Iberia settling for you?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R2</span></div><div class='btext'>Border stays frozen, Marseille dead quiet — commit fully east, your western flank is locked. If Austria grabs Rumania-side centers and runs ahead, flag me the turn you turn on him and I'll keep my whole western line still so you can throw everything at the Adriatic.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R2</span></div><div class='btext'>Noted and locked — my full force commits east this spring. If Austria keeps blocking my expansion in Greece I may wedge against him directly within a turn or two; when I do I'll flag you so you keep Marseille frozen. Keep your Piedmont/Tyrrhenian border dead quiet and I'll never need to look west.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R3</span></div><div class='btext'>Confirmed: Marseille stays dead quiet, A SPA shifts to MAR only to free a build, nothing toward Piedmont or the Tyrrhenian. Commit fully east — flag me the turn you turn on Austria and my whole western line stays frozen for you.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R3</span></div><div class='btext'>Locked: my whole force commits east/Adriatic this spring, nothing toward Piedmont or Tyrrhenian. Austria sits on Greece blocking me, so I'm pressing his Adriatic flank now and may wedge against him outright within a turn. Keep Marseille dead quiet and I'll never look west.</div></div>
+</div></div>
+<div class='thread' id='pair-GERMANY-RUSSIA'>
+<div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Last offer: pull F BOT back and I'll keep Prussia and Berlin entirely off you — focus everything south against Austria and Turkey, which is where you're bleeding. Refuse and England takes Sweden while I move on your Baltic line this turn. Your call.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R1</span></div><div class='btext'>You kept Denmark off Sweden and our border's the quietest on the board — I value that. Let's formalize it: eastern Baltic mine, Berlin/Kiel yours, neither pushes the other's home coast. My whole effort this year is south against Turkey, so the Baltic stays peaceful from me.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Your call's made for you — England takes Sweden three-on-one this turn whatever you do, since BOT's support gets cut. Pull A WAR's weight south and salvage your Black Sea position; the Baltic's already lost this year.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R2</span></div><div class='btext'>I'm honoring the Baltic deal — nothing toward Berlin, Kiel, or Prussia from me. But I won't gift you Sweden by pulling F BOT; if you attack BOT you make a permanent enemy of the neighbor keeping your east calm while England circles your north. Keep Denmark and your Baltic fleet off me and our border stays the quietest on the board while I bleed Turkey.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>Baltic border toward Berlin/Kiel/Prussia stays quiet from me as agreed — I'm not pushing your home coast. Focus your defense south against Turkey, that's where you're bleeding most.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R3</span></div><div class='btext'>I'm keeping the border quiet — nothing toward Berlin, Kiel, or Prussia, my whole effort is south. F BOT stays put supporting Sweden; if you attack it you spend your Baltic fleet to make a permanent enemy while England circles your north. Leave BOT and Denmark alone and our border stays the calmest on the board.</div></div>
+</div></div>
+<div class='thread' id='pair-ITALY-TURKEY'>
+<div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Austria grabbed nothing and Turkey now holds Rumania at five with the Black Sea locked — you're the one growing. I've honored our non-aggression two years running, but holding is losing for me. If Austria overreaches I'd rather wedge into Greece against him with you; tell me straight whether you're pivoting south onto Austria's Bulgaria-Serbia line or staying east on Russia, because that decides where my fleet goes.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R1</span></div><div class='btext'>I cracked Rumania and I'm pressing Sevastopol now — fully east, still clear of the Aegean and your Med per our standing deal. Austria is at five and will jump if Russia folds; keep leaning on his Trieste fleet in the Adriatic so he can't pivot south onto my Bulgaria. Greece stays your lane if he overreaches.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R2</span></div><div class='btext'>Concrete proposal: you're growing east while Austria sits on Greece blocking my only expansion. I'd rather turn on Austria with you than keep holding. If you push F AEG to support my convoyed army into GRE next turn — or pin his F GRE so it can't defend — I'll commit my whole fleet stack against his Greece/Adriatic line. Tell me if you'll back a Greece landing against Austria, and I move now to set it up.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R2</span></div><div class='btext'>Straight answer: I'm staying east on Sevastopol this turn, not pivoting onto Austria yet. But Austria's A GAL push means if Russia folds, Austria takes Warsaw and jumps — that's when I turn south with you. Move F ION toward the Adriatic and lean on his Trieste fleet now so he can't capitalize, and Greece is your wedge the moment he overreaches.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R3</span></div><div class='btext'>I'm moving F ION to ADR this spring to lean on Austria's Trieste as you asked — that's my commitment. In return, next turn when Russia is folding and you pivot south, I expect F AEG to pin or hit Austria's F GRE so my convoyed army can land in Greece. Confirm and I'll have my fleet stack ready in the Adriatic to crack his line with you.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R3</span></div><div class='btext'>I'm east on Sevastopol this turn, but the moment Russia folds Austria jumps and that's when I pivot south with you. Move F ION toward the Adriatic now and lean on his Trieste fleet so he can't capitalize — next year I'll throw F AEG behind your Greece landing. Set it up; I'll be ready to pin F GRE when you commit.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-RUSSIA'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Germany is committing his Baltic fleet hard against your Bothnia this turn to cut your Sweden support — this is the aggression I warned you about. If you want to hold Sweden, you'll need to defend BOT itself, not just lean on it. My hands are full reacting to his fleets from the north.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>North's been clean between us all game and I want it to stay that way — A SWE and F BOT stay oriented north, nothing toward Norway. My fleets are committed south against Turkey, who broke into my Black Sea, so I'm trusting Norway and the north to stay quiet on your side.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Final warning: Germany's F BAL is moving to BOT this turn to strip your Sweden support. I'm watching from the north as always, but his fleets are out of my reach. If you want any chance at Sweden you must defend BOT directly — leaning on it won't be enough once it's attacked.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>If Germany really moves his Baltic fleet on my Bothnia, that's him overextending alone — and his north opens up for you. Stay off Norway and Sweden and let him stretch; I keep everything pointed south at Turkey and Austria stays quiet on my eastern border. A peaceful north costs you nothing and traps Germany.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>If Germany throws F BAL at my Bothnia he overextends alone and his north opens for you — stay off Norway and Sweden and let him stretch. My fleets stay south; the north stays clean from me. A quiet north costs you nothing and traps Germany between us.</div></div>
+</div></div>
+<div class='thread' id='pair-RUSSIA-TURKEY'>
+<div class='thread-head'><span style='color:#7d3c98'>RUSSIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>You took Rumania by breaking your own DMZ — that's a clean betrayal, and now Austria and I are both done trusting you. Hand RUM back and pull F BLA to ANK and there's still a southern deal to be had; keep it and you fight Austria's armies and my Sevastopol fleet on one front while Austria takes Serbia from the other.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Rumania's gone and Sevastopol is next unless we talk. You're being squeezed between Austria's Galicia and my Black Sea — I have no interest in grinding you to dust for Vienna's benefit. Pull F SEV's defense and we can still arrange a border; dig in and you lose SEV and your last eastern footing while Austria takes Warsaw.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R2</span></div><div class='btext'>Austria has already agreed to back my retake of Rumania — you're now facing my Sevastopol fleet from the east and Austrian armies from the west on one front. Hand RUM back and pull F BLA to ANK and there's still a border to draw; dig in and you spend this turn defending while Austria eats Serbia behind you.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>I'm pressing SEV this turn — but I meant the southern offer. Pull F SEV off the Black Sea approach and I'll hold at Rumania rather than grind into Sevastopol, and we both turn on Austria's Galicia before he takes Warsaw from you. Dig in and you lose SEV to me and Warsaw to Austria the same year.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R3</span></div><div class='btext'>Austria is supporting my F SEV - RUM into Rumania this turn — you're facing my fleet from the east and his army from the west on one front while A SER hits your Bulgaria. Hand RUM back now and pull F BLA to ANK and there's still a border to draw; dig in and you lose the turn defending both flanks.</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-FRANCE'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
+<div class='rgrid'>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>We've never crossed swords and I'd like to keep it that way. Russia at 5 and Turkey at 5 are your real neighbors — I have no designs anywhere near your borders. If you want a quiet understanding while you handle the east, I'm happy to keep my Mediterranean fleets pointed away from the Adriatic.</div></div>
+</div></div>
+<nav><a href='S1903M.html'>← back to SPRING 1903 MOVEMENT (S1903M)</a><a href='index.html'>index</a></nav>
+</body></html>
