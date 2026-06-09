@@ -218,20 +218,33 @@ class GatewayClient(LLMClient):
                 if not text.strip():
                     raise _EmptyResponse(getattr(choice, "finish_reason", None))
             except _EmptyResponse as e:
-                # No usable text. Common cause: a reasoning model spent the whole
-                # max_tokens budget on hidden reasoning. Retry, then fail loudly
-                # rather than letting the caller treat empty as "no orders".
+                # No usable text. Common cause: a model that bills hidden
+                # reasoning against max_tokens spends a tight budget entirely on
+                # reasoning (finish_reason=length). Retry; on the final attempt
+                # degrade to an empty result rather than aborting the whole run.
+                # An empty result means this one call yields no orders/message
+                # (the power holds or stays silent), which the transcript records
+                # and the dropped-turns metric surfaces. Dropping a multi-year
+                # game to one stubborn call is the worse outcome. Token usage is
+                # still captured so cost accounting stays accurate.
                 last_chance = attempt > self._max_retries
                 self._log_error(attempt, e, fatal=last_chance)
                 if last_chance:
-                    raise RunnerError(
-                        f"OpenRouter API ({self.model}): returned empty content "
-                        f"after {self._max_retries} retries (finish_reason="
-                        f"{e.finish_reason}). If this is a reasoning model, the "
-                        f"reasoning likely consumed the token budget: raise "
-                        f"max_tokens or construct GatewayClient with "
-                        f"enable_reasoning=False."
-                    ) from e
+                    if self._verbose_retries:
+                        print(
+                            f"  [WARN] empty content from OpenRouter API "
+                            f"({self.model}) after {self._max_retries} retries "
+                            f"(finish_reason={e.finish_reason}); returning empty "
+                            f"for this call and continuing.",
+                            flush=True,
+                        )
+                    usage = getattr(response, "usage", None)
+                    return ChatResult(
+                        text="",
+                        input_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+                        output_tokens=getattr(usage, "completion_tokens", 0) or 0,
+                        raw=response,
+                    )
                 wait = _retry_wait(e, attempt)
                 if self._verbose_retries:
                     print(

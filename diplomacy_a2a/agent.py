@@ -18,7 +18,11 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from diplomacy_a2a.config import ORDER_MAX_TOKENS
+from diplomacy_a2a.config import (
+    NEGOTIATION_MAX_TOKENS,
+    ORDER_MAX_TOKENS,
+    STRATEGY_MAX_TOKENS,
+)
 from diplomacy_a2a.game.state import GameState, POWERS
 from diplomacy_a2a.game.view import render_for_power
 from diplomacy_a2a.llm.client import ChatResult, LLMClient, Message
@@ -193,7 +197,7 @@ class Agent:
         kind: str,  # "initial" or "revised"
         dialogue: list[DialogueMessage] | None,
         strategy_history: list[StrategyNote] | None,
-        max_tokens: int = 500,
+        max_tokens: int = STRATEGY_MAX_TOKENS,
         temperature: float = 0.6,
     ) -> StrategyResult:
         view = render_for_power(state, self.power, memory=self.memory)
@@ -290,7 +294,7 @@ class Agent:
         round_index: int = 1,
         total_rounds: int = 1,
         strategy_history: list[StrategyNote] | None = None,
-        max_tokens: int = 1024,
+        max_tokens: int = NEGOTIATION_MAX_TOKENS,
         temperature: float = 0.8,
     ) -> MessagesResult:
         view = render_for_power(state, self.power, memory=self.memory)

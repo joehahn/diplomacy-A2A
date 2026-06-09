@@ -31,4 +31,12 @@ DEFAULT_MAX_TOKENS = 1024
 # parseable orders. max_tokens is a ceiling, not a target, so a model that
 # finishes early (e.g. Sonnet) pays nothing for the extra headroom.
 ORDER_MAX_TOKENS = 4096
+# Strategy and negotiation calls ask for only a few sentences, but gateway
+# models that bill hidden reasoning against max_tokens (DeepSeek V4-Flash,
+# Kimi K2.6) can spend a tight budget entirely on reasoning and return empty
+# content (finish_reason=length). The old 500/1024 caps left no room; these
+# give reasoning headroom. As with ORDER_MAX_TOKENS, the cap is a ceiling, so
+# models that finish early pay nothing for it.
+STRATEGY_MAX_TOKENS = 2048
+NEGOTIATION_MAX_TOKENS = 2048
 DEFAULT_TEMPERATURE = 1.0
