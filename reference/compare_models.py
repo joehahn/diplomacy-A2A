@@ -56,28 +56,56 @@ def load_events(arg: str) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
-def land_turnover(snapshots: list[dict[str, list[str]]]) -> int:
-    """Total supply-center ownership changes across the game.
+def _land_provinces() -> frozenset[str]:
+    """Base codes of the 56 land provinces (LAND + COAST) from the map.
 
-    For each consecutive pair of center snapshots, count the centers whose
-    owner changed (a neutral center counts as its own owner state, so both
-    captures of neutrals and transfers between powers are counted). A high
-    total means a churning, contested board; a low total means a static one.
-    This is the activity signal that disambiguates a balanced-and-dynamic
-    game from a balanced-but-inert one, so it pairs with N_eff.
+    Mirrors diplomacy_a2a/transcripts.py: coastal provinces count as land,
+    the 19 pure-water provinces are excluded, sourced from the library.
     """
+    from diplomacy import Map
+
+    m = Map()
+    return frozenset(
+        loc.split("/")[0].upper()
+        for loc in m.locs
+        if m.area_type(loc) in ("LAND", "COAST")
+    )
+
+
+def land_turnover(events: list[dict]) -> int:
+    """Land turnover ("changed hands"), replicating transcripts.py exactly.
+
+    The occupier of a province is the power whose unit sits on it. Counts only
+    direct power->other-power handovers of the 56 land provinces between
+    consecutive post-adjudication snapshots; empty<->power moves do not count.
+    A high total means a churning, contested board, so it pairs with N_eff to
+    tell a balanced-and-dynamic game from a balanced-but-inert one. Distinct
+    from supply-center ownership (which only flips at Fall).
+    """
+    land = _land_provinces()
+
+    def prov(unit: str) -> str:
+        loc = unit.split()[-1] if unit.split() else unit
+        return loc.split("/")[0].upper()
+
+    snaps: list[dict[str, str]] = []
+    for e in events:
+        if e.get("type") == "phase_resolved":
+            occ: dict[str, str] = {}
+            for power, units in (e.get("units", {}) or {}).items():
+                for u in units:
+                    p = prov(u)
+                    if p in land:
+                        occ[p] = power
+            snaps.append(occ)
     total = 0
-    prev: dict[str, str] | None = None
-    for snap in snapshots:
-        owner: dict[str, str] = {}
-        for power, provs in snap.items():
-            for prov in provs:
-                owner[prov] = power
-        if prev is not None:
-            for prov in set(prev) | set(owner):
-                if prev.get(prov) != owner.get(prov):
-                    total += 1
-        prev = owner
+    prev = snaps[0] if snaps else {}
+    for occ in snaps[1:]:
+        for p, power in occ.items():
+            before = prev.get(p)
+            if before is not None and before != power:
+                total += 1
+        prev = occ
     return total
 
 
@@ -155,7 +183,7 @@ def metrics(events: list[dict]) -> dict:
     max_sc = max(sc_counts.values(), default=0)
     survivors = sum(1 for c in sc_counts.values() if c > 0)
     held = sum(sc_counts.values())
-    turnover = land_turnover(centers_snaps)
+    turnover = land_turnover(events)
 
     # --- negotiation signals over all messages ---
     msgs = cond = alliance = 0
@@ -231,7 +259,7 @@ ROWS = [
     ("Max SC (final)", "max_sc", "{}"),
     ("Survivors", "survivors", "{}"),
     ("Centers held /34", "held", "{}"),
-    ("Land turnover (SC changes)", "turnover", "{}"),
+    ("Land turnover", "turnover", "{}"),
     ("Competence", None, None),
     ("Total orders", "orders", "{}"),
     ("Illegal %", "illegal", "{:.1f}"),
@@ -277,9 +305,9 @@ def main(argv: list[str]) -> int:
     rows = [metrics(load_events(a)) for a in argv]
     print(render(rows))
     print()
-    print("N_eff and dropped-turns are computed here; the eight order/message")
-    print("metrics mirror diplomacy_a2a/transcripts.py. Board and negotiation")
-    print("blocks are single-reading per game; rank on the competence block.")
+    print("N_eff and dropped-turns are reference-only; all other metrics mirror")
+    print("diplomacy_a2a/transcripts.py. Board and negotiation blocks are")
+    print("single-reading per game; rank on the competence block.")
     return 0
 
 
