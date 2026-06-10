@@ -18,17 +18,17 @@ Read the top half as personalities; read the bottom half as the leaderboard.
 
 The headline cost of one 10-year self-play game per model:
 
-| tier | model | 10-year self-play cost |
-|------|-------|------------------------|
-| S (budget) | xiaomi/mimo-v2.5 | $1.66 |
-| M (mid) | Claude Sonnet 4.6 | $25.62 |
-| L (frontier) | Claude Opus 4.8 | $184.16 |
+| tier | model | 10-year self-play cost | input tokens | output tokens | wall time |
+|------|-------|------------------------|--------------|---------------|-----------|
+| S (budget) | xiaomi/mimo-v2.5 | $1.66 | 11.2M (uncached) | 334K | 32 min |
+| M (mid) | Claude Sonnet 4.6 | $25.62 | 11.9M (48% cached) | 347K | 34 min |
+| L (frontier) | Claude Opus 4.8 | $184.16 | 17.4M (45% cached) | 369K | 25 min |
 
-Roughly a 110x spread from budget to frontier. For reference, the canonical
-Sonnet game processes about 11.9M input tokens (about 48% cached and served at
-10% of full price) and 347K output tokens across about 885 LLM calls, in about
-34 minutes of wall time. Per-token rates and the full six-model cost-and-
-competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
+Roughly a 110x cost spread from budget to frontier, driven by per-token rates,
+not volume: all three games run a comparable number of LLM calls (~880) and
+land within 2x on tokens and wall time. Cached input (the bracketed share
+above) is billed at 10% of the full input rate. Per-token rates and the full
+six-model cost-and-competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
 
 ## The three models in self-play (style)
 
