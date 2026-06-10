@@ -629,12 +629,12 @@ def plot_competence(raw: dict) -> str:
     panels = [
         ("Illegal-order rate", "% of orders · lower is better",
          {m: _rate(raw, m, "illegal", "orders") for m in ORDER}, "{:.1f}%"),
-        ("Move-support success", "% of move-supports · higher is better",
-         {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}, "{:.1f}%"),
-        ("Uncoordinated supports", "% of move-supports · lower is better",
-         {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}, "{:.1f}%"),
         ("Self-bounces", "per 100 orders · lower is better",
          {m: _rate(raw, m, "self_bounce", "orders") for m in ORDER}, "{:.1f}"),
+        ("Uncoordinated supports", "% of move-supports · lower is better",
+         {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}, "{:.1f}%"),
+        ("Move-support success", "% of move-supports · higher is better",
+         {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}, "{:.1f}%"),
         ("Support rate", "% of orders · coordination effort",
          {m: _rate(raw, m, "support", "orders") for m in ORDER}, "{:.1f}%"),
         ("Hold rate", "% of orders · passivity",
@@ -827,16 +827,29 @@ def plot_cost_frontier(data: dict) -> str:
         v = 100 * c[num] / c[den] if c[den] else 0.0
         return v, _poisson_err(c[num], c[den])[0]
 
+    def mistakes(m):
+        # disjoint error events (invalid orders, self-bounces, supports backing a
+        # move no one made), as a share of all orders
+        c = raw[m]
+        k = c["illegal"] + c["self_bounce"] + c["supp_uncoord"]
+        v = 100 * k / c["orders"] if c["orders"] else 0.0
+        return v, _poisson_err(k, c["orders"])[0]
+
     panels = [
         ("Final centers / nation", "outcome · higher is better",
          {m: (statistics.mean(final[m]), sem(final[m])) for m in ORDER}, "{:.2f}"),
+        ("Total mistakes", "illegal + self-bounce + uncoord · lower is better",
+         {m: mistakes(m) for m in ORDER}, "{:.1f}%"),
         ("Illegal-order rate", "% of orders · lower is better",
          {m: rate(m, "illegal", "orders") for m in ORDER}, "{:.1f}%"),
         ("Support rate", "% of orders · coordination",
          {m: rate(m, "support", "orders") for m in ORDER}, "{:.1f}%"),
+        ("Hold rate", "% of orders · passivity",
+         {m: rate(m, "holds", "orders") for m in ORDER}, "{:.1f}%"),
     ]
-    pw, ph, oy = 250, 340, 30
-    w, h = pw * len(panels), ph + oy
+    pw, ph, oy, per_row = 250, 340, 30, 3
+    nrows = -(-len(panels) // per_row)
+    w, h = pw * per_row, oy + nrows * ph + 22
     pad_l, pad_b, pad_t = 50, 64, 52
     plot_h = ph - pad_b - pad_t
     plot_w = pw - pad_l - 20
@@ -854,7 +867,8 @@ def plot_cost_frontier(data: dict) -> str:
          f"font-weight='600' fill='#333'>7. KPIs per dollar "
          f"(cost-performance frontier)</text>"]
     for pi, (ptitle, hint, dat, fmt) in enumerate(panels):
-        ox = pi * pw
+        ox = (pi % per_row) * pw
+        top = oy + (pi // per_row) * ph
         ys = [dat[m][0] for m in ORDER]
         es = [dat[m][1] for m in ORDER]
         y0 = min(y - e for y, e in zip(ys, es))
@@ -862,13 +876,13 @@ def plot_cost_frontier(data: dict) -> str:
         pad = (y1 - y0) * 0.3 + 1e-6
         y0, y1 = y0 - pad, y1 + pad
 
-        def yf(v, y0=y0, y1=y1):
-            return oy + pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
+        def yf(v, top=top, y0=y0, y1=y1):
+            return top + pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-        base = oy + pad_t + plot_h
-        s.append(f"<text x='{ox+pw/2:.0f}' y='{22+oy}' text-anchor='middle' "
+        base = top + pad_t + plot_h
+        s.append(f"<text x='{ox+pw/2:.0f}' y='{22+top}' text-anchor='middle' "
                  f"font-size='12.5' font-weight='600' fill='#333'>{ptitle}</text>")
-        s.append(f"<text x='{ox+pw/2:.0f}' y='{38+oy}' text-anchor='middle' "
+        s.append(f"<text x='{ox+pw/2:.0f}' y='{38+top}' text-anchor='middle' "
                  f"font-size='9.5' fill='#aaa'>{hint}</text>")
         s.append(f"<line x1='{ox+pad_l}' y1='{base}' x2='{ox+pad_l+plot_w}' "
                  f"y2='{base}' stroke='#bbb' stroke-width='0.8'/>")
@@ -943,6 +957,9 @@ def kpi_table(data: dict) -> str:
         ("Illegal orders", lambda m: pct(raw[m]['illegal'], raw[m]['orders'])),
         ("Self-bounces / 100 orders",
          lambda m: f"{100*raw[m]['self_bounce']/raw[m]['orders']:.1f}" if raw[m]['orders'] else "n/a"),
+        ("Total mistakes",
+         lambda m: pct(raw[m]['illegal'] + raw[m]['self_bounce'] + raw[m]['supp_uncoord'],
+                       raw[m]['orders'])),
     ]
     head = "".join(
         f"<th style='color:{COLOR[m]}'>{m}<br><span style='font-weight:400;"
@@ -1033,11 +1050,14 @@ def build_index(data: dict) -> str:
         "against cost per nation-game on a log axis (MiMo $0.06, Sonnet $0.84, Opus "
         "$5.25, an ~88&times; span). A flat frontier means paying more buys nothing "
         "on that KPI; a sloped one means it does. At 3 years final centers are flat "
-        "(territory is a near-tie, so the 88&times; premium buys none), while "
-        "illegal-order rate and support rate do improve with spend, the frontier "
-        "model plays cleaner and coordinates more. This view earns its keep on the "
-        "10-year games, where, if territory finally separates, the question becomes "
-        "whether the gain is worth the cost.</figcaption></figure>",
+        "(territory is a near-tie, so the 88&times; premium buys none), and total "
+        "mistakes are flat too, but for a subtle reason: the frontier model's lower "
+        "illegal-order rate is offset by the ambition errors (self-bounces, "
+        "uncoordinated supports) that come with its higher support rate, so spending "
+        "shifts the <i>type</i> of error rather than the total. Hold rate (passivity) "
+        "is flat. This view earns its keep on the 10-year games, where, if territory "
+        "finally separates, the question becomes whether the gain is worth the cost."
+        "</figcaption></figure>",
 
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
