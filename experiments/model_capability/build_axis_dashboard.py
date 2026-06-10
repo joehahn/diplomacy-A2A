@@ -148,6 +148,7 @@ def _competence(events: list[dict], label: dict, raw: dict) -> None:
             if o.rstrip().endswith(" H"):
                 c["holds"] += 1
             if " S " in o:
+                c["support"] += 1
                 parts = o.split(" S ")
                 if len(parts) == 2 and " - " in parts[1]:
                     c["supp_move"] += 1
@@ -163,6 +164,8 @@ def _competence(events: list[dict], label: dict, raw: dict) -> None:
                         unit.split()[0], dest.split("/")[0]) in locs
                     if not failed and landed:
                         c["supp_move_ok"] += 1
+                else:
+                    c["supp_hold"] += 1
             elif " - " in o and " C " not in o:
                 unit = o.split(" - ", 1)[0].strip()
                 dest = o.split(" - ", 1)[1].split()[0].split("/")[0]
@@ -527,31 +530,38 @@ def _rate(raw, m, num, den, scale=100.0):
     return v, _poisson_err(c[num], c[den], scale)
 
 
-def _bar_panels(number: int, title: str, panels: list) -> str:
-    """Render a one-row grid of bar charts with Poisson error bars, MiMo ->
-    Sonnet -> Opus, no per-bar value labels (exact numbers live in the KPI
-    table). Each panel is (panel_title, hint, {m: (value, (err, is_limit))})."""
+def _bar_panels(number: int, title: str, panels: list,
+                per_row: int = None, show_values: bool = False) -> str:
+    """Render a grid of bar charts with Poisson error bars, MiMo -> Sonnet ->
+    Opus, wrapping at per_row panels. Each panel is
+    (panel_title, hint, {m: (value, (err, is_limit))}, [fmt]); fmt is the value
+    label format, used only when show_values is set."""
     pw, ph, oy = 250, 320, 30
-    w, h = pw * len(panels), ph + oy
+    per_row = per_row or len(panels)
+    nrows = -(-len(panels) // per_row)
+    w, h = pw * per_row, oy + nrows * ph
+    pad_l, pad_b, pad_t = 44, 64, 50
+    plot_h = ph - pad_b - pad_t
+    bw, gap = 46, (pw - 2 * pad_l) / len(ORDER)
     bar_order = list(reversed(ORDER))  # MiMo, Sonnet, Opus
     s = [f"<svg viewBox='0 0 {w} {h}' xmlns='http://www.w3.org/2000/svg' "
          f"font-family='{FONT}' width='{w}' height='{h}'>",
          f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
          f"font-weight='600' fill='#333'>{number}. {title}</text>"]
-    for pi, (ptitle, hint, data) in enumerate(panels):
-        ox = pi * pw
-        pad_l, pad_b, pad_t = 44, 64, 50
-        plot_h = ph - pad_b - pad_t
-        bw = 46
-        gap = (pw - 2 * pad_l) / len(ORDER)
+    for pi, panel in enumerate(panels):
+        ptitle, hint, data = panel[0], panel[1], panel[2]
+        fmt = panel[3] if len(panel) > 3 else "{:.1f}"
+        ox = (pi % per_row) * pw
+        top = oy + (pi // per_row) * ph
         vals = [data[m][0] for m in bar_order]
         errs = [data[m][1] for m in bar_order]
-        vmax = max([v + e[0] for v, e in zip(vals, errs)] + [1e-6]) * 1.12
-        s.append(f"<text x='{ox+pw/2:.0f}' y='{22+oy}' text-anchor='middle' "
+        vmax = max([v + e[0] for v, e in zip(vals, errs)] + [1e-6]) * (
+            1.2 if show_values else 1.12)
+        s.append(f"<text x='{ox+pw/2:.0f}' y='{22+top}' text-anchor='middle' "
                  f"font-size='12.5' font-weight='600' fill='#333'>{ptitle}</text>")
-        s.append(f"<text x='{ox+pw/2:.0f}' y='{38+oy}' text-anchor='middle' "
+        s.append(f"<text x='{ox+pw/2:.0f}' y='{38+top}' text-anchor='middle' "
                  f"font-size='9.5' fill='#aaa'>{hint}</text>")
-        baseline = oy + pad_t + plot_h
+        baseline = top + pad_t + plot_h
         s.append(f"<line x1='{ox+pad_l}' y1='{baseline}' x2='{ox+pw-12}' "
                  f"y2='{baseline}' stroke='#ddd' stroke-width='1'/>")
         for i, m in enumerate(bar_order):
@@ -570,6 +580,10 @@ def _bar_panels(number: int, title: str, panels: list) -> str:
                 for yy in ((y_hi,) if is_limit else (y_hi, y_lo)):
                     s.append(f"<line x1='{cx-7:.1f}' y1='{yy:.1f}' x2='{cx+7:.1f}' "
                              f"y2='{yy:.1f}' stroke='#333' stroke-width='1.3'/>")
+            if show_values:
+                s.append(f"<text x='{cx:.1f}' y='{y_hi-6:.1f}' text-anchor='middle' "
+                         f"font-size='11.5' font-weight='700' fill='{COLOR[m]}'>"
+                         f"{fmt.format(val)}</text>")
             s.append(f"<text x='{cx:.1f}' y='{baseline+16:.1f}' text-anchor='middle' "
                      f"font-size='10.5' fill='#666'>{m}</text>")
     s.append("</svg>")
@@ -586,22 +600,26 @@ def plot_competence(raw: dict) -> str:
          {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}),
         ("Self-bounces", "per 100 orders · lower is better",
          {m: _rate(raw, m, "self_bounce", "orders") for m in ORDER}),
+        ("Support rate", "% of orders · coordination effort",
+         {m: _rate(raw, m, "support", "orders") for m in ORDER}),
+        ("Hold rate", "% of orders · passivity",
+         {m: _rate(raw, m, "holds", "orders") for m in ORDER}),
     ]
-    return _bar_panels(3, "Competence by model", panels)
+    return _bar_panels(3, "Competence by model", panels, per_row=3)
 
 
 def plot_negotiation(raw: dict) -> str:
     panels = [
         ("Messages / nation", "count per nation-game",
-         {m: _rate(raw, m, "msgs", "nations", scale=1.0) for m in ORDER}),
+         {m: _rate(raw, m, "msgs", "nations", scale=1.0) for m in ORDER}, "{:.0f}"),
         ("Conditional bargaining", "% of messages",
-         {m: _rate(raw, m, "cond", "msgs") for m in ORDER}),
+         {m: _rate(raw, m, "cond", "msgs") for m in ORDER}, "{:.1f}%"),
         ("Alliance language", "% of messages",
-         {m: _rate(raw, m, "alliance", "msgs") for m in ORDER}),
+         {m: _rate(raw, m, "alliance", "msgs") for m in ORDER}, "{:.1f}%"),
         ("Betrayals", "% of messages · heuristic",
-         {m: _rate(raw, m, "betray", "msgs") for m in ORDER}),
+         {m: _rate(raw, m, "betray", "msgs") for m in ORDER}, "{:.1f}%"),
     ]
-    return _bar_panels(4, "Negotiation by model", panels)
+    return _bar_panels(4, "Negotiation by model", panels, show_values=True)
 
 
 def plot_offence_defence_bars(od_points: dict) -> str:
@@ -614,11 +632,11 @@ def plot_offence_defence_bars(od_points: dict) -> str:
 
     panels = [
         ("Offence / nation", "ground taken · higher is more aggressive",
-         {m: stat([o for o, _ in od_points[m]]) for m in ORDER}),
+         {m: stat([o for o, _ in od_points[m]]) for m in ORDER}, "{:+.1f}"),
         ("Defence / nation", "attacks survived · higher is more solid",
-         {m: stat([d for _, d in od_points[m]]) for m in ORDER}),
+         {m: stat([d for _, d in od_points[m]]) for m in ORDER}, "{:+.1f}"),
     ]
-    return _bar_panels(5, "Offence and defence by model", panels)
+    return _bar_panels(5, "Offence and defence by model", panels, show_values=True)
 
 
 # --- plot 4: offence vs defence scatter -------------------------------------
@@ -719,6 +737,7 @@ def kpi_table(data: dict) -> str:
         ("Alliance language", lambda m: pct(raw[m]['alliance'], raw[m]['msgs'])),
         ("Betrayals", lambda m: pct(raw[m]['betray'], raw[m]['msgs'])),
         ("Hold rate", lambda m: pct(raw[m]['holds'], raw[m]['orders'])),
+        ("Support rate", lambda m: pct(raw[m]['support'], raw[m]['orders'])),
         ("Move-support success", lambda m: pct(raw[m]['supp_move_ok'], raw[m]['supp_move'])),
         ("Uncoordinated supports", lambda m: pct(raw[m]['supp_uncoord'], raw[m]['supp_move'])),
         ("Illegal orders", lambda m: pct(raw[m]['illegal'], raw[m]['orders'])),
@@ -774,7 +793,9 @@ def build_index(data: dict) -> str:
         "Move-support success and uncoordinated supports (backing a move your own side "
         "never ordered) probe coordination coherence; self-bounces echo the self-play "
         "paradox, the budget model jamming its own units least because it attempts the "
-        "least coordination. Error bars are 1&sigma; Poisson (&radic;N on the event "
+        "least coordination. Support rate exposes that coordination ambition directly "
+        "(Opus orders supports far more often than the budget model), and hold rate is "
+        "its inverse, passivity. Error bars are 1&sigma; Poisson (&radic;N on the event "
         "count): the illegal-order ladder clears them, but they swallow the "
         "move-support panel, so those differences are not significant at this sample "
         "size. A zero count is drawn as a one-sided upper limit (observing none "
