@@ -871,6 +871,50 @@ thinking off.
   coordinated and active game in the set, but at $184 (~110x DeepSeek) it is not
   a value contender, it is the ceiling the cheap models are measured against.
 
+### Opus vs Sonnet: play style (self-play deep-read)
+
+A qualitative read of the two committed flagship games, the Sonnet `canonical`
+run and the Opus `opus-reference` run, both 10-year self-play. This compares
+STYLE, not skill: each game is one model driving all seven powers, so it cannot
+rank the models (that is the model-capability rotation's job). It does surface a
+consistent difference in how the two play.
+
+**Same temperament, different execution.** Both games field articulate,
+rule-literate, risk-averse negotiators who reason in explicit strength-math,
+prefer turn-by-turn deals to named alliances, rarely betray, and verbally gang
+up on the leader. The difference is whether that talk reaches the board.
+
+| dimension | Sonnet (canonical) | Opus (reference) |
+|-----------|--------------------|------------------|
+| Coordination outcome | fragile: 14.5% support, 49% hold, 88 bounces, stalemate | coherent combined-arms: 34% support, lands 71% |
+| After a failed attack | re-issues the same move 5-6 seasons (France A BUR-MUN six times) | pivots (Italy reroutes F ADR onto Trieste) |
+| Anti-leader coalition | verbal only; England runs to 8-9 unchecked | actually pins France at 7 mid-game |
+| Game shape | locked, grindy, no solo, leader uncatchable | decisive: England 4 to 9, Germany eliminated |
+| Signature blunder | repeated illegal (impossible) supports, e.g. A PAR S A BUR-MUN three times | 13+ legal self-bounces in rotation chains |
+| Negotiation flavor | "polite accountants", 55% bargaining | "shared order sheets", 26% bargaining, more precise |
+
+**The self-bounce paradox.** Opus's signature flaw is the shadow of its
+strength. It self-bounces 16 times (vs Sonnet's 1) because it juggles far more
+units in active "no idle unit" rotation chains, and those chains jam against its
+own occupancy (Turkey's F1906M double self-bounce mid-chain; England's recurring
+home-waters pileup). Sonnet's near-spotless spatial record owes partly to a more
+static game (more holds, fewer rotations, so less to misfire). The failure modes
+mirror the temperaments: Opus blunders by ordering legal-but-self-defeating moves
+while orchestrating a complex plan; Sonnet blunders by reaching for moves the map
+forbids (illegal supports), then throwing the same doomed move at a wall for six
+turns.
+
+**Did Opus play "smarter"?** The read refines the question rather than answering
+it. Opus shows more tactical execution (coordination that lands, real adaptation
+after failure, a decisive outcome), the clearest sense in which it looks smarter,
+but it also blunders more visibly, and because both games are self-play, Opus's
+harder, more decisive game could reflect sharper opponents (a tougher table) as
+much as a sharper model. The honest claim is about style: Opus is the more
+executive, dynamic player (intent becomes board result); Sonnet the more static,
+cautious one; and Opus's sophistication and its self-bounces are two faces of the
+same ambition. The ranking itself waits on the model-capability rotation, where
+the models meet on one board.
+
 ### One gateway key instead of three accounts
 
 An LLM gateway (Vercel AI Gateway, OpenRouter) exposes Gemini, DeepSeek,
