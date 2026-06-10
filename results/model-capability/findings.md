@@ -30,6 +30,23 @@ land within 2x on tokens and wall time. Cached input (the bracketed share
 above) is billed at 10% of the full input rate. Per-token rates and the full
 six-model cost-and-competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
 
+Where those tokens go, using the canonical Sonnet game (885 calls, 11.9M input
++ 347K output) as the budget. Every call is one of three kinds, and the three
+account for the whole budget; there is no other token sink.
+
+| call type | calls | input (prompt + context) | output | share of all tokens |
+|-----------|-------|--------------------------|--------|---------------------|
+| negotiation | 420 | 5.6M | 243K | 48% |
+| strategy | 280 | 3.8M | 37K | 31% |
+| moves | 185 | 2.5M | 68K | 21% |
+| **total** | **885** | **11.9M** | **347K** | **100%** |
+
+Two things stand out. There is no separate "prompt" line because the prompt
+*is* the input side of every call: about 97% of all tokens are input (the board
+state, rules, persona, and running history re-sent on each call) and only ~3%
+are model output. And negotiation is the single largest consumer at ~48%, which
+fits the project's premise that the dialogue, not the move, is the deliverable.
+
 ## The three models in self-play (style)
 
 **MiMo (S, budget): the talkative brawler.** The most talkative and most
