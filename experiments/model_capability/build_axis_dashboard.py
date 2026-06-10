@@ -95,6 +95,7 @@ def extract(games_dir: str) -> dict:
             o, d = od.get(power, (0, 0))
             raw[lbl]["off_sum"] += o
             raw[lbl]["def_sum"] += d
+            raw[lbl]["nations"] += 1  # power-games this model drove
             od_points[lbl].append((o, d))
 
     return {"final": final, "traj": traj, "raw": raw,
@@ -151,6 +152,11 @@ def _competence(events: list[dict], label: dict, raw: dict) -> None:
                 if len(parts) == 2 and " - " in parts[1]:
                     c["supp_move"] += 1
                     unit, dest = (s.strip() for s in parts[1].split(" - ", 1))
+                    ut = unit.split()
+                    if len(ut) >= 2 and (
+                        ut[0], ut[1].split("/")[0],
+                        dest.split("/")[0]) not in move_targets.get(ph, set()):
+                        c["supp_uncoord"] += 1  # backed a move no one ordered
                     failed = any(t in ("bounce", "void", "dislodged")
                                  for t in res.get(unit, ["void"]))
                     landed = bool(unit.split()) and (
@@ -500,79 +506,51 @@ def plot_trajectory(traj: dict) -> str:
     return "\n".join(s)
 
 
-# --- plot 3: competence panels ----------------------------------------------
+# --- plots 3 & 4: competence and negotiation bar panels ---------------------
 
-def plot_competence(raw: dict) -> str:
-    def illegal_pct(m):
-        c = raw[m]
-        return 100 * c["illegal"] / c["orders"] if c["orders"] else 0
+def _poisson_err(k: int, n: int, scale: float = 100.0) -> tuple[float, bool]:
+    """1-sigma Poisson error on a bar of value scale*k/n. k is an event count
+    over a large, ~fixed denominator n, so sigma_k = sqrt(k). A zero count is a
+    one-sided upper limit: observing 0 implies under one event, so sigma < 1.
+    Returns (magnitude, is_upper_limit)."""
+    if not n:
+        return (0.0, False)
+    if k == 0:
+        return (scale * 1.0 / n, True)
+    return (scale * math.sqrt(k) / n, False)
 
-    def supp_pct(m):
-        c = raw[m]
-        return 100 * c["supp_move_ok"] / c["supp_move"] if c["supp_move"] else 0
 
-    def selfb_rate(m):
-        c = raw[m]
-        return 100 * c["self_bounce"] / c["orders"] if c["orders"] else 0
+def _rate(raw, m, num, den, scale=100.0):
+    """(value, poisson_error) for scale * raw[m][num] / raw[m][den]."""
+    c = raw[m]
+    v = scale * c[num] / c[den] if c[den] else 0.0
+    return v, _poisson_err(c[num], c[den], scale)
 
-    def supp_n(m):
-        return f"n={raw[m]['supp_move']}"
 
-    # Each bar is 100 * k / n for an event count k over a (large, ~fixed)
-    # denominator n, so k is approximately Poisson and the 1-sigma error on the
-    # bar is 100 * sqrt(k) / n. A zero count is treated as a one-sided upper
-    # limit: observing 0 implies fewer than one event, so sigma < sqrt(1) = 1,
-    # drawn upward only. Returns (magnitude, is_upper_limit).
-    def _poisson_err(k, n):
-        if not n:
-            return (0.0, False)
-        if k == 0:
-            return (100 * 1.0 / n, True)
-        return (100 * math.sqrt(k) / n, False)
-
-    def illegal_err(m):
-        return _poisson_err(raw[m]["illegal"], raw[m]["orders"])
-
-    def supp_err(m):
-        return _poisson_err(raw[m]["supp_move_ok"], raw[m]["supp_move"])
-
-    def selfb_err(m):
-        return _poisson_err(raw[m]["self_bounce"], raw[m]["orders"])
-
-    # Each panel: title, y-label, value fn, hint, per-bar sub-annotation fn
-    # (None = no sub-label), 1-sigma error fn. The move-support panel prints its
-    # sample size on every bar because the counts are small enough to mislead.
-    panels = [
-        ("Illegal-order rate", "% of orders", illegal_pct, "lower is better",
-         None, illegal_err),
-        ("Move-support success", "% of move-supports", supp_pct,
-         "higher is better, but small n", supp_n, supp_err),
-        ("Self-bounces", "per 100 orders", selfb_rate, "lower is better",
-         None, selfb_err),
-    ]
-    pw, ph = 250, 320
-    oy = 30  # top band for the plot title
-    w, h = pw * 3, ph + oy
+def _bar_panels(number: int, title: str, panels: list) -> str:
+    """Render a one-row grid of bar charts with Poisson error bars, MiMo ->
+    Sonnet -> Opus, no per-bar value labels (exact numbers live in the KPI
+    table). Each panel is (panel_title, hint, {m: (value, (err, is_limit))})."""
+    pw, ph, oy = 250, 320, 30
+    w, h = pw * len(panels), ph + oy
+    bar_order = list(reversed(ORDER))  # MiMo, Sonnet, Opus
     s = [f"<svg viewBox='0 0 {w} {h}' xmlns='http://www.w3.org/2000/svg' "
-         f"font-family='{FONT}' width='{w}' height='{h}'>"]
-    s.append(f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
-             f"font-weight='600' fill='#333'>3. Competence by model</text>")
-
-    for pi, (title, ylab, fn, hint, subfn, efn) in enumerate(panels):
+         f"font-family='{FONT}' width='{w}' height='{h}'>",
+         f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
+         f"font-weight='600' fill='#333'>{number}. {title}</text>"]
+    for pi, (ptitle, hint, data) in enumerate(panels):
         ox = pi * pw
         pad_l, pad_b, pad_t = 44, 64, 50
         plot_h = ph - pad_b - pad_t
-        bar_order = list(reversed(ORDER))  # MiMo, Sonnet, Opus
-        vals = [fn(m) for m in bar_order]
-        errs = [efn(m) for m in bar_order]  # (magnitude, is_upper_limit)
-        # leave room for the upper error cap and the value label above it
-        vmax = max([v + e[0] for v, e in zip(vals, errs)] + [1]) * 1.15
         bw = 46
         gap = (pw - 2 * pad_l) / len(ORDER)
+        vals = [data[m][0] for m in bar_order]
+        errs = [data[m][1] for m in bar_order]
+        vmax = max([v + e[0] for v, e in zip(vals, errs)] + [1e-6]) * 1.12
         s.append(f"<text x='{ox+pw/2:.0f}' y='{22+oy}' text-anchor='middle' "
-                 f"font-size='12.5' font-weight='600' fill='#333'>{title}</text>")
+                 f"font-size='12.5' font-weight='600' fill='#333'>{ptitle}</text>")
         s.append(f"<text x='{ox+pw/2:.0f}' y='{38+oy}' text-anchor='middle' "
-                 f"font-size='9.5' fill='#aaa'>{ylab} · {hint}</text>")
+                 f"font-size='9.5' fill='#aaa'>{hint}</text>")
         baseline = oy + pad_t + plot_h
         s.append(f"<line x1='{ox+pad_l}' y1='{baseline}' x2='{ox+pw-12}' "
                  f"y2='{baseline}' stroke='#ddd' stroke-width='1'/>")
@@ -583,28 +561,47 @@ def plot_competence(raw: dict) -> str:
             s.append(f"<rect x='{cx-bw/2:.1f}' y='{by:.1f}' width='{bw}' "
                      f"height='{baseline-by:.1f}' rx='2' fill='{COLOR[m]}' "
                      f"fill-opacity='0.85'/>")
-            # Poisson error bar: symmetric 1-sigma, or one-sided upper limit when
-            # the count is zero (top cap only, stem rising from the bar).
+            # symmetric 1-sigma bar, or one-sided upper limit for a zero count
             y_hi = baseline - plot_h * ((val + err) / vmax)
             if err > 0:
                 y_lo = by if is_limit else baseline - plot_h * (max(val - err, 0.0) / vmax)
                 s.append(f"<line x1='{cx:.1f}' y1='{y_hi:.1f}' x2='{cx:.1f}' "
                          f"y2='{y_lo:.1f}' stroke='#333' stroke-width='1.3'/>")
-                caps = (y_hi,) if is_limit else (y_hi, y_lo)
-                for yy in caps:
+                for yy in ((y_hi,) if is_limit else (y_hi, y_lo)):
                     s.append(f"<line x1='{cx-7:.1f}' y1='{yy:.1f}' x2='{cx+7:.1f}' "
                              f"y2='{yy:.1f}' stroke='#333' stroke-width='1.3'/>")
-            s.append(f"<text x='{cx:.1f}' y='{y_hi-6:.1f}' text-anchor='middle' "
-                     f"font-size='11.5' font-weight='700' fill='{COLOR[m]}'>"
-                     f"{val:.1f}</text>")
             s.append(f"<text x='{cx:.1f}' y='{baseline+16:.1f}' text-anchor='middle' "
                      f"font-size='10.5' fill='#666'>{m}</text>")
-            if subfn is not None:
-                s.append(f"<text x='{cx:.1f}' y='{baseline+30:.1f}' "
-                         f"text-anchor='middle' font-size='9' fill='#aaa'>"
-                         f"{subfn(m)}</text>")
     s.append("</svg>")
     return "\n".join(s)
+
+
+def plot_competence(raw: dict) -> str:
+    panels = [
+        ("Illegal-order rate", "% of orders · lower is better",
+         {m: _rate(raw, m, "illegal", "orders") for m in ORDER}),
+        ("Move-support success", "% of move-supports · higher is better",
+         {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}),
+        ("Uncoordinated supports", "% of move-supports · lower is better",
+         {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}),
+        ("Self-bounces", "per 100 orders · lower is better",
+         {m: _rate(raw, m, "self_bounce", "orders") for m in ORDER}),
+    ]
+    return _bar_panels(3, "Competence by model", panels)
+
+
+def plot_negotiation(raw: dict) -> str:
+    panels = [
+        ("Messages / nation", "count per nation-game",
+         {m: _rate(raw, m, "msgs", "nations", scale=1.0) for m in ORDER}),
+        ("Conditional bargaining", "% of messages",
+         {m: _rate(raw, m, "cond", "msgs") for m in ORDER}),
+        ("Alliance language", "% of messages",
+         {m: _rate(raw, m, "alliance", "msgs") for m in ORDER}),
+        ("Betrayals", "% of messages · heuristic",
+         {m: _rate(raw, m, "betray", "msgs") for m in ORDER}),
+    ]
+    return _bar_panels(4, "Negotiation by model", panels)
 
 
 # --- plot 4: offence vs defence scatter -------------------------------------
@@ -625,7 +622,7 @@ def plot_scatter(od_points: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "4. Offence vs Defence (per nation)")
+    s = _svg_open(w, h, "5. Offence vs Defence (per nation)")
     # axis frame
     s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
              f"stroke='#bbb' stroke-width='0.8'/>")
@@ -706,6 +703,7 @@ def kpi_table(data: dict) -> str:
         ("Betrayals", lambda m: pct(raw[m]['betray'], raw[m]['msgs'])),
         ("Hold rate", lambda m: pct(raw[m]['holds'], raw[m]['orders'])),
         ("Move-support success", lambda m: pct(raw[m]['supp_move_ok'], raw[m]['supp_move'])),
+        ("Uncoordinated supports", lambda m: pct(raw[m]['supp_uncoord'], raw[m]['supp_move'])),
         ("Illegal orders", lambda m: pct(raw[m]['illegal'], raw[m]['orders'])),
         ("Self-bounces / 100 orders",
          lambda m: f"{100*raw[m]['self_bounce']/raw[m]['orders']:.1f}" if raw[m]['orders'] else "n/a"),
@@ -725,7 +723,6 @@ def kpi_table(data: dict) -> str:
 def build_index(data: dict) -> str:
     raw = data["raw"]
     n = data["n_games"]
-    supp_n = {m: raw[m]["supp_move"] for m in ORDER}
     css = (
         "body{font:15px/1.6 " + FONT + ";color:#222;max-width:860px;margin:0 auto;"
         "padding:32px 24px;}h1{font-size:22px;margin:0 0 4px;}"
@@ -754,19 +751,26 @@ def build_index(data: dict) -> str:
         "<figure><object type='image/svg+xml' data='sc_trajectory.svg'></object></figure>",
 
         "<figure><object type='image/svg+xml' data='competence.svg'></object>",
-        f"<figcaption><b>Competence is where the tiers separate.</b> Illegal-order "
-        f"rate ladders cleanly by price: MiMo roughly triples Opus's rate, with "
-        f"Sonnet between, the same coordination-failure ladder the self-play games "
-        f"show. Move-support success is noisier (only {supp_n['Opus']}/{supp_n['MiMo']} "
-        f"move-supports for Opus/MiMo in 3 years, so read it as indicative). "
-        f"Self-bounces echo the paradox from self-play: the budget model trips over "
-        f"its own units least because it attempts the least coordination. Error bars "
-        f"are 1&sigma; Poisson (&radic;N on the event count, scaled by the order "
-        f"total): the illegal-order ladder survives them, but they swallow the "
-        f"move-support panel whole, confirming those differences are not significant "
-        f"at this sample size. MiMo's zero self-bounces is drawn as a one-sided upper "
-        f"limit (observing none implies under one event, so &sigma; &lt; 1)."
-        f"</figcaption></figure>",
+        "<figcaption><b>Competence is where the tiers separate.</b> Illegal-order "
+        "rate ladders cleanly by price: MiMo roughly triples Opus's rate, with Sonnet "
+        "between, the same coordination-failure ladder the self-play games show. "
+        "Move-support success and uncoordinated supports (backing a move your own side "
+        "never ordered) probe coordination coherence; self-bounces echo the self-play "
+        "paradox, the budget model jamming its own units least because it attempts the "
+        "least coordination. Error bars are 1&sigma; Poisson (&radic;N on the event "
+        "count): the illegal-order ladder clears them, but they swallow the "
+        "move-support panel, so those differences are not significant at this sample "
+        "size. A zero count is drawn as a one-sided upper limit (observing none "
+        "implies under one event, so &sigma; &lt; 1). Exact values are in the KPI "
+        "table below.</figcaption></figure>",
+
+        "<figure><object type='image/svg+xml' data='negotiation.svg'></object>",
+        "<figcaption><b>Negotiation separates the personas.</b> MiMo and Opus talk "
+        "the most per nation; Sonnet drives the hardest bargains (most conditional "
+        "and alliance language); and betrayal cleaves the field, Opus breaking its "
+        "word least (it betrays only when it announces why) against MiMo's and "
+        "Sonnet's higher rates. Same 1&sigma; Poisson error bars; betrayals are a "
+        "keyword heuristic, so read them as order-of-magnitude.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='offence_defence.svg'></object>",
         "<figcaption><b>Style, the canonical dashboard's signature view.</b> Each "
@@ -808,6 +812,7 @@ def main() -> int:
     (out / "final_centers.svg").write_text(plot_final(data["final"]))
     (out / "sc_trajectory.svg").write_text(plot_trajectory(data["traj"]))
     (out / "competence.svg").write_text(plot_competence(data["raw"]))
+    (out / "negotiation.svg").write_text(plot_negotiation(data["raw"]))
     (out / "offence_defence.svg").write_text(plot_scatter(data["od_points"]))
     (out / "index.html").write_text(build_index(data))
 
