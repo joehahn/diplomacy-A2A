@@ -1067,10 +1067,11 @@ slideshow:
   stop-list (`IF`, `AND`, `BUT`, `THE`, `OUR`, `ALL`, …) filters the
   most common false-positive 3-letter tokens.
 - **Offence score** (per-power cumulative line chart on the dashboard index,
-  signed): rewards taking ground each movement phase. Every successful move earns
-  **+2** for **dislodging an enemy** (taking a province it occupied, land or sea)
-  or **+1** for **advancing into a vacant province** (a follow into a square the
-  enemy merely vacated scores +1, not +2); separately, losing a supply center
+  signed): rewards taking ground each movement phase, on a ladder of resistance
+  overcome. Every successful move earns **+3** for **dislodging a hold-supported
+  (defended) enemy**, **+2** for **dislodging a lone enemy** (a follow into a
+  square the enemy merely vacated scores +1, not +2), or **+1** for **advancing
+  into a vacant province** (land or sea); separately, losing a supply center
   costs **-1** if you garrisoned it, **-2** if you left it undefended. Cumulative
   net per power. Because it credits maneuvering, not just captures, it is
   decoupled from the final standings: a power that probes and advances a lot can

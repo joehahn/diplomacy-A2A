@@ -1736,10 +1736,10 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 ] = net
 
     # Offence and defence scores, accumulated per power per phase, for the
-    # trajectory charts. Offence rewards taking ground each movement phase: +2
-    # for dislodging an enemy (taking a province it occupied, land or sea), +1
-    # for advancing into a vacant province; plus a territorial penalty of -1 for
-    # losing a garrisoned supply center, -2 for losing an undefended one.
+    # trajectory charts. Offence rewards taking ground each movement phase: +3
+    # for dislodging a hold-supported (defended) enemy, +2 for dislodging a lone
+    # enemy, +1 for advancing into a vacant province; plus a territorial penalty
+    # of -1 for losing a garrisoned supply center, -2 for losing an undefended one.
     # Defence scores units under attack each movement phase: +2/+1 for a unit
     # that held against a supported/unsupported attack, -2/-1 for a unit
     # dislodged on a supply center / elsewhere. Both are cumulative net.
@@ -1786,9 +1786,23 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 continue
             d = agg_delta.setdefault(cur_ph, {})
             d[a] = d.get(a, 0) + (-1 if prev_occ.get(sc) == a else -2)
-    # Gain side: every successful move at a movement phase. +2 for dislodging an
-    # enemy out of the destination, +1 for advancing into a vacant province (a
-    # follow into a square the enemy merely vacated scores +1, not +2).
+    # Hold-supported units per movement phase, so a dislodge can tell whether the
+    # defender was a defended position (had hold-support) or a lone unit.
+    hold_supported: dict[str, set[str]] = {}
+    for e in events:
+        if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
+            continue
+        ph = e.get("phase", "")
+        for o in e.get("valid", []):
+            if " S " not in o:
+                continue
+            sup = o.split(" S ", 1)[1].strip()
+            if " - " not in sup:  # a hold-support backing unit `sup` in place
+                hold_supported.setdefault(ph, set()).add(sup)
+    # Gain side: every successful move at a movement phase. Dislodging an enemy
+    # scores +3 if it was hold-supported (a defended position), +2 if it was a
+    # lone unit; advancing into a vacant province scores +1 (a follow into a
+    # square the enemy merely vacated also scores +1).
     for e in events:
         if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
             continue
@@ -1807,7 +1821,10 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             if occ is None:
                 gain = 1
             elif occ[0] != power:
-                gain = 2 if any("dislodged" in t for t in res.get(occ[1], [])) else 1
+                if any("dislodged" in t for t in res.get(occ[1], [])):
+                    gain = 3 if occ[1] in hold_supported.get(ph, set()) else 2
+                else:
+                    gain = 1  # enemy merely vacated; we followed in
             else:
                 continue  # moved into a square one of your own units held
             d = agg_delta.setdefault(ph, {})
@@ -2114,7 +2131,8 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             index_body.append(
                 "<div class='kpi-notes'>"
                 "<p class='kpi-note'><b>Offence</b> rewards units taking ground:<br>"
-                "&nbsp;&nbsp;+2 for dislodging an enemy from a province<br>"
+                "&nbsp;&nbsp;+3 for dislodging a supported enemy<br>"
+                "&nbsp;&nbsp;+2 for dislodging an unsupported enemy<br>"
                 "&nbsp;&nbsp;+1 for advancing into a vacant province<br>"
                 "&nbsp;&nbsp;-1 for losing a garrisoned supply center<br>"
                 "&nbsp;&nbsp;-2 for losing an undefended supply center</p>"
