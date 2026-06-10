@@ -53,14 +53,15 @@ START_CENTERS = {
 }
 BOARD_AVG = 34 / 7  # all 34 supply centers / 7 powers, the no-edge baseline
 
-# Total-parameter estimates in billions: (low, central, high, label). Only MiMo
-# (an open model) is a published figure; Anthropic discloses nothing for Sonnet
-# and Opus, so these are third-party speculation (throughput-based estimates and
-# the wider "expert" claims). The low-high spread is drawn as a horizontal error
-# bar. Central is the geometric midpoint of low and high (log axis). See the
-# project memory for sourcing; treat as order-of-magnitude only.
+# TOTAL-parameter estimates in billions: (low, central, high, label). All three
+# are mixture-of-experts, so active params are only ~5-15% of these totals; on a
+# log axis that is a near-uniform leftward shift that does not change the picture,
+# so we plot total. MiMo V2.5 is published (311B total / 15B active); Anthropic
+# discloses nothing for Sonnet and Opus, so those are third-party speculation and
+# the low-high spread becomes a horizontal error bar (central = geometric midpoint
+# on the log axis). Treat the Claude figures as order-of-magnitude only.
 PARAMS_B = {
-    "MiMo": (7, 7, 7, "~7B (published)"),
+    "MiMo": (311, 311, 311, "311B (published)"),
     "Sonnet": (1000, 1400, 2000, "~1-2T (est.)"),
     "Opus": (1500, 2700, 5000, "~1.5-5T (est.)"),
 }
@@ -887,7 +888,7 @@ def plot_param_frontier(data: dict) -> str:
     hi = {m: math.log10(PARAMS_B[m][2]) for m in ORDER}
     yv = {m: statistics.mean(final[m]) for m in ORDER}
     ye = {m: sem(final[m]) for m in ORDER}
-    x0 = min(lo.values()) - 0.4
+    x0 = min(lo.values()) - 0.6
     x1 = max(hi.values()) + 0.4
     y0 = min(yv[m] - ye[m] for m in ORDER) - 0.5
     y1 = max(yv[m] + ye[m] for m in ORDER) + 0.5
@@ -1074,14 +1075,17 @@ def build_index(data: dict) -> str:
 
         "<figure><object type='image/svg+xml' data='param_frontier.svg'></object>",
         "<figcaption><b>Does size predict territory? (speculative)</b> Final supply "
-        "centers against total parameter count on a log axis. Only MiMo's ~7B is a "
-        "published figure; Anthropic discloses nothing for Sonnet and Opus, so their "
-        "horizontal bars span the wide third-party guesses (throughput-based estimates "
-        "and louder 'expert' claims put Sonnet near 1&ndash;2T and Opus near "
-        "1.5&ndash;5T, total). Vertical bars are 1&sigma; standard error on centers. "
-        "The takeaway mirrors the cost frontier: across a ~400&times; range in (alleged) "
-        "size, final centers stay flat at 3 years, raw scale does not buy territory in "
-        "a short game. Read the x-axis as order-of-magnitude only.</figcaption></figure>",
+        "centers against total parameter count on a log axis. MiMo is a published "
+        "311B-parameter MoE (so the budget model is cheap, not small); Anthropic "
+        "discloses nothing for Sonnet and Opus, so their horizontal bars span the wide "
+        "third-party guesses (~1&ndash;2T for Sonnet, ~1.5&ndash;5T for Opus, total). "
+        "Vertical bars are 1&sigma; standard error on centers. All three are "
+        "mixture-of-experts, so active parameters are only ~5&ndash;15% of these "
+        "totals, a near-uniform leftward shift on a log axis that would not change the "
+        "picture. The takeaway mirrors the cost frontier: across the ~10&times; of "
+        "total parameters these models span, final centers stay flat at 3 years, raw "
+        "scale does not buy territory in a short game. Read the x-axis as "
+        "order-of-magnitude only.</figcaption></figure>",
 
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
