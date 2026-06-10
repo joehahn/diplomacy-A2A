@@ -983,6 +983,8 @@ body:has(.thread:target) .thread:target { display: block; }
            background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
 .kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
 .kpi-svg .dot-wrap:hover circle:nth-child(2) { r: 4.5; }
+.kpi-svg .dot-wrap:hover circle.sc-final { r: 7; }
+.sc-label { font-size: 13.5px; font-weight: 600; }
 .kpi-svg .dot-tip { opacity: 0; pointer-events: none; }
 .kpi-svg .dot-wrap:hover .dot-tip { opacity: 1; }
 .kpi-svg .dot-tip-bg { fill: #222; fill-opacity: 0.92; }
@@ -1453,6 +1455,11 @@ def _scatter_chart(
             f"<polyline points='{pts}' fill='none' stroke='{color}' "
             f"stroke-width='1.4' stroke-opacity='0.30'/>"
         )
+        for x, y in traj:
+            parts.append(
+                f"<circle cx='{x_for(x):.1f}' cy='{y_for(y):.1f}' r='1.6' "
+                f"fill='{color}' fill-opacity='0.5'/>"
+            )
     for power, xv, yv in points:
         cx, cy = x_for(xv), y_for(yv)
         color = POWER_COLORS.get(power, "#777")
@@ -1460,9 +1467,9 @@ def _scatter_chart(
         parts.append(
             f"<g class='dot-wrap'>"
             f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='9' class='dot-hit'/>"
-            f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='4' fill='{color}' stroke='white' "
-            f"stroke-width='1'><title>{tip}</title></circle>"
-            f"<text x='{cx+6:.1f}' y='{cy-5:.1f}' class='kpi-tick' fill='{color}'>"
+            f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='5.3' class='sc-final' fill='{color}' "
+            f"stroke='white' stroke-width='1'><title>{tip}</title></circle>"
+            f"<text x='{cx+7:.1f}' y='{cy-6:.1f}' class='sc-label' fill='{color}'>"
             f"{power.title()}</text></g>"
         )
     parts.append("</svg>")
@@ -2105,13 +2112,16 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             index_body.append("<h2>Supply center trajectory</h2>")
             index_body.append(full_chart)
             index_body.append(
-                "<p class='kpi-note'><b>Offence</b> rewards taking ground each "
-                "movement phase: +2 for dislodging an enemy from any province, +1 "
-                "for advancing into a vacant one, and -1/-2 for losing a "
-                "garrisoned/undefended supply center. <b>Defence</b> scores units "
-                "under attack: +2/+1 for holding (against a supported/unsupported "
-                "attack), -2/-1 for being dislodged (on a supply center/elsewhere). "
-                "Both accumulate over the game.</p>"
+                "<p class='kpi-note'><b>Offence</b> rewards taking ground:<br>"
+                "&nbsp;&nbsp;+2 for dislodging an enemy from a province<br>"
+                "&nbsp;&nbsp;+1 for advancing into a vacant province<br>"
+                "&nbsp;&nbsp;-1 for losing a garrisoned supply center<br>"
+                "&nbsp;&nbsp;-2 for losing an undefended supply center</p>"
+                "<p class='kpi-note'><b>Defence</b> scores units under attack:<br>"
+                "&nbsp;&nbsp;+2 for holding against a supported attack<br>"
+                "&nbsp;&nbsp;+1 for holding against an unsupported attack<br>"
+                "&nbsp;&nbsp;-2 for being dislodged on a supply center<br>"
+                "&nbsp;&nbsp;-1 for being dislodged elsewhere</p>"
             )
         last_ph = phase_order[-1]
         agg_final = aggression_by_phase.get(last_ph, {})
