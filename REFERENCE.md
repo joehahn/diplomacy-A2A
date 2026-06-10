@@ -1086,7 +1086,7 @@ slideshow:
   fall on the offence score instead). The **+2 dislodge** line on offence mirrors
   the dislodge line here: an attack you land is the same event the defender
   survives or falls to.
-- **Offence-vs-defence scatter** (dashboard index): one power-colored dot per
+- **Defence-vs-offence scatter** (dashboard index): one power-colored dot per
   nation, final offence (x) vs final defence (y), with dashed zero crosshairs
   marking the four offence/defence quadrants. Each nation's path through the
   plane over the game is overlaid as a translucent curve ending at its dot, so

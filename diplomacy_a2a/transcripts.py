@@ -2137,14 +2137,14 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             for p in powers_all
         }
         scatter = _scatter_chart(
-            "Offence vs defence (paths end at the labeled dot)",
+            "Defence vs Offence (paths end at the labeled dot)",
             [(p, agg_final.get(p, 0), def_final.get(p, 0)) for p in powers_all],
             xlabel="Offence score", ylabel="Defence score",
             width=640, height=550,
             trajectories=trajectories,
         )
         if scatter:
-            index_body.append("<h2>Offence vs defence (trajectories)</h2>")
+            index_body.append("<h2>Defence vs Offence</h2>")
             standings_side = (
                 "<div class='kpi-standings-side'>"
                 "<h3 class='so-heading'>Final standings</h3>"
