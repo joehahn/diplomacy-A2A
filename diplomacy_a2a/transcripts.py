@@ -1383,15 +1383,23 @@ def _scatter_chart(
     ylabel: str,
     width: int = 480,
     height: int = 414,
+    trajectories: dict[str, list[tuple[float, float]]] | None = None,
 ) -> str:
     """Scatter of one labeled, power-colored dot per power, with dashed zero
-    crosshairs so the four quadrants (strong/weak offense x strong/weak defense)
-    read at a glance. `points` is (power, x, y); hover shows both scores.
+    crosshairs so the four quadrants (strong/weak offence x strong/weak defence)
+    read at a glance. `points` is (power, x, y); hover shows both scores. When
+    `trajectories` (power -> [(x, y), ...] over the phases) is given, each power's
+    path through the plane is drawn as a translucent connected curve ending at
+    its dot.
     """
     if not points:
         return ""
-    xs_v = [x for _, x, _ in points]
-    ys_v = [y for _, _, y in points]
+    if trajectories:
+        xs_v = [x for traj in trajectories.values() for x, _ in traj]
+        ys_v = [y for traj in trajectories.values() for _, y in traj]
+    else:
+        xs_v = [x for _, x, _ in points]
+        ys_v = [y for _, _, y in points]
     xmin, xmax = min(xs_v + [0]), max(xs_v + [0])
     ymin, ymax = min(ys_v + [0]), max(ys_v + [0])
     xmin -= (xmax - xmin) * 0.12 or 1
@@ -1435,10 +1443,20 @@ def _scatter_chart(
         parts.append(
             f"<text x='{pad_l-5}' y='{y_for(v)+3:.1f}' text-anchor='end' class='kpi-tick'>{int(v)}</text>"
         )
+    # Translucent trajectories first, so the endgame dots sit on top of them.
+    for power, traj in (trajectories or {}).items():
+        if len(traj) < 2:
+            continue
+        color = POWER_COLORS.get(power, "#777")
+        pts = " ".join(f"{x_for(x):.1f},{y_for(y):.1f}" for x, y in traj)
+        parts.append(
+            f"<polyline points='{pts}' fill='none' stroke='{color}' "
+            f"stroke-width='1.4' stroke-opacity='0.30'/>"
+        )
     for power, xv, yv in points:
         cx, cy = x_for(xv), y_for(yv)
         color = POWER_COLORS.get(power, "#777")
-        tip = f"{power.title()}: agg {int(round(xv)):+d}, def {int(round(yv)):+d}"
+        tip = f"{power.title()}: offence {int(round(xv)):+d}, defence {int(round(yv)):+d}"
         parts.append(
             f"<g class='dot-wrap'>"
             f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='9' class='dot-hit'/>"
@@ -2098,14 +2116,23 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         last_ph = phase_order[-1]
         agg_final = aggression_by_phase.get(last_ph, {})
         def_final = defense_by_phase.get(last_ph, {})
+        trajectories = {
+            p: [
+                (aggression_by_phase.get(ph, {}).get(p, 0),
+                 defense_by_phase.get(ph, {}).get(p, 0))
+                for ph in phase_order
+            ]
+            for p in powers_all
+        }
         scatter = _scatter_chart(
-            "Offence vs defence (endgame)",
+            "Offence vs defence (paths end at the labeled dot)",
             [(p, agg_final.get(p, 0), def_final.get(p, 0)) for p in powers_all],
             xlabel="Offence score", ylabel="Defence score",
             width=640, height=550,
+            trajectories=trajectories,
         )
         if scatter:
-            index_body.append("<h2>Offence vs defence (endgame)</h2>")
+            index_body.append("<h2>Offence vs defence (trajectories)</h2>")
             standings_side = (
                 "<div class='kpi-standings-side'>"
                 "<h3 class='so-heading'>Final standings</h3>"
