@@ -53,6 +53,18 @@ START_CENTERS = {
 }
 BOARD_AVG = 34 / 7  # all 34 supply centers / 7 powers, the no-edge baseline
 
+# Total-parameter estimates in billions: (low, central, high, label). Only MiMo
+# (an open model) is a published figure; Anthropic discloses nothing for Sonnet
+# and Opus, so these are third-party speculation (throughput-based estimates and
+# the wider "expert" claims). The low-high spread is drawn as a horizontal error
+# bar. Central is the geometric midpoint of low and high (log axis). See the
+# project memory for sourcing; treat as order-of-magnitude only.
+PARAMS_B = {
+    "MiMo": (7, 7, 7, "~7B (published)"),
+    "Sonnet": (1000, 1400, 2000, "~1-2T (est.)"),
+    "Opus": (1500, 2700, 5000, "~1.5-5T (est.)"),
+}
+
 
 # --- extraction -------------------------------------------------------------
 
@@ -166,6 +178,10 @@ def _competence(events: list[dict], label: dict, raw: dict) -> None:
                 c["holds"] += 1
             if re.search(r"\bC\b", o) or o.rstrip().endswith(" VIA"):
                 c["convoy"] += 1  # convoying fleet (C) or convoyed army (VIA)
+            if o.rstrip().endswith(" VIA"):
+                via_unit = o.split(" - ", 1)[0].strip()
+                if any("no convoy" in t for t in res.get(via_unit, [])):
+                    c["convoy_uncoord"] += 1  # convoy move with no fleet to carry it
             if " S " in o:
                 c["support"] += 1
                 parts = o.split(" S ")
@@ -632,14 +648,16 @@ def plot_competence(raw: dict) -> str:
          {m: _rate(raw, m, "self_bounce", "orders") for m in ORDER}, "{:.1f}"),
         ("Uncoordinated supports", "% of move-supports · lower is better",
          {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}, "{:.1f}%"),
+        ("Convoy rate", "% of orders · rare",
+         {m: _rate(raw, m, "convoy", "orders") for m in ORDER}, "{:.1f}%"),
+        ("Uncoordinated convoys", "% of orders · rare",
+         {m: _rate(raw, m, "convoy_uncoord", "orders") for m in ORDER}, "{:.1f}%"),
         ("Move-support success", "% of move-supports · higher is better",
          {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}, "{:.1f}%"),
         ("Support rate", "% of orders · coordination effort",
          {m: _rate(raw, m, "support", "orders") for m in ORDER}, "{:.1f}%"),
         ("Hold rate", "% of orders · passivity",
          {m: _rate(raw, m, "holds", "orders") for m in ORDER}, "{:.1f}%"),
-        ("Convoy rate", "% of orders · rare",
-         {m: _rate(raw, m, "convoy", "orders") for m in ORDER}, "{:.1f}%"),
     ]
     return _bar_panels(3, "Competence by model", panels, per_row=3, show_values=True)
 
@@ -850,6 +868,87 @@ def plot_cost_frontier(data: dict) -> str:
     return "\n".join(s)
 
 
+# --- plot 7: final centers vs model size (speculative) ----------------------
+
+def plot_param_frontier(data: dict) -> str:
+    """Final supply centers vs total parameter count (log x). Vertical bars are
+    1-sigma standard error on centers; horizontal bars are the wide third-party
+    speculation range on size (Sonnet and Opus are undisclosed, so the bar spans
+    the published guesses). Tests whether raw scale predicts territory."""
+    final = data["final"]
+
+    def sem(vals):
+        return statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
+
+    w, h = 620, 440
+    pad_l, pad_r, pad_b, pad_t = 56, 160, 56, 44
+    lx = {m: math.log10(PARAMS_B[m][1]) for m in ORDER}
+    lo = {m: math.log10(PARAMS_B[m][0]) for m in ORDER}
+    hi = {m: math.log10(PARAMS_B[m][2]) for m in ORDER}
+    yv = {m: statistics.mean(final[m]) for m in ORDER}
+    ye = {m: sem(final[m]) for m in ORDER}
+    x0 = min(lo.values()) - 0.4
+    x1 = max(hi.values()) + 0.4
+    y0 = min(yv[m] - ye[m] for m in ORDER) - 0.5
+    y1 = max(yv[m] + ye[m] for m in ORDER) + 0.5
+    plot_w, plot_h = w - pad_l - pad_r, h - pad_b - pad_t
+
+    def xf(v):
+        return pad_l + plot_w * ((v - x0) / (x1 - x0))
+
+    def yf(v):
+        return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
+
+    s = _svg_open(w, h, "7. Final supply centers vs model size")
+    s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
+             f"stroke='#bbb' stroke-width='0.8'/>")
+    s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
+             f"y2='{pad_t+plot_h}' stroke='#bbb' stroke-width='0.8'/>")
+    for lv, lbl in ((0, "1B"), (1, "10B"), (2, "100B"), (3, "1T"), (4, "10T")):
+        if x0 <= lv <= x1:
+            s.append(f"<line x1='{xf(lv):.1f}' y1='{pad_t+plot_h}' x2='{xf(lv):.1f}' "
+                     f"y2='{pad_t+plot_h+3}' stroke='#bbb'/>")
+            s.append(f"<text x='{xf(lv):.1f}' y='{pad_t+plot_h+16:.0f}' "
+                     f"text-anchor='middle' font-size='9' fill='#999'>{lbl}</text>")
+    for v in range(math.ceil(y0), int(y1) + 1):
+        s.append(f"<text x='{pad_l-7}' y='{yf(v)+3:.1f}' text-anchor='end' "
+                 f"font-size='9' fill='#999'>{v}</text>")
+    s.append(f"<text x='{pad_l+plot_w/2:.0f}' y='{h-6}' text-anchor='middle' "
+             f"font-size='10' fill='#777'>total parameters (log, speculative)</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+             f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
+             f"text-anchor='middle'>supply centers / nation</text>")
+    for m in ORDER:
+        cx, cy, col = xf(lx[m]), yf(yv[m]), COLOR[m]
+        # horizontal parameter-uncertainty bar
+        if hi[m] > lo[m]:
+            s.append(f"<line x1='{xf(lo[m]):.1f}' y1='{cy:.1f}' x2='{xf(hi[m]):.1f}' "
+                     f"y2='{cy:.1f}' stroke='{col}' stroke-width='1.6'/>")
+            for xx in (xf(lo[m]), xf(hi[m])):
+                s.append(f"<line x1='{xx:.1f}' y1='{cy-5:.1f}' x2='{xx:.1f}' "
+                         f"y2='{cy+5:.1f}' stroke='{col}' stroke-width='1.6'/>")
+        # vertical standard-error bar on centers
+        if ye[m] > 0:
+            s.append(f"<line x1='{cx:.1f}' y1='{yf(yv[m]-ye[m]):.1f}' x2='{cx:.1f}' "
+                     f"y2='{yf(yv[m]+ye[m]):.1f}' stroke='{col}' stroke-width='1.6'/>")
+            for yy in (yf(yv[m] - ye[m]), yf(yv[m] + ye[m])):
+                s.append(f"<line x1='{cx-5:.1f}' y1='{yy:.1f}' x2='{cx+5:.1f}' "
+                         f"y2='{yy:.1f}' stroke='{col}' stroke-width='1.6'/>")
+        s.append(f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='6' fill='{col}' "
+                 f"stroke='#222' stroke-width='1.4'/>")
+    # legend at right with the size estimates
+    lxleg = w - pad_r + 18
+    ly0 = pad_t + plot_h / 2 - 22
+    for i, m in enumerate(["MiMo", "Sonnet", "Opus"]):
+        ly = ly0 + i * 26
+        s.append(f"<circle cx='{lxleg+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
+                 f"stroke='#222' stroke-width='1.2'/>")
+        s.append(f"<text x='{lxleg+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
+                 f"{m} <tspan fill='#999'>{PARAMS_B[m][3]}</tspan></text>")
+    s.append("</svg>")
+    return "\n".join(s)
+
+
 # --- per-model KPI table ----------------------------------------------------
 
 def kpi_table(data: dict) -> str:
@@ -875,6 +974,7 @@ def kpi_table(data: dict) -> str:
         ("Hold rate", lambda m: pct(raw[m]['holds'], raw[m]['orders'])),
         ("Support rate", lambda m: pct(raw[m]['support'], raw[m]['orders'])),
         ("Convoy rate", lambda m: pct(raw[m]['convoy'], raw[m]['orders'])),
+        ("Uncoordinated convoys", lambda m: pct(raw[m]['convoy_uncoord'], raw[m]['orders'])),
         ("Move-support success", lambda m: pct(raw[m]['supp_move_ok'], raw[m]['supp_move'])),
         ("Uncoordinated supports", lambda m: pct(raw[m]['supp_uncoord'], raw[m]['supp_move'])),
         ("Illegal orders", lambda m: pct(raw[m]['illegal'], raw[m]['orders'])),
@@ -972,6 +1072,17 @@ def build_index(data: dict) -> str:
         "keep on the 10-year games, where, if territory finally separates, the "
         "question becomes whether the gain is worth the cost.</figcaption></figure>",
 
+        "<figure><object type='image/svg+xml' data='param_frontier.svg'></object>",
+        "<figcaption><b>Does size predict territory? (speculative)</b> Final supply "
+        "centers against total parameter count on a log axis. Only MiMo's ~7B is a "
+        "published figure; Anthropic discloses nothing for Sonnet and Opus, so their "
+        "horizontal bars span the wide third-party guesses (throughput-based estimates "
+        "and louder 'expert' claims put Sonnet near 1&ndash;2T and Opus near "
+        "1.5&ndash;5T, total). Vertical bars are 1&sigma; standard error on centers. "
+        "The takeaway mirrors the cost frontier: across a ~400&times; range in (alleged) "
+        "size, final centers stay flat at 3 years, raw scale does not buy territory in "
+        "a short game. Read the x-axis as order-of-magnitude only.</figcaption></figure>",
+
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
         "(or as a share) so the three models compare despite Sonnet playing five "
@@ -1006,6 +1117,7 @@ def main() -> int:
     (out / "negotiation.svg").write_text(plot_negotiation(data["raw"]))
     (out / "offence_defence_means.svg").write_text(plot_od_means(data["od_points"]))
     (out / "cost_frontier.svg").write_text(plot_cost_frontier(data))
+    (out / "param_frontier.svg").write_text(plot_param_frontier(data))
     (out / "index.html").write_text(build_index(data))
     # remove superseded artifacts
     for stale in ("offence_defence_bars.svg", "offence_defence.svg",
