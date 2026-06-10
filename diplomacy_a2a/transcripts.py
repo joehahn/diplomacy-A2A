@@ -1211,7 +1211,7 @@ def _adjustments_chart(
     powers: list[str],
     *,
     width: int = 966,
-    height: int = 168,
+    height: int = 414,
 ) -> str:
     """Diverging bar chart of per-year adjustments: builds above the zero line,
     disbands below, one bar per power colored from POWER_COLORS. Shares the SC
