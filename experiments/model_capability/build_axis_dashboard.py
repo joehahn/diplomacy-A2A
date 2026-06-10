@@ -190,7 +190,9 @@ def plot_final(final: dict) -> str:
 
     cols = [pad_l + 90 + i * 200 for i in range(len(ORDER))]
     bw = 84
-    s = _svg_open(w, h, "Final supply centers by model (7-game rotation)")
+    # plot 1 runs cheap -> expensive left to right: MiMo, Sonnet, Opus
+    plot_order = list(reversed(ORDER))
+    s = _svg_open(w, h, "1. Final supply centers by model")
 
     # y grid + ticks
     for v in range(int(y0), int(y1) + 1):
@@ -210,7 +212,7 @@ def plot_final(final: dict) -> str:
     s.append(f"<text x='{w-22}' y='{ya-4:.1f}' text-anchor='end' font-size='9.5' "
              f"fill='#999'>board average {BOARD_AVG:.2f} (34 SC / 7 powers)</text>")
 
-    for col, m in zip(cols, ORDER):
+    for col, m in zip(cols, plot_order):
         vals = final[m]
         mean = statistics.mean(vals)
         # standard deviation of the mean (standard error): sample std / sqrt(n)
@@ -227,16 +229,11 @@ def plot_final(final: dict) -> str:
         for yy in (y_hi, y_lo):
             s.append(f"<line x1='{col-9:.1f}' y1='{yy:.1f}' x2='{col+9:.1f}' "
                      f"y2='{yy:.1f}' stroke='#222' stroke-width='1.4'/>")
-        # value label above the error bar
-        s.append(f"<text x='{col:.0f}' y='{y_hi-7:.1f}' text-anchor='middle' "
-                 f"font-size='12.5' font-weight='700' fill='{COLOR[m]}'>"
-                 f"{mean:.2f}<tspan font-size='10' font-weight='400' "
-                 f"fill='#777'> ± {sem:.2f}</tspan></text>")
         # column label
         s.append(f"<text x='{col:.0f}' y='{h-30}' text-anchor='middle' "
                  f"font-size='12' font-weight='600' fill='{COLOR[m]}'>{m}</text>")
         s.append(f"<text x='{col:.0f}' y='{h-16}' text-anchor='middle' "
-                 f"font-size='9.5' fill='#999'>{TIER[m]} · n={len(vals)}</text>")
+                 f"font-size='9.5' fill='#999'>({len(vals)} nations)</text>")
     s.append("</svg>")
     return "\n".join(s)
 
@@ -257,7 +254,7 @@ def plot_trajectory(traj: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "Mean supply centers by year, per model")
+    s = _svg_open(w, h, "2. Mean supply centers by year, per model")
     # y grid
     v = y0
     while v <= y1 + 1e-9:
@@ -336,9 +333,12 @@ def plot_competence(raw: dict) -> str:
         ("Self-bounces", "per 100 orders", selfb_rate, "lower is better", None),
     ]
     pw, ph = 250, 320
-    w, h = pw * 3, ph
+    oy = 30  # top band for the plot title
+    w, h = pw * 3, ph + oy
     s = [f"<svg viewBox='0 0 {w} {h}' xmlns='http://www.w3.org/2000/svg' "
          f"font-family='{FONT}' width='{w}' height='{h}'>"]
+    s.append(f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
+             f"font-weight='600' fill='#333'>3. Competence by model</text>")
 
     for pi, (title, ylab, fn, hint, subfn) in enumerate(panels):
         ox = pi * pw
@@ -348,11 +348,11 @@ def plot_competence(raw: dict) -> str:
         vmax = max(vals + [1]) * 1.25
         bw = 46
         gap = (pw - 2 * pad_l) / len(ORDER)
-        s.append(f"<text x='{ox+pw/2:.0f}' y='22' text-anchor='middle' "
+        s.append(f"<text x='{ox+pw/2:.0f}' y='{22+oy}' text-anchor='middle' "
                  f"font-size='12.5' font-weight='600' fill='#333'>{title}</text>")
-        s.append(f"<text x='{ox+pw/2:.0f}' y='38' text-anchor='middle' "
+        s.append(f"<text x='{ox+pw/2:.0f}' y='{38+oy}' text-anchor='middle' "
                  f"font-size='9.5' fill='#aaa'>{ylab} · {hint}</text>")
-        baseline = pad_t + plot_h
+        baseline = oy + pad_t + plot_h
         s.append(f"<line x1='{ox+pad_l}' y1='{baseline}' x2='{ox+pw-12}' "
                  f"y2='{baseline}' stroke='#ddd' stroke-width='1'/>")
         for i, m in enumerate(ORDER):
@@ -392,17 +392,11 @@ def build_index(data: dict) -> str:
         "<a class='back' href='../findings.md'>&larr; findings.md</a>",
         "<h1>Model-capability axis: the 7-game rotation</h1>",
         f"<p class='sub'>Opus (frontier) and MiMo (budget) each rotate through all "
-        f"seven powers once, on opposite sides of the board, against a Sonnet field. "
-        f"Counterbalancing board position across {n} games isolates the model from "
-        f"the seat. Games run 3 years (S1901&ndash;W1903A).</p>",
+        f"seven powers once, on opposite sides of the board, against a Sonnet field, "
+        f"counterbalancing board position across {n} games to isolate model-dependant "
+        f"outcomes from the nations they play.</p>",
 
-        "<figure><object type='image/svg+xml' data='final_centers.svg'></object>",
-        "<figcaption><b>The ranking is a near-tie at 3 years.</b> Every model lands "
-        "within a tenth of a center of the 4.86 board average: a 3-year game is long "
-        "enough to carve up all 34 centers but too short for any tier to convert "
-        "capability into territory. Bars are the mean final center count; error bars "
-        "are the standard deviation of the mean (standard error, std / &radic;n), and "
-        "they overlap heavily, so the differences are not significant.</figcaption></figure>",
+        "<figure><object type='image/svg+xml' data='final_centers.svg'></object></figure>",
 
         "<figure><object type='image/svg+xml' data='sc_trajectory.svg'></object>",
         "<figcaption><b>All three expand in lockstep.</b> The models climb together "
