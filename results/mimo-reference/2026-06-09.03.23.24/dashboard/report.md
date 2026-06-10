@@ -21,6 +21,7 @@
   - self-bounces: 0
 - **Land turnover**: 24
 - **Dislodgements**: 12
+- **Supports cut**: 6
 - **Builds**: 25
 - **Disbands**: 10
 - **Hold rate**: 48.4%

@@ -448,9 +448,12 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
                     ):
                         adjacency_errors += 1
 
-        # Pass 2: bounces and dislodgements from per-unit result tokens at
-        # phase_resolved.
-        bounces = dislodgements = 0
+        # Pass 2: bounces, dislodgements, and cut supports from per-unit result
+        # tokens at phase_resolved. A "cut" token marks a support order that was
+        # cut (nullified) by an enemy attack on the supporting unit, so the count
+        # is the number of supports cut over the game: a marker of tactical
+        # counterplay (attacking a supporter to break a wall).
+        bounces = dislodgements = supports_cut = 0
         for e in events:
             if e.get("type") == "phase_resolved":
                 for tokens in (e.get("results", {}) or {}).values():
@@ -458,6 +461,8 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
                         bounces += 1
                     if any("dislodged" in t for t in tokens):
                         dislodgements += 1
+                    if any("cut" in t for t in tokens):
+                        supports_cut += 1
 
         # Pass 2b: cumulative builds and disbands across all adjustment
         # ("A") phases. Scoped to adjustment phases so retreat-phase removals,
@@ -703,6 +708,7 @@ def _compute_outcomes(events: list[dict], run_ended: dict) -> list[tuple]:
             if land_turnover > 0 and land:
                 outcomes_rows.append(("Land turnover", str(land_turnover)))
             outcomes_rows.append(("Dislodgements", str(dislodgements)))
+            outcomes_rows.append(("Supports cut", str(supports_cut)))
         if builds or disbands:
             outcomes_rows.append(("Builds", str(builds)))
             outcomes_rows.append(("Disbands", str(disbands)))
