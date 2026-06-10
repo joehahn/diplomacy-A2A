@@ -2113,7 +2113,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             index_body.append(full_chart)
             index_body.append(
                 "<div class='kpi-notes'>"
-                "<p class='kpi-note'><b>Offence</b> rewards taking ground:<br>"
+                "<p class='kpi-note'><b>Offence</b> rewards units taking ground:<br>"
                 "&nbsp;&nbsp;+2 for dislodging an enemy from a province<br>"
                 "&nbsp;&nbsp;+1 for advancing into a vacant province<br>"
                 "&nbsp;&nbsp;-1 for losing a garrisoned supply center<br>"
