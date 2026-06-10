@@ -643,24 +643,26 @@ def _bar_panels(number: int, title: str, panels: list,
 
 def plot_competence(raw: dict) -> str:
     panels = [
+        # row 1: error / coordination-failure metrics
         ("Illegal-order rate", "% of orders · lower is better",
          {m: _rate(raw, m, "illegal", "orders") for m in ORDER}, "{:.1f}%"),
         ("Self-bounces", "per 100 orders · lower is better",
          {m: _rate(raw, m, "self_bounce", "orders") for m in ORDER}, "{:.1f}"),
         ("Uncoordinated supports", "% of move-supports · lower is better",
          {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}, "{:.1f}%"),
-        ("Convoy rate", "% of orders · rare",
-         {m: _rate(raw, m, "convoy", "orders") for m in ORDER}, "{:.1f}%"),
         ("Uncoordinated convoys", "% of orders · rare",
          {m: _rate(raw, m, "convoy_uncoord", "orders") for m in ORDER}, "{:.1f}%"),
-        ("Move-support success", "% of move-supports · higher is better",
-         {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}, "{:.1f}%"),
-        ("Support rate", "% of orders · coordination effort",
-         {m: _rate(raw, m, "support", "orders") for m in ORDER}, "{:.1f}%"),
+        # row 2: order-mix and coordination metrics
         ("Hold rate", "% of orders · passivity",
          {m: _rate(raw, m, "holds", "orders") for m in ORDER}, "{:.1f}%"),
+        ("Support rate", "% of orders · coordination effort",
+         {m: _rate(raw, m, "support", "orders") for m in ORDER}, "{:.1f}%"),
+        ("Move-support success", "% of move-supports · higher is better",
+         {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}, "{:.1f}%"),
+        ("Convoy rate", "% of orders · rare",
+         {m: _rate(raw, m, "convoy", "orders") for m in ORDER}, "{:.1f}%"),
     ]
-    return _bar_panels(3, "Competence by model", panels, per_row=3, show_values=True)
+    return _bar_panels(3, "Competence by model", panels, per_row=4, show_values=True)
 
 
 def plot_negotiation(raw: dict) -> str:
