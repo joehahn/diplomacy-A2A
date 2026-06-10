@@ -9,7 +9,7 @@ hand-rolled inline-SVG plots plus an index.html into the output dashboard dir.
 No plotting dependency, matching the per-game dashboards in transcripts.py.
 
     python experiments/model_capability/build_axis_dashboard.py \
-        --games scratch/model-capability-3yr \
+        --games results/model-capability \
         --out results/model-capability/dashboard
 
 Plots:
@@ -366,7 +366,13 @@ def _legend(x: float, y: float) -> str:
 def plot_final(final: dict) -> str:
     w, h = 760, 380
     pad_l, pad_b, pad_t = 56, 58, 44
-    y0, y1 = 0.0, 6.0  # supply-center axis; bars start at 0
+    # bars start at 0; the top auto-scales so longer games (leaders reaching 8-12
+    # centers) do not clip, with a floor of 6 so short games keep headroom.
+    def _sem(vals):
+        return statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
+    top = max(statistics.mean(final[m]) + _sem(final[m]) for m in ORDER)
+    y0, y1 = 0.0, max(6.0, float(math.ceil(top + 0.5)))
+    ystep = 1 if y1 <= 8 else 2
     plot_h = h - pad_b - pad_t
 
     def yf(v):
@@ -379,7 +385,7 @@ def plot_final(final: dict) -> str:
     s = _svg_open(w, h, "1. Final supply centers by model")
 
     # y grid + ticks
-    for v in range(int(y0), int(y1) + 1):
+    for v in range(int(y0), int(y1) + 1, ystep):
         yy = yf(v)
         s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-20}' y2='{yy:.1f}' "
                  f"stroke='#eee' stroke-width='1'/>")
@@ -421,9 +427,21 @@ def plot_trajectory(traj: dict) -> str:
     w, h = 760, 360
     pad_l, pad_r, pad_b, pad_t = 56, 140, 50, 44
     years = sorted(traj)
-    y0, y1 = 2.8, 5.4
     plot_w = w - pad_l - pad_r
     plot_h = h - pad_b - pad_t
+
+    def sem(vals):
+        return statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
+
+    # y-range auto-scales to the error-bar extent, padded and snapped to 0.5,
+    # so a 10-year game (means spreading well past 5) does not clip.
+    lo = min(statistics.mean(traj[yr][m]) - sem(traj[yr][m])
+             for yr in years for m in ORDER)
+    hi = max(statistics.mean(traj[yr][m]) + sem(traj[yr][m])
+             for yr in years for m in ORDER)
+    y0 = math.floor((lo - 0.15) * 2) / 2
+    y1 = math.ceil((hi + 0.15) * 2) / 2
+    ystep = 0.5 if (y1 - y0) <= 3 else 1.0
 
     def xf(yr):
         return pad_l + plot_w * (years.index(yr) / (len(years) - 1))
@@ -431,17 +449,16 @@ def plot_trajectory(traj: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    def sem(vals):
-        return statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
-
     s = _svg_open(w, h, "2. Mean supply centers by year, per model")
-    # y grid at whole-and-half marks inside the range
-    for v in (3.0, 3.5, 4.0, 4.5, 5.0):
+    # y grid
+    v = y0
+    while v <= y1 + 1e-9:
         yy = yf(v)
         s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-pad_r}' y2='{yy:.1f}' "
                  f"stroke='#eee' stroke-width='1'/>")
         s.append(f"<text x='{pad_l-8}' y='{yy+3:.1f}' text-anchor='end' "
                  f"font-size='10' fill='#999'>{v:.1f}</text>")
+        v += ystep
     # x ticks
     for yr in years:
         lbl = "start" if yr == 1900 else str(yr)
@@ -736,7 +753,7 @@ def build_index(data: dict) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--games", default="scratch/model-capability-3yr",
+    ap.add_argument("--games", default="results/model-capability",
                     help="dir holding the rotation games (each */transcript.jsonl)")
     ap.add_argument("--out", default="results/model-capability/dashboard",
                     help="output dashboard dir")
