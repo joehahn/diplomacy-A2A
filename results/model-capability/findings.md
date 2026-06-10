@@ -42,7 +42,7 @@ geometry: ~6% of its orders are illegal, and almost all of those are non-adjacen
 support orders (a fleet "supporting" an attack it cannot reach), often the same
 impossible order re-issued for many turns. It reflexively dogpiles the leader, so
 its game is maximally contested and no one solos.
-Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html) or [report](../mimo-reference/2026-06-09.03.23.24/dashboard/report.md)
+Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html)
 
 **Sonnet (M, mid): the polite accountant.** Articulate, rule-literate, and
 risk-averse; it reasons in explicit strength-math but rarely converts it. Its
@@ -52,7 +52,7 @@ board stalemates, and it re-issues the same failed move for five or six seasons
 form in chat but never on the board, so the leader (England, 8-9 centers) is
 never finished or checked. Tidy on defense, low on betrayal, and lighter on
 ruthlessness than its own persona prescribes.
-Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html) or [report](../canonical/2026-06-04.14.48.20/dashboard/report.md)
+Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)
 
 **Opus (L, frontier): the staff officer.** Plays like seven disciplined staff
 officers: peace-first openings, meticulously specified combined-arms that mostly
@@ -63,7 +63,7 @@ precise and transactional, betraying only when it announces why. Its signature
 flaw is the shadow of its ambition: juggling many units in active rotation
 chains, it self-bounces 16 times, ordering a unit into a square its own side
 already holds.
-Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/opus-reference/2026-06-09.17.03.53/dashboard/index.html) or [report](../opus-reference/2026-06-09.17.03.53/dashboard/report.md)
+Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/opus-reference/2026-06-09.17.03.53/dashboard/index.html)
 
 ### What the three share, and where they ladder
 

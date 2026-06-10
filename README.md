@@ -387,7 +387,7 @@ varying a single axis. Each gets its own writeup as it completes:
   model (MiMo), a mid-tier model (Sonnet), and a frontier model (Opus), play one
   board across seven counterbalanced games, so board position is averaged out.
   LLM gaming capabilities and head-to-head rankings are reported in
-  [`results/model-capability/`](results/model-capability/README.md).
+  [`results/model-capability/`](results/model-capability/findings.md).
 - **Pre-game collusion** *(planned)*: two agents share a private agreement before
   the game starts.
 - **Personality trait** *(planned)*: one aggressive, untruthful, or backstabbing

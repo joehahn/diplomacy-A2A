@@ -18,7 +18,7 @@ to scratch/.
     python experiments/llm_axis.py --dry-run                # print commands, run nothing
 
 Roster is pinned in config.py (LLM_AXIS_TOPSHELF / LLM_AXIS_LOWCOST / the field
-is DEFAULT_MODEL). See results/model-capability/README.md for the writeup.
+is DEFAULT_MODEL). See results/model-capability/findings.md for the writeup.
 """
 from __future__ import annotations
 
