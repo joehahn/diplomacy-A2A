@@ -383,32 +383,38 @@ game-year. It shows precisely what each agent was shown (the system rules,
 its board view, the dialogue, its strategy notes) and what it replied, the
 ground truth behind everything in the dashboard.
 
+## Experiments
+
+Goal 3 runs as controlled-variation experiments, each holding the table fixed and
+varying a single axis. Each gets its own writeup as it completes:
+
+- **Model capability** *(in progress)*: three tee-shirt-sized models, a budget
+  model (MiMo), a mid-tier model (Sonnet), and a frontier model (Opus), play one
+  board across seven counterbalanced games, so board position is averaged out and
+  the models are ranked fairly rather than by a single seat. Self-play style
+  profiles and the head-to-head ranking live in
+  [`results/model-capability/`](results/model-capability/README.md).
+- **Personality trait** *(planned)*: one aggressive, untruthful, or backstabbing
+  agent at an otherwise neutral table.
+- **Memory depth** *(planned)*: one agent given more or less past-turn context.
+- **Pre-game collusion** *(planned)*: two agents share a private agreement before
+  the game starts.
+- **Information asymmetry** *(planned)*: one agent has part of its prompt hidden
+  (for example the supply-center tracker), forcing it to infer standings from
+  unit positions and dialogue.
+
+The cheaper-model gateway that makes these sweeps affordable (any non-`claude-*`
+model id routes to OpenRouter; opt-in, reads its own `OPENROUTER_API_KEY`) is
+documented in the provider-boundary section of REFERENCE.md.
+
 ## Summary of Main Findings
 
 This section will fill in with empirical results from the goal-3
 controlled-variation experiments as they complete. Expected content:
-per-axis takeaways (model capability, personality trait, memory depth,
-pre-game collusion, information asymmetry), the success-vs-spend chart
-described in goal 3, and any falsifiable claims that emerge about which
-agent designs perform better in A2A competition.
-
-Cost to execute the canonical game is about **$26 when using Sonnet**,
-which processes **11.9M input tokens** (of which about **48% is
-cached and served at 10% of full price**) and **347K output tokens**
-across **about 885 LLM calls**, with the game executing in about
-**34 minutes** of wall time.
-
-### Cost-reduction work in progress: cheaper-model gateway
-
-To make the goal-3 sweeps affordable, agents can now run on cheaper
-non-Anthropic models (DeepSeek, Gemini, Kimi, MiniMax) through an
-OpenRouter gateway, chosen per power by model id. A `claude-*` id routes
-to the direct `AnthropicClient`; any other id (for example
-`deepseek/deepseek-v4-flash`) routes to a `GatewayClient` speaking
-OpenRouter's OpenAI-compatible API. The "runs with only an Anthropic key"
-default is unchanged: the gateway is opt-in and reads its own
-`OPENROUTER_API_KEY`. See the provider-boundary section of REFERENCE.md for
-rationale, candidate models, and caveats.
+per-axis takeaways, the success-vs-spend chart described in goal 3, and any
+falsifiable claims that emerge about which agent designs perform better in A2A
+competition. The first results are landing now in the model-capability
+experiment above.
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).
 

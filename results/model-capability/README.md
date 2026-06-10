@@ -14,6 +14,22 @@ game: a budget model (xiaomi/mimo-v2.5, **S**), a mid-tier model (Claude Sonnet
 
 Read the top half as personalities; read the bottom half as the leaderboard.
 
+## Cost: the price spread these tiers represent
+
+The headline cost of one 10-year self-play game per model:
+
+| tier | model | 10-year self-play cost |
+|------|-------|------------------------|
+| S (budget) | xiaomi/mimo-v2.5 | $1.66 |
+| M (mid) | Claude Sonnet 4.6 | $25.62 |
+| L (frontier) | Claude Opus 4.8 | $184.16 |
+
+Roughly a 110x spread from budget to frontier. For reference, the canonical
+Sonnet game processes about 11.9M input tokens (about 48% cached and served at
+10% of full price) and 347K output tokens across about 885 LLM calls, in about
+34 minutes of wall time. Per-token rates and the full six-model cost-and-
+competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
+
 ## The three models in self-play (style)
 
 **MiMo (S, budget): the talkative brawler.** The most talkative and most
