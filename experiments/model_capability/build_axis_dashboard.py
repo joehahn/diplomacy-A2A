@@ -26,7 +26,13 @@ import json
 import math
 import re
 import statistics
+import sys
 from pathlib import Path
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+from diplomacy_a2a.runner import _estimate_cost  # noqa: E402  (reuse the rate table)
 
 # --- model roster -----------------------------------------------------------
 
@@ -66,6 +72,7 @@ def extract(games_dir: str) -> dict:
     raw = collections.defaultdict(collections.Counter)   # model->counters
     od_points = {m: [] for m in ORDER}                   # model->[(offence, defence)] finals
     od_traj = {m: [] for m in ORDER}                     # model->[trajectory] per nation-game
+    tokens = collections.defaultdict(collections.Counter)  # raw_model_id -> token bucket
 
     for path in paths:
         events = _load(path)
@@ -74,6 +81,8 @@ def extract(games_dir: str) -> dict:
 
         # final supply centers
         ended = next(e for e in events if e["type"] == "run_ended")
+        for raw_m, tk in (ended.get("tokens_by_model", {}) or {}).items():
+            tokens[raw_m].update(tk)
         centers = ended["final_state"]["centers"]
         for power, lbl in label.items():
             final[lbl].append(len(centers.get(power, [])))
@@ -101,8 +110,16 @@ def extract(games_dir: str) -> dict:
             od_points[lbl].append((o, d))
             od_traj[lbl].append(path)
 
+    # per-model API cost across the rotation, and cost per nation-game driven
+    cost_per_nation = {}
+    for raw_m, bucket in tokens.items():
+        lbl = MODEL_LABEL.get(raw_m)
+        if lbl and raw[lbl]["nations"]:
+            cost_per_nation[lbl] = _estimate_cost({raw_m: dict(bucket)}) / raw[lbl]["nations"]
+
     return {"final": final, "traj": traj, "raw": raw, "od_points": od_points,
-            "od_traj": od_traj, "n_games": len(paths)}
+            "od_traj": od_traj, "cost_per_nation": cost_per_nation,
+            "n_games": len(paths)}
 
 
 def _competence(events: list[dict], label: dict, raw: dict) -> None:
@@ -611,19 +628,19 @@ def _bar_panels(number: int, title: str, panels: list,
 def plot_competence(raw: dict) -> str:
     panels = [
         ("Illegal-order rate", "% of orders · lower is better",
-         {m: _rate(raw, m, "illegal", "orders") for m in ORDER}),
+         {m: _rate(raw, m, "illegal", "orders") for m in ORDER}, "{:.1f}%"),
         ("Move-support success", "% of move-supports · higher is better",
-         {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}),
+         {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}, "{:.1f}%"),
         ("Uncoordinated supports", "% of move-supports · lower is better",
-         {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}),
+         {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}, "{:.1f}%"),
         ("Self-bounces", "per 100 orders · lower is better",
-         {m: _rate(raw, m, "self_bounce", "orders") for m in ORDER}),
+         {m: _rate(raw, m, "self_bounce", "orders") for m in ORDER}, "{:.1f}"),
         ("Support rate", "% of orders · coordination effort",
-         {m: _rate(raw, m, "support", "orders") for m in ORDER}),
+         {m: _rate(raw, m, "support", "orders") for m in ORDER}, "{:.1f}%"),
         ("Hold rate", "% of orders · passivity",
-         {m: _rate(raw, m, "holds", "orders") for m in ORDER}),
+         {m: _rate(raw, m, "holds", "orders") for m in ORDER}, "{:.1f}%"),
     ]
-    return _bar_panels(3, "Competence by model", panels, per_row=3)
+    return _bar_panels(3, "Competence by model", panels, per_row=3, show_values=True)
 
 
 def plot_negotiation(raw: dict) -> str:
@@ -737,7 +754,13 @@ def plot_od_trajectories(od_traj: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "6. Offence-defence path, every nation-game")
+    # drawn in w x h coordinates but rendered 33% larger
+    scale = 1.33
+    s = [f"<svg viewBox='0 0 {w} {h}' xmlns='http://www.w3.org/2000/svg' "
+         f"font-family='{FONT}' width='{w*scale:.0f}' height='{h*scale:.0f}'>",
+         f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
+         f"font-weight='600' fill='#333'>"
+         f"6. Offence-defence path, every nation-game</text>"]
     s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
              f"stroke='#bbb' stroke-width='0.8'/>")
     s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
@@ -763,13 +786,16 @@ def plot_od_trajectories(od_traj: dict) -> str:
     # total ink is comparable despite Sonnet having five times as many curves
     for m in ORDER:
         n = max(len(od_traj[m]), 1)
-        op = max(0.14, min(0.5, 2.6 / n))
+        op = max(0.175, min(0.62, 3.25 / n))  # 25% more opaque than before
         for tr in od_traj[m]:
             pts = " ".join(
                 f"{'M' if i == 0 else 'L'} {xf(d):.1f} {yf(o):.1f}"
                 for i, (o, d) in enumerate(tr))
             s.append(f"<path d='{pts}' fill='none' stroke='{COLOR[m]}' "
                      f"stroke-width='1.4' stroke-opacity='{op:.2f}'/>")
+            for o, d in tr:
+                s.append(f"<circle cx='{xf(d):.1f}' cy='{yf(o):.1f}' r='1.7' "
+                         f"fill='{COLOR[m]}' fill-opacity='{op:.2f}'/>")
     # legend at right
     lx = w - pad_r + 22
     ly0 = pad_t + plot_h / 2 - 22
@@ -779,6 +805,111 @@ def plot_od_trajectories(od_traj: dict) -> str:
                  f"stroke='{COLOR[m]}' stroke-width='2.5'/>")
         s.append(f"<text x='{lx+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
                  f"{m} <tspan fill='#999'>{TIER[m]}</tspan></text>")
+    s.append("</svg>")
+    return "\n".join(s)
+
+
+# --- plot 7: cost-performance frontier (prototype) --------------------------
+
+def plot_cost_frontier(data: dict) -> str:
+    """Per-dollar view: each KPI plotted against cost per nation-game (log x),
+    one point per model. A near-flat frontier means paying more buys no gain on
+    that KPI; a sloped one means it does. Prototype: at 3 years the models are
+    near-tied, so this mostly shows MiMo's cost dominance until 10-year games
+    let territory separate."""
+    raw, final, cost = data["raw"], data["final"], data["cost_per_nation"]
+
+    def sem(vals):
+        return statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
+
+    def rate(m, num, den):
+        c = raw[m]
+        v = 100 * c[num] / c[den] if c[den] else 0.0
+        return v, _poisson_err(c[num], c[den])[0]
+
+    panels = [
+        ("Final centers / nation", "outcome · higher is better",
+         {m: (statistics.mean(final[m]), sem(final[m])) for m in ORDER}, "{:.2f}"),
+        ("Illegal-order rate", "% of orders · lower is better",
+         {m: rate(m, "illegal", "orders") for m in ORDER}, "{:.1f}%"),
+        ("Support rate", "% of orders · coordination",
+         {m: rate(m, "support", "orders") for m in ORDER}, "{:.1f}%"),
+    ]
+    pw, ph, oy = 250, 340, 30
+    w, h = pw * len(panels), ph + oy
+    pad_l, pad_b, pad_t = 50, 64, 52
+    plot_h = ph - pad_b - pad_t
+    plot_w = pw - pad_l - 20
+    lx = {m: math.log10(cost[m]) for m in ORDER}
+    x0 = min(lx.values()) - 0.55
+    x1 = max(lx.values()) + 0.55
+    cost_order = sorted(ORDER, key=lambda m: cost[m])  # cheap -> frontier
+
+    def xf(ox, v):
+        return ox + pad_l + plot_w * ((v - x0) / (x1 - x0))
+
+    s = [f"<svg viewBox='0 0 {w} {h}' xmlns='http://www.w3.org/2000/svg' "
+         f"font-family='{FONT}' width='{w}' height='{h}'>",
+         f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
+         f"font-weight='600' fill='#333'>7. KPIs per dollar "
+         f"(cost-performance frontier)</text>"]
+    for pi, (ptitle, hint, dat, fmt) in enumerate(panels):
+        ox = pi * pw
+        ys = [dat[m][0] for m in ORDER]
+        es = [dat[m][1] for m in ORDER]
+        y0 = min(y - e for y, e in zip(ys, es))
+        y1 = max(y + e for y, e in zip(ys, es))
+        pad = (y1 - y0) * 0.3 + 1e-6
+        y0, y1 = y0 - pad, y1 + pad
+
+        def yf(v, y0=y0, y1=y1):
+            return oy + pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
+
+        base = oy + pad_t + plot_h
+        s.append(f"<text x='{ox+pw/2:.0f}' y='{22+oy}' text-anchor='middle' "
+                 f"font-size='12.5' font-weight='600' fill='#333'>{ptitle}</text>")
+        s.append(f"<text x='{ox+pw/2:.0f}' y='{38+oy}' text-anchor='middle' "
+                 f"font-size='9.5' fill='#aaa'>{hint}</text>")
+        s.append(f"<line x1='{ox+pad_l}' y1='{base}' x2='{ox+pad_l+plot_w}' "
+                 f"y2='{base}' stroke='#bbb' stroke-width='0.8'/>")
+        for lv, lbl in ((-2, "$0.01"), (-1, "$0.10"), (0, "$1"), (1, "$10")):
+            if x0 <= lv <= x1:
+                s.append(f"<line x1='{xf(ox,lv):.1f}' y1='{base}' "
+                         f"x2='{xf(ox,lv):.1f}' y2='{base+3}' stroke='#bbb'/>")
+                s.append(f"<text x='{xf(ox,lv):.1f}' y='{base+15:.0f}' "
+                         f"text-anchor='middle' font-size='9' fill='#999'>{lbl}</text>")
+        s.append(f"<text x='{ox+pad_l+plot_w/2:.0f}' y='{base+32:.0f}' "
+                 f"text-anchor='middle' font-size='9.5' fill='#888'>"
+                 f"cost / nation (log)</text>")
+        # faint frontier line through points in ascending-cost order
+        line = " ".join(
+            f"{'M' if i == 0 else 'L'} {xf(ox,lx[m]):.1f} {yf(dat[m][0]):.1f}"
+            for i, m in enumerate(cost_order))
+        s.append(f"<path d='{line}' fill='none' stroke='#ccc' stroke-width='1.5'/>")
+        for m in ORDER:
+            cx, cy, e = xf(ox, lx[m]), yf(dat[m][0]), dat[m][1]
+            if e > 0:
+                s.append(f"<line x1='{cx:.1f}' y1='{yf(dat[m][0]-e):.1f}' "
+                         f"x2='{cx:.1f}' y2='{yf(dat[m][0]+e):.1f}' "
+                         f"stroke='{COLOR[m]}' stroke-width='1.4'/>")
+                for yy in (yf(dat[m][0] - e), yf(dat[m][0] + e)):
+                    s.append(f"<line x1='{cx-4:.1f}' y1='{yy:.1f}' x2='{cx+4:.1f}' "
+                             f"y2='{yy:.1f}' stroke='{COLOR[m]}' stroke-width='1.4'/>")
+            s.append(f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='5' fill='{COLOR[m]}' "
+                     f"stroke='#222' stroke-width='1.2'/>")
+            s.append(f"<text x='{cx:.1f}' y='{yf(dat[m][0]+e)-7:.1f}' "
+                     f"text-anchor='middle' font-size='10.5' font-weight='700' "
+                     f"fill='{COLOR[m]}'>{fmt.format(dat[m][0])}</text>")
+    # shared legend, centered at the bottom
+    items = [(m, f"{m} (${cost[m]:.2f}/nation)") for m in cost_order]
+    total_w = sum(9 + 7 + len(lbl) * 6.0 + 22 for _, lbl in items)
+    cur = w / 2 - total_w / 2
+    for m, lbl in items:
+        s.append(f"<rect x='{cur:.1f}' y='{h-13}' width='11' height='11' rx='2' "
+                 f"fill='{COLOR[m]}'/>")
+        s.append(f"<text x='{cur+16:.1f}' y='{h-4}' font-size='10.5' fill='#555'>"
+                 f"{lbl}</text>")
+        cur += 9 + 7 + len(lbl) * 6.0 + 22
     s.append("</svg>")
     return "\n".join(s)
 
@@ -897,6 +1028,17 @@ def build_index(data: dict) -> str:
         "model so Sonnet's 35 curves and the others' 7 carry comparable ink)."
         "</figcaption></figure>",
 
+        "<figure><object type='image/svg+xml' data='cost_frontier.svg'></object>",
+        "<figcaption><b>What does the money buy? (prototype)</b> Each KPI plotted "
+        "against cost per nation-game on a log axis (MiMo $0.06, Sonnet $0.84, Opus "
+        "$5.25, an ~88&times; span). A flat frontier means paying more buys nothing "
+        "on that KPI; a sloped one means it does. At 3 years final centers are flat "
+        "(territory is a near-tie, so the 88&times; premium buys none), while "
+        "illegal-order rate and support rate do improve with spend, the frontier "
+        "model plays cleaner and coordinates more. This view earns its keep on the "
+        "10-year games, where, if territory finally separates, the question becomes "
+        "whether the gain is worth the cost.</figcaption></figure>",
+
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
         "(or as a share) so the three models compare despite Sonnet playing five "
@@ -932,6 +1074,7 @@ def main() -> int:
     (out / "offence_defence_means.svg").write_text(plot_od_means(data["od_points"]))
     (out / "offence_defence_paths.svg").write_text(
         plot_od_trajectories(data["od_traj"]))
+    (out / "cost_frontier.svg").write_text(plot_cost_frontier(data))
     (out / "index.html").write_text(build_index(data))
     # remove superseded artifacts (old bar/scatter versions)
     for stale in ("offence_defence_bars.svg", "offence_defence.svg"):
