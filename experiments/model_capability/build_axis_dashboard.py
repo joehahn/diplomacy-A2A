@@ -23,6 +23,7 @@ import argparse
 import collections
 import glob
 import json
+import math
 import re
 import statistics
 from pathlib import Path
@@ -181,13 +182,14 @@ def _legend(x: float, y: float) -> str:
 def plot_final(final: dict) -> str:
     w, h = 760, 380
     pad_l, pad_b, pad_t = 56, 58, 44
-    y0, y1 = 1.0, 8.0  # supply-center axis
+    y0, y1 = 0.0, 6.0  # supply-center axis; bars start at 0
     plot_h = h - pad_b - pad_t
 
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    cols = [pad_l + 70 + i * 210 for i in range(len(ORDER))]
+    cols = [pad_l + 90 + i * 200 for i in range(len(ORDER))]
+    bw = 84
     s = _svg_open(w, h, "Final supply centers by model (7-game rotation)")
 
     # y grid + ticks
@@ -210,23 +212,26 @@ def plot_final(final: dict) -> str:
 
     for col, m in zip(cols, ORDER):
         vals = final[m]
-        # deterministic horizontal spread by index so equal values fan out
-        counts = collections.Counter(vals)
-        seen: collections.Counter = collections.Counter()
-        for v in vals:
-            k = seen[v]
-            n = counts[v]
-            seen[v] += 1
-            dx = (k - (n - 1) / 2) * 13
-            s.append(f"<circle cx='{col+dx:.1f}' cy='{yf(v):.1f}' r='4' "
-                     f"fill='{COLOR[m]}' fill-opacity='0.6' "
-                     f"stroke='{COLOR[m]}' stroke-width='0.8'/>")
         mean = statistics.mean(vals)
+        # standard deviation of the mean (standard error): sample std / sqrt(n)
+        sem = statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
         ym = yf(mean)
-        s.append(f"<line x1='{col-46}' y1='{ym:.1f}' x2='{col+46}' y2='{ym:.1f}' "
-                 f"stroke='{COLOR[m]}' stroke-width='2.5'/>")
-        s.append(f"<text x='{col+52}' y='{ym+4:.1f}' font-size='12' "
-                 f"font-weight='700' fill='{COLOR[m]}'>{mean:.2f}</text>")
+        # bar
+        s.append(f"<rect x='{col-bw/2:.1f}' y='{ym:.1f}' width='{bw}' "
+                 f"height='{yf(0)-ym:.1f}' rx='2' fill='{COLOR[m]}' "
+                 f"fill-opacity='0.85'/>")
+        # error bar: mean +/- sem, with caps
+        y_hi, y_lo = yf(mean + sem), yf(mean - sem)
+        s.append(f"<line x1='{col:.1f}' y1='{y_hi:.1f}' x2='{col:.1f}' "
+                 f"y2='{y_lo:.1f}' stroke='#222' stroke-width='1.4'/>")
+        for yy in (y_hi, y_lo):
+            s.append(f"<line x1='{col-9:.1f}' y1='{yy:.1f}' x2='{col+9:.1f}' "
+                     f"y2='{yy:.1f}' stroke='#222' stroke-width='1.4'/>")
+        # value label above the error bar
+        s.append(f"<text x='{col:.0f}' y='{y_hi-7:.1f}' text-anchor='middle' "
+                 f"font-size='12.5' font-weight='700' fill='{COLOR[m]}'>"
+                 f"{mean:.2f}<tspan font-size='10' font-weight='400' "
+                 f"fill='#777'> ± {sem:.2f}</tspan></text>")
         # column label
         s.append(f"<text x='{col:.0f}' y='{h-30}' text-anchor='middle' "
                  f"font-size='12' font-weight='600' fill='{COLOR[m]}'>{m}</text>")
@@ -240,7 +245,7 @@ def plot_final(final: dict) -> str:
 
 def plot_trajectory(traj: dict) -> str:
     w, h = 760, 360
-    pad_l, pad_r, pad_b, pad_t = 56, 24, 50, 44
+    pad_l, pad_r, pad_b, pad_t = 56, 66, 50, 44
     years = sorted(traj)
     y0, y1 = 3.0, 5.2
     plot_w = w - pad_l - pad_r
@@ -278,6 +283,26 @@ def plot_trajectory(traj: dict) -> str:
         s.append(f"<path d='{d}' fill='none' stroke='{COLOR[m]}' stroke-width='2.5'/>")
         for x, y in pts:
             s.append(f"<circle cx='{x:.1f}' cy='{y:.1f}' r='3.5' fill='{COLOR[m]}'/>")
+
+    # value labels at each marker. The opening year is identical for all three
+    # models (every model averages the same seven home centers), so it is
+    # labelled once; later years are labelled per model, pushed apart vertically
+    # so the near-tied lines do not stack their numbers on top of each other.
+    for yr in years:
+        means = {m: statistics.mean(traj[yr][m]) for m in ORDER}
+        if yr == years[0]:
+            s.append(f"<text x='{xf(yr)-8:.1f}' y='{yf(means[ORDER[0]])-8:.1f}' "
+                     f"text-anchor='end' font-size='9.5' fill='#999'>"
+                     f"{means[ORDER[0]]:.2f}</text>")
+            continue
+        ranked = sorted(ORDER, key=lambda m: yf(means[m]))  # top of chart first
+        lys = [yf(means[m]) for m in ranked]
+        for i in range(1, len(lys)):
+            if lys[i] < lys[i - 1] + 12:
+                lys[i] = lys[i - 1] + 12
+        for m, ly in zip(ranked, lys):
+            s.append(f"<text x='{xf(yr)+7:.1f}' y='{ly+3:.1f}' text-anchor='start' "
+                     f"font-size='9.5' fill='{COLOR[m]}'>{means[m]:.2f}</text>")
     s.append(_legend(pad_l + 4, h - 14))
     s.append("</svg>")
     return "\n".join(s)
@@ -375,8 +400,9 @@ def build_index(data: dict) -> str:
         "<figcaption><b>The ranking is a near-tie at 3 years.</b> Every model lands "
         "within a tenth of a center of the 4.86 board average: a 3-year game is long "
         "enough to carve up all 34 centers but too short for any tier to convert "
-        "capability into territory. The within-model spread (3&ndash;7) is board "
-        "position, not skill. Each dot is one power-game; the bar is the mean.</figcaption></figure>",
+        "capability into territory. Bars are the mean final center count; error bars "
+        "are the standard deviation of the mean (standard error, std / &radic;n), and "
+        "they overlap heavily, so the differences are not significant.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='sc_trajectory.svg'></object>",
         "<figcaption><b>All three expand in lockstep.</b> The models climb together "
