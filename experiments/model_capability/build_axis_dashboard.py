@@ -205,13 +205,6 @@ def plot_final(final: dict) -> str:
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>supply centers at game end</text>")
 
-    # board-average reference line
-    ya = yf(BOARD_AVG)
-    s.append(f"<line x1='{pad_l}' y1='{ya:.1f}' x2='{w-20}' y2='{ya:.1f}' "
-             f"stroke='#bbb' stroke-width='1' stroke-dasharray='5 4'/>")
-    s.append(f"<text x='{w-22}' y='{ya-4:.1f}' text-anchor='end' font-size='9.5' "
-             f"fill='#999'>board average {BOARD_AVG:.2f} (34 SC / 7 powers)</text>")
-
     for col, m in zip(cols, plot_order):
         vals = final[m]
         mean = statistics.mean(vals)
@@ -242,9 +235,9 @@ def plot_final(final: dict) -> str:
 
 def plot_trajectory(traj: dict) -> str:
     w, h = 760, 360
-    pad_l, pad_r, pad_b, pad_t = 56, 66, 50, 44
+    pad_l, pad_r, pad_b, pad_t = 56, 140, 50, 44
     years = sorted(traj)
-    y0, y1 = 3.0, 5.2
+    y0, y1 = 2.8, 5.4
     plot_w = w - pad_l - pad_r
     plot_h = h - pad_b - pad_t
 
@@ -254,16 +247,17 @@ def plot_trajectory(traj: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
+    def sem(vals):
+        return statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
+
     s = _svg_open(w, h, "2. Mean supply centers by year, per model")
-    # y grid
-    v = y0
-    while v <= y1 + 1e-9:
+    # y grid at whole-and-half marks inside the range
+    for v in (3.0, 3.5, 4.0, 4.5, 5.0):
         yy = yf(v)
         s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-pad_r}' y2='{yy:.1f}' "
                  f"stroke='#eee' stroke-width='1'/>")
         s.append(f"<text x='{pad_l-8}' y='{yy+3:.1f}' text-anchor='end' "
                  f"font-size='10' fill='#999'>{v:.1f}</text>")
-        v += 0.5
     # x ticks
     for yr in years:
         lbl = "start" if yr == 1900 else str(yr)
@@ -278,29 +272,29 @@ def plot_trajectory(traj: dict) -> str:
         d = " ".join(f"{'M' if i==0 else 'L'} {x:.1f} {y:.1f}"
                      for i, (x, y) in enumerate(pts))
         s.append(f"<path d='{d}' fill='none' stroke='{COLOR[m]}' stroke-width='2.5'/>")
-        for x, y in pts:
-            s.append(f"<circle cx='{x:.1f}' cy='{y:.1f}' r='3.5' fill='{COLOR[m]}'/>")
+        # markers with standard-error bars
+        for yr, (x, _) in zip(years, pts):
+            vals = traj[yr][m]
+            mean = statistics.mean(vals)
+            e = sem(vals)
+            y_hi, y_lo = yf(mean + e), yf(mean - e)
+            s.append(f"<line x1='{x:.1f}' y1='{y_hi:.1f}' x2='{x:.1f}' "
+                     f"y2='{y_lo:.1f}' stroke='{COLOR[m]}' stroke-width='1.2'/>")
+            for yy in (y_hi, y_lo):
+                s.append(f"<line x1='{x-4:.1f}' y1='{yy:.1f}' x2='{x+4:.1f}' "
+                         f"y2='{yy:.1f}' stroke='{COLOR[m]}' stroke-width='1.2'/>")
+            s.append(f"<circle cx='{x:.1f}' cy='{yf(mean):.1f}' r='3.5' "
+                     f"fill='{COLOR[m]}'/>")
 
-    # value labels at each marker. The opening year is identical for all three
-    # models (every model averages the same seven home centers), so it is
-    # labelled once; later years are labelled per model, pushed apart vertically
-    # so the near-tied lines do not stack their numbers on top of each other.
-    for yr in years:
-        means = {m: statistics.mean(traj[yr][m]) for m in ORDER}
-        if yr == years[0]:
-            s.append(f"<text x='{xf(yr)-8:.1f}' y='{yf(means[ORDER[0]])-8:.1f}' "
-                     f"text-anchor='end' font-size='9.5' fill='#999'>"
-                     f"{means[ORDER[0]]:.2f}</text>")
-            continue
-        ranked = sorted(ORDER, key=lambda m: yf(means[m]))  # top of chart first
-        lys = [yf(means[m]) for m in ranked]
-        for i in range(1, len(lys)):
-            if lys[i] < lys[i - 1] + 12:
-                lys[i] = lys[i - 1] + 12
-        for m, ly in zip(ranked, lys):
-            s.append(f"<text x='{xf(yr)+7:.1f}' y='{ly+3:.1f}' text-anchor='start' "
-                     f"font-size='9.5' fill='{COLOR[m]}'>{means[m]:.2f}</text>")
-    s.append(_legend(pad_l + 4, h - 14))
+    # legend at right, cheap -> frontier top to bottom: MiMo, Sonnet, Opus
+    lx = w - pad_r + 20
+    ly0 = pad_t + plot_h / 2 - 22
+    for i, m in enumerate(["MiMo", "Sonnet", "Opus"]):
+        ly = ly0 + i * 24
+        s.append(f"<rect x='{lx}' y='{ly-9:.0f}' width='12' height='12' rx='2' "
+                 f"fill='{COLOR[m]}'/>")
+        s.append(f"<text x='{lx+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
+                 f"{m} <tspan fill='#999'>{TIER[m]}</tspan></text>")
     s.append("</svg>")
     return "\n".join(s)
 
@@ -344,7 +338,8 @@ def plot_competence(raw: dict) -> str:
         ox = pi * pw
         pad_l, pad_b, pad_t = 44, 64, 50
         plot_h = ph - pad_b - pad_t
-        vals = [fn(m) for m in ORDER]
+        bar_order = list(reversed(ORDER))  # MiMo, Sonnet, Opus
+        vals = [fn(m) for m in bar_order]
         vmax = max(vals + [1]) * 1.25
         bw = 46
         gap = (pw - 2 * pad_l) / len(ORDER)
@@ -355,7 +350,7 @@ def plot_competence(raw: dict) -> str:
         baseline = oy + pad_t + plot_h
         s.append(f"<line x1='{ox+pad_l}' y1='{baseline}' x2='{ox+pw-12}' "
                  f"y2='{baseline}' stroke='#ddd' stroke-width='1'/>")
-        for i, m in enumerate(ORDER):
+        for i, m in enumerate(bar_order):
             cx = ox + pad_l + gap * (i + 0.5)
             bh = plot_h * (vals[i] / vmax)
             by = baseline - bh
@@ -398,11 +393,7 @@ def build_index(data: dict) -> str:
 
         "<figure><object type='image/svg+xml' data='final_centers.svg'></object></figure>",
 
-        "<figure><object type='image/svg+xml' data='sc_trajectory.svg'></object>",
-        "<figcaption><b>All three expand in lockstep.</b> The models climb together "
-        "from the 3.14-center average opening into the neutrals and then tangle "
-        "around 4.7&ndash;4.9. No tier pulls away. Same message as the ranking, over "
-        "time.</figcaption></figure>",
+        "<figure><object type='image/svg+xml' data='sc_trajectory.svg'></object></figure>",
 
         "<figure><object type='image/svg+xml' data='competence.svg'></object>",
         f"<figcaption><b>Competence is where the tiers separate.</b> Illegal-order "
