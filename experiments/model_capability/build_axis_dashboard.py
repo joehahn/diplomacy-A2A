@@ -520,9 +520,15 @@ def plot_competence(raw: dict) -> str:
 
     # Each bar is 100 * k / n for an event count k over a (large, ~fixed)
     # denominator n, so k is approximately Poisson and the 1-sigma error on the
-    # bar is 100 * sqrt(k) / n. A zero count has no Poisson error bar (sqrt 0).
+    # bar is 100 * sqrt(k) / n. A zero count is treated as a one-sided upper
+    # limit: observing 0 implies fewer than one event, so sigma < sqrt(1) = 1,
+    # drawn upward only. Returns (magnitude, is_upper_limit).
     def _poisson_err(k, n):
-        return 100 * math.sqrt(k) / n if n else 0.0
+        if not n:
+            return (0.0, False)
+        if k == 0:
+            return (100 * 1.0 / n, True)
+        return (100 * math.sqrt(k) / n, False)
 
     def illegal_err(m):
         return _poisson_err(raw[m]["illegal"], raw[m]["orders"])
@@ -558,9 +564,9 @@ def plot_competence(raw: dict) -> str:
         plot_h = ph - pad_b - pad_t
         bar_order = list(reversed(ORDER))  # MiMo, Sonnet, Opus
         vals = [fn(m) for m in bar_order]
-        errs = [efn(m) for m in bar_order]
+        errs = [efn(m) for m in bar_order]  # (magnitude, is_upper_limit)
         # leave room for the upper error cap and the value label above it
-        vmax = max([v + e for v, e in zip(vals, errs)] + [1]) * 1.15
+        vmax = max([v + e[0] for v, e in zip(vals, errs)] + [1]) * 1.15
         bw = 46
         gap = (pw - 2 * pad_l) / len(ORDER)
         s.append(f"<text x='{ox+pw/2:.0f}' y='{22+oy}' text-anchor='middle' "
@@ -572,18 +578,20 @@ def plot_competence(raw: dict) -> str:
                  f"y2='{baseline}' stroke='#ddd' stroke-width='1'/>")
         for i, m in enumerate(bar_order):
             cx = ox + pad_l + gap * (i + 0.5)
-            val, err = vals[i], errs[i]
+            val, (err, is_limit) = vals[i], errs[i]
             by = baseline - plot_h * (val / vmax)
             s.append(f"<rect x='{cx-bw/2:.1f}' y='{by:.1f}' width='{bw}' "
                      f"height='{baseline-by:.1f}' rx='2' fill='{COLOR[m]}' "
                      f"fill-opacity='0.85'/>")
-            # 1-sigma Poisson error bar with caps
+            # Poisson error bar: symmetric 1-sigma, or one-sided upper limit when
+            # the count is zero (top cap only, stem rising from the bar).
             y_hi = baseline - plot_h * ((val + err) / vmax)
             if err > 0:
-                y_lo = baseline - plot_h * (max(val - err, 0.0) / vmax)
+                y_lo = by if is_limit else baseline - plot_h * (max(val - err, 0.0) / vmax)
                 s.append(f"<line x1='{cx:.1f}' y1='{y_hi:.1f}' x2='{cx:.1f}' "
                          f"y2='{y_lo:.1f}' stroke='#333' stroke-width='1.3'/>")
-                for yy in (y_hi, y_lo):
+                caps = (y_hi,) if is_limit else (y_hi, y_lo)
+                for yy in caps:
                     s.append(f"<line x1='{cx-7:.1f}' y1='{yy:.1f}' x2='{cx+7:.1f}' "
                              f"y2='{yy:.1f}' stroke='#333' stroke-width='1.3'/>")
             s.append(f"<text x='{cx:.1f}' y='{y_hi-6:.1f}' text-anchor='middle' "
@@ -756,7 +764,9 @@ def build_index(data: dict) -> str:
         f"are 1&sigma; Poisson (&radic;N on the event count, scaled by the order "
         f"total): the illegal-order ladder survives them, but they swallow the "
         f"move-support panel whole, confirming those differences are not significant "
-        f"at this sample size.</figcaption></figure>",
+        f"at this sample size. MiMo's zero self-bounces is drawn as a one-sided upper "
+        f"limit (observing none implies under one event, so &sigma; &lt; 1)."
+        f"</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='offence_defence.svg'></object>",
         "<figcaption><b>Style, the canonical dashboard's signature view.</b> Each "
