@@ -2118,7 +2118,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "&nbsp;&nbsp;+1 for advancing into a vacant province<br>"
                 "&nbsp;&nbsp;-1 for losing a garrisoned supply center<br>"
                 "&nbsp;&nbsp;-2 for losing an undefended supply center</p>"
-                "<p class='kpi-note'><b>Defence</b> scores units under attack:<br>"
+                "<p class='kpi-note'><b>Defence</b> rewards units surviving attack:<br>"
                 "&nbsp;&nbsp;+2 for holding against a supported attack<br>"
                 "&nbsp;&nbsp;+1 for holding against an unsupported attack<br>"
                 "&nbsp;&nbsp;-2 for being dislodged on a supply center<br>"
