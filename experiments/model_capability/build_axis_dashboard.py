@@ -634,12 +634,12 @@ def plot_competence(raw: dict) -> str:
          {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}, "{:.1f}%"),
         ("Move-support success", "% of move-supports · higher is better",
          {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}, "{:.1f}%"),
-        ("Convoy rate", "% of orders · rare",
-         {m: _rate(raw, m, "convoy", "orders") for m in ORDER}, "{:.1f}%"),
         ("Support rate", "% of orders · coordination effort",
          {m: _rate(raw, m, "support", "orders") for m in ORDER}, "{:.1f}%"),
         ("Hold rate", "% of orders · passivity",
          {m: _rate(raw, m, "holds", "orders") for m in ORDER}, "{:.1f}%"),
+        ("Convoy rate", "% of orders · rare",
+         {m: _rate(raw, m, "convoy", "orders") for m in ORDER}, "{:.1f}%"),
     ]
     return _bar_panels(3, "Competence by model", panels, per_row=3, show_values=True)
 
@@ -768,10 +768,6 @@ def plot_cost_frontier(data: dict) -> str:
          {m: mistakes(m) for m in ORDER}, "{:.1f}%"),
         ("Illegal-order rate", "% of orders · lower is better",
          {m: rate(m, "illegal", "orders") for m in ORDER}, "{:.1f}%"),
-        ("Support rate", "% of orders · coordination",
-         {m: rate(m, "support", "orders") for m in ORDER}, "{:.1f}%"),
-        ("Hold rate", "% of orders · passivity",
-         {m: rate(m, "holds", "orders") for m in ORDER}, "{:.1f}%"),
     ]
     pw, ph, oy, per_row = 250, 340, 30, 3
     nrows = -(-len(panels) // per_row)
@@ -972,10 +968,9 @@ def build_index(data: dict) -> str:
         "mistakes are flat too, but for a subtle reason: the frontier model's lower "
         "illegal-order rate is offset by the ambition errors (self-bounces, "
         "uncoordinated supports) that come with its higher support rate, so spending "
-        "shifts the <i>type</i> of error rather than the total. Hold rate (passivity) "
-        "is flat. This view earns its keep on the 10-year games, where, if territory "
-        "finally separates, the question becomes whether the gain is worth the cost."
-        "</figcaption></figure>",
+        "shifts the <i>type</i> of error rather than the total. This view earns its "
+        "keep on the 10-year games, where, if territory finally separates, the "
+        "question becomes whether the gain is worth the cost.</figcaption></figure>",
 
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
