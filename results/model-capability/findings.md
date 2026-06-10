@@ -1,9 +1,12 @@
 # Model-capability axis:
 ### Three T-shirt sized LLMs play Diplomacy
 
-This study compares 3 LLMs across the price/capability spectrum using mimo-v2.5
-(small budget LLM), Claude Sonnet 4.6 (medium mid-tier model), and Claude Opus 4.8
-(large frontier LLM), and this investigation has two parts:
+This study compares 3 LLMs across the price/capability spectrum: mimo-v2.5
+(budget), Claude Sonnet 4.6 (mid-tier), and Claude Opus 4.8 (frontier). The
+"T-shirt sizes" are price tiers, not parameter counts, and the two decouple:
+MiMo is cheap but not small, a 311B-parameter open MoE, larger than the
+genuinely small (~20B) Claude Haiku it edged out for the budget slot. This
+investigation has two parts:
 
 1. **Assessing self-play**: the same LLM plays against itself while driving all 7
    players in a game, three games for the 3 tier models (plus a fourth for Claude
@@ -79,26 +82,19 @@ A longer Opus-vs-Sonnet read lives in [`REFERENCE.md`](../../REFERENCE.md) under
 
 ### The budget runner-up: Haiku
 
-Before MiMo was chosen as the budget tier, Claude Haiku 4.5 (~20B by third-party
-estimate) was the other candidate; it lost the budget-tier playoff to MiMo, and
-its 10-year self-play game shows why.
-
-**Haiku: the agreeable diplomat.** The most *social* of the four models and the
-least *forceful*. It runs the table on coalition-talk: the highest alliance
-language of any model (43% of messages, more than double the next) and the most
-questions (39%), forever proposing partnerships ("Turkey and Italy are natural
-partners... shall we coordinate?"; "let's both grow in our zones and watch Russia
-together"). But the warmth is soft, among the lowest conditional bargaining (28%)
-and barely any betrayal (1.4%), so it offers friendship freely yet rarely turns it
-into a hard, conditional deal or breaks its word. On the board it is the most
-passive game run: the highest hold rate (56%), the lowest support rate (8%), the
-fewest dislodgements (6), and a single cut support all game, so it sits still,
-barely coordinates, and never breaks a wall by cutting its defender. The bill for
-all that peace is 21 disbands, the most contraction of any game: it talks
-coalitions but does not take or hold ground. That is the gap MiMo exploits.
-Diplomacy is won by seizing centers, and where MiMo coerces ("let me have TRI
-peacefully... if you refuse I'll take it by force"), Haiku asks permission and
-keeps the peace. The genial diplomat loses to the brawler.
+**Haiku (~20B, est.): the agreeable diplomat.** Claude Haiku was the budget
+candidate MiMo beat out, and its self-play game shows why. It is the most
+*social* of the four and the least *forceful*: the highest alliance language of
+any model (43% of messages, double the next) and the most questions (39%),
+forever proposing partnerships ("Turkey and Italy are natural partners... shall
+we coordinate?"), yet near-zero betrayal (1.4%) and among the lowest conditional
+bargaining, so it offers friendship freely but rarely turns it into a hard deal.
+On the board it is the most passive game run, the highest hold rate (56%), the
+lowest support rate (8%), the fewest dislodgements, and a single cut support all
+game. The bill is 21 disbands, the most contraction of any game: it talks
+coalitions but does not take ground. That is the gap MiMo exploits, where MiMo
+coerces ("let me have TRI peacefully... if you refuse I'll take it by force"),
+Haiku asks permission. The genial diplomat loses to the brawler.
 Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
 
 ## Three LLMs head-to-head (the leaderboard)
@@ -134,6 +130,18 @@ attempts the least coordination, while Opus self-bounces most per order, tripped
 by the ambition of juggling many units in rotation. (Move-support success is
 noisier; only 13 to 16 legal move-supports each for Opus and MiMo across 3 years,
 so read that panel as indicative, not decisive.)
+
+**On price and size, scale buys cleaner play, not more ground.** The rotation
+dashboard also plots every KPI against cost per nation-game and against (mostly
+speculative) parameter count, and both frontiers are flat where it counts. Across
+an 88x spread in cost and a ~10x range in total parameters, final centers barely
+move, so neither dollars nor scale buys territory at this length. What spending
+does buy is execution: the illegal-order rate falls cleanly with price, though
+total mistakes stay flat, because the frontier model trades the budget model's
+geometry errors for its own ambition errors (self-bounces, uncoordinated
+supports). Cost and size are also distinct axes: MiMo is a cheap 311B-parameter
+MoE, far larger than the genuinely small Haiku yet a small fraction of the Claude
+models' price, so "budget" here means cheap, not small.
 
 The headline: at this game length the three models are nearly indistinguishable on
 the scoreboard but clearly tiered on how cleanly they execute. Turning the
