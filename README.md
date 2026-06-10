@@ -104,17 +104,12 @@ that broke when one party defected for its own gain.
    whether any particular agent wins.
 
 3. **Quantify what helps an AI agent succeed when it is competing against other agents in an A2A universe.** *(Under active development.)*
-   Controlled A/B experiments where six agents are identical and one differs
-   along a single axis: model capability (one Sonnet among Haikus, or one Opus
-   among Sonnets), memory depth (one agent given more or less past-turn
-   context), personality trait (one aggressive / untruthful / backstabbing
-   agent at an otherwise neutral table), pre-game collusion (two agents
-   share a private agreement to coordinate prior to game start), or
-   information asymmetry (one agent has parts of its prompt hidden, such as
-   the current supply-center ownership tracker, forcing it to infer
-   standings from unit positions and dialogue alone). A planned deliverable
-   from these experiments is a chart of agent success versus LLM spend,
-   making the cost-benefit shape of each axis explicit.
+   Controlled A/B experiments hold the table fixed and vary a single agent along
+   one axis at a time (model capability, memory depth, personality, pre-game
+   collusion, information asymmetry), isolating that axis's effect on success.
+   The planned deliverable is a chart of agent success versus LLM spend, making
+   the cost-benefit shape of each axis explicit. The axes, with their writeups as
+   they complete, are listed under [Experiments](#experiments) below.
 
 ## Real-world A2A analogies
 
