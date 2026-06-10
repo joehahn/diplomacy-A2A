@@ -976,6 +976,9 @@ body:has(.thread:target) .thread:target { display: block; }
 .kpi-stack { flex: 0 1 966px; min-width: 0; max-width: 1035px;
              display: flex; flex-direction: column; gap: 4px; }
 .kpi-scatter { flex: 0 1 640px; min-width: 0; }
+.kpi-standings-side { flex: 0 1 auto; min-width: 0; }
+.kpi-note { max-width: 966px; font-size: 0.85em; color: #555; line-height: 1.5;
+            margin: 6px 0 16px; }
 .kpi-svg { display: block; width: 100%; max-width: 1035px; height: auto;
            background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
 .kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
@@ -2083,6 +2086,15 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         if full_chart:
             index_body.append("<h2>Supply center trajectory</h2>")
             index_body.append(full_chart)
+            index_body.append(
+                "<p class='kpi-note'><b>Offence</b> rewards taking ground each "
+                "movement phase: +2 for dislodging an enemy from any province, +1 "
+                "for advancing into a vacant one, and -1/-2 for losing a "
+                "garrisoned/undefended supply center. <b>Defence</b> scores units "
+                "under attack: +2/+1 for holding (against a supported/unsupported "
+                "attack), -2/-1 for being dislodged (on a supply center/elsewhere). "
+                "Both accumulate over the game.</p>"
+            )
         last_ph = phase_order[-1]
         agg_final = aggression_by_phase.get(last_ph, {})
         def_final = defense_by_phase.get(last_ph, {})
@@ -2094,13 +2106,16 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         )
         if scatter:
             index_body.append("<h2>Offence vs defence (endgame)</h2>")
+            standings_side = (
+                "<div class='kpi-standings-side'>"
+                "<h3 class='so-heading'>Final standings</h3>"
+                f"{standings_chart}</div>"
+                if standings_chart else ""
+            )
             index_body.append(
                 f"<div class='kpi-row'><div class='kpi-scatter'>{scatter}</div>"
-                f"{_kpi_legend(powers_all)}</div>"
+                f"{standings_side}</div>"
             )
-            if standings_chart:
-                index_body.append("<h3 class='so-heading'>Final standings</h3>")
-                index_body.append(standings_chart)
     (out_dir / "index.html").write_text(
         _html_page(title=f"Diplomacy A2A — {run_id}", body="\n".join(index_body))
     )
