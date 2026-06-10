@@ -604,6 +604,23 @@ def plot_negotiation(raw: dict) -> str:
     return _bar_panels(4, "Negotiation by model", panels)
 
 
+def plot_offence_defence_bars(od_points: dict) -> str:
+    """Offence and defence per nation as bars with standard-error whiskers
+    (sigma of the mean across each model's nation-games)."""
+    def stat(vals):
+        mean = statistics.mean(vals)
+        sem = statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
+        return (mean, (sem, False))
+
+    panels = [
+        ("Offence / nation", "ground taken · higher is more aggressive",
+         {m: stat([o for o, _ in od_points[m]]) for m in ORDER}),
+        ("Defence / nation", "attacks survived · higher is more solid",
+         {m: stat([d for _, d in od_points[m]]) for m in ORDER}),
+    ]
+    return _bar_panels(5, "Offence and defence by model", panels)
+
+
 # --- plot 4: offence vs defence scatter -------------------------------------
 
 def plot_scatter(od_points: dict) -> str:
@@ -622,7 +639,7 @@ def plot_scatter(od_points: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "5. Offence vs Defence (per nation)")
+    s = _svg_open(w, h, "6. Offence vs Defence (per nation)")
     # axis frame
     s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
              f"stroke='#bbb' stroke-width='0.8'/>")
@@ -772,6 +789,15 @@ def build_index(data: dict) -> str:
         "Sonnet's higher rates. Same 1&sigma; Poisson error bars; betrayals are a "
         "keyword heuristic, so read them as order-of-magnitude.</figcaption></figure>",
 
+        "<figure><object type='image/svg+xml' data='offence_defence_bars.svg'></object>",
+        "<figcaption><b>Offence and defence per nation, as bars.</b> Offence rewards "
+        "taking ground, defence rewards surviving attack (scoring in the canonical "
+        "dashboard). Sonnet is the most offensive, MiMo the most defensive, Opus "
+        "lowest on both, the peace-first staff officer. Whiskers are 1&sigma; "
+        "standard error across each model's nation-games; they overlap, so on raw "
+        "score this is the same near-tie the supply-center plots show."
+        "</figcaption></figure>",
+
         "<figure><object type='image/svg+xml' data='offence_defence.svg'></object>",
         "<figcaption><b>Style, the canonical dashboard's signature view.</b> Each "
         "faint dot is one nation-game (offence rewards taking ground, defence rewards "
@@ -813,6 +839,8 @@ def main() -> int:
     (out / "sc_trajectory.svg").write_text(plot_trajectory(data["traj"]))
     (out / "competence.svg").write_text(plot_competence(data["raw"]))
     (out / "negotiation.svg").write_text(plot_negotiation(data["raw"]))
+    (out / "offence_defence_bars.svg").write_text(
+        plot_offence_defence_bars(data["od_points"]))
     (out / "offence_defence.svg").write_text(plot_scatter(data["od_points"]))
     (out / "index.html").write_text(build_index(data))
 
