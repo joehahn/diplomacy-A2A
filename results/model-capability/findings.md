@@ -1,8 +1,9 @@
-# Model-capability axis: three tee-shirt-sized LLMs play Diplomacy
+# Model-capability axis:
+### three Tshirt sized LLMs play Diplomacy
 
-This study compares three models across the price/capability spectrum on the same
-game: a budget model (xiaomi/mimo-v2.5, **S**), a mid-tier model (Claude Sonnet
-4.6, **M**), and a frontier model (Claude Opus 4.8, **L**). It has two halves:
+This study compares 3 LLMs across the price/capability spectrum using mimo-v2.
+(small budget LLM), Claude Sonnet 4.6 (medium mid-tier model), and Claude Opus 4.8
+(large frontier LLM). This investigation has two parts:
 
 1. **Self-play style profiles** (below): one 10-year game per model, that model
    driving all seven powers. These characterize *how* each model plays. They do
