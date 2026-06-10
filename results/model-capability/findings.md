@@ -1,19 +1,19 @@
 # Model-capability axis:
-### three Tshirt sized LLMs play Diplomacy
+### three T-shirt sized LLMs play Diplomacy
 
-This study compares 3 LLMs across the price/capability spectrum using mimo-v2.
+This study compares 3 LLMs across the price/capability spectrum using mimo-v2.5
 (small budget LLM), Claude Sonnet 4.6 (medium mid-tier model), and Claude Opus 4.8
 (large frontier LLM). This investigation has two parts:
 
-1. **Self-play style profiles** (below): one 10-year game per model, that model
-   driving all seven powers. These characterize *how* each model plays. They do
-   NOT rank the models, self-play has no fixed-skill opponent, so they are style,
-   not score.
-2. **The head-to-head rotation** (further down): the three models meet on one
-   board across seven counterbalanced games, where each rotates through every
-   power. That is where the ranking lives.
+1. **Assessing self-play styles** (below): one 10-year game per model with that
+   model driving all seven powers. These games don't rank models, they instead
+   characterize each LLM's playing styles, which are quite different.
+2. **LLM head-to-head rotation** (further down): the three models meet on one
+   board across seven counterbalanced games, where each LLM rotates through every
+   power, which allows us to build an LLM leaderboard for Diplomacy gameplay.
 
-Read the top half as personalities; read the bottom half as the leaderboard.
+Read the top half as personalities; read the bottom half as the level-field
+comparison.
 
 ## Cost: the price spread these tiers represent
 
@@ -109,10 +109,40 @@ Three patterns recur across all three games, regardless of model family or price
 A longer Opus-vs-Sonnet read lives in [`REFERENCE.md`](../../REFERENCE.md) under
 "Opus vs Sonnet: play style."
 
-## The head-to-head rotation (ranking)
+## The head-to-head rotation (level-field comparison)
 
-*In progress.* Seven counterbalanced games (each model rotates through every
-power, on opposite sides of the board, against a field of the mid-tier model),
-run by [`experiments/llm_axis.py`](../../experiments/llm_axis.py). This section
-will hold the per-model counterbalanced ranking, the supply-center and competence
-plots, and outcome-vs-properties (cost, parameters) analysis once the games land.
+Seven counterbalanced games run by
+[`experiments/llm_axis.py`](../../experiments/llm_axis.py): Opus (frontier) and
+MiMo (budget) each rotate through all seven powers once, on opposite sides of the
+board, against a field of the mid-tier Sonnet. Because every power plays each test
+role exactly once, board position is averaged out and each test model is measured
+against the same Sonnet field rather than dueling the other test model. Games run
+3 years; the rotation is seven games, so it is run short to keep the bill down.
+The three cross-game plots below are collected in the
+**[rotation dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)**
+(derived from the seven transcripts by
+[`experiments/model_capability/build_axis_dashboard.py`](../../experiments/model_capability/build_axis_dashboard.py)).
+
+**On territory, a near-tie.** Every model finishes within a tenth of a center of
+the 4.86 board average (all 34 centers over 7 powers): Opus 4.86, Sonnet 4.86,
+MiMo 4.71. Three years is long enough to carve up all 34 centers but too short for
+any tier to convert capability into a territorial lead; the within-model spread
+(3 to 7 centers) is the seat, not the model. The supply-center trajectories say
+the same thing over time; all three climb out of the 3.14-center opening in
+lockstep and tangle around 4.7 to 4.9. If there is a leaderboard at this game
+length, it is not written in centers.
+
+**On execution, the ladder returns.** Where the models separate is order quality,
+and they separate in exactly the order the self-play games predicted. Illegal-order
+rate ranks cleanly by price: Opus 1.7%, Sonnet 2.5%, MiMo 5.5%, the budget model
+roughly tripling the frontier's rate. This is the same geometry ceiling MiMo hits
+in self-play, where non-adjacent supports are its signature error. Self-bounces
+echo the self-play paradox too: MiMo never jams its own units (zero) because it
+attempts the least coordination, while Opus self-bounces most per order, tripped up
+by the ambition of juggling many units in rotation. (Move-support success is
+noisier; only 13 to 16 legal move-supports each for Opus and MiMo across 3 years,
+so read that panel as indicative, not decisive.)
+
+The headline: at this game length the three models are nearly indistinguishable on
+the scoreboard but clearly tiered on how cleanly they execute. Turning the
+execution gap into a center gap would take a longer rotation.

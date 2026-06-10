@@ -298,17 +298,24 @@ def plot_competence(raw: dict) -> str:
         c = raw[m]
         return 100 * c["self_bounce"] / c["orders"] if c["orders"] else 0
 
+    def supp_n(m):
+        return f"n={raw[m]['supp_move']}"
+
+    # Each panel: title, y-label, value fn, hint, per-bar sub-annotation fn
+    # (None = no sub-label). The move-support panel prints its sample size on
+    # every bar because the counts are small enough to mislead at a glance.
     panels = [
-        ("Illegal-order rate", "% of orders", illegal_pct, "lower is better"),
-        ("Move-support success", "% of move-supports", supp_pct, "higher is better"),
-        ("Self-bounces", "per 100 orders", selfb_rate, "lower is better"),
+        ("Illegal-order rate", "% of orders", illegal_pct, "lower is better", None),
+        ("Move-support success", "% of move-supports", supp_pct,
+         "higher is better, but small n", supp_n),
+        ("Self-bounces", "per 100 orders", selfb_rate, "lower is better", None),
     ]
     pw, ph = 250, 320
     w, h = pw * 3, ph
     s = [f"<svg viewBox='0 0 {w} {h}' xmlns='http://www.w3.org/2000/svg' "
          f"font-family='{FONT}' width='{w}' height='{h}'>"]
 
-    for pi, (title, ylab, fn, hint) in enumerate(panels):
+    for pi, (title, ylab, fn, hint, subfn) in enumerate(panels):
         ox = pi * pw
         pad_l, pad_b, pad_t = 44, 64, 50
         plot_h = ph - pad_b - pad_t
@@ -334,6 +341,10 @@ def plot_competence(raw: dict) -> str:
                      f"{vals[i]:.1f}</text>")
             s.append(f"<text x='{cx:.1f}' y='{baseline+16:.1f}' text-anchor='middle' "
                      f"font-size='10.5' fill='#666'>{m}</text>")
+            if subfn is not None:
+                s.append(f"<text x='{cx:.1f}' y='{baseline+30:.1f}' "
+                         f"text-anchor='middle' font-size='9' fill='#aaa'>"
+                         f"{subfn(m)}</text>")
     s.append("</svg>")
     return "\n".join(s)
 
