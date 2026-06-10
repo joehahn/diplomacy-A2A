@@ -977,8 +977,8 @@ body:has(.thread:target) .thread:target { display: block; }
              display: flex; flex-direction: column; gap: 4px; }
 .kpi-scatter { flex: 0 1 640px; min-width: 0; }
 .kpi-standings-side { flex: 0 1 auto; min-width: 0; }
-.kpi-note { max-width: 966px; font-size: 0.85em; color: #555; line-height: 1.5;
-            margin: 6px 0 16px; }
+.kpi-notes { display: flex; gap: 48px; flex-wrap: wrap; margin: 6px 0 16px; }
+.kpi-note { font-size: 0.85em; color: #555; line-height: 1.5; margin: 0; }
 .kpi-svg { display: block; width: 100%; max-width: 1035px; height: auto;
            background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
 .kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
@@ -2112,6 +2112,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
             index_body.append("<h2>Supply center trajectory</h2>")
             index_body.append(full_chart)
             index_body.append(
+                "<div class='kpi-notes'>"
                 "<p class='kpi-note'><b>Offence</b> rewards taking ground:<br>"
                 "&nbsp;&nbsp;+2 for dislodging an enemy from a province<br>"
                 "&nbsp;&nbsp;+1 for advancing into a vacant province<br>"
@@ -2122,6 +2123,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                 "&nbsp;&nbsp;+1 for holding against an unsupported attack<br>"
                 "&nbsp;&nbsp;-2 for being dislodged on a supply center<br>"
                 "&nbsp;&nbsp;-1 for being dislodged elsewhere</p>"
+                "</div>"
             )
         last_ph = phase_order[-1]
         agg_final = aggression_by_phase.get(last_ph, {})
