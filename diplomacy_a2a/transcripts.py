@@ -1490,8 +1490,8 @@ def _kpi_charts_for_phase(
         }
         extra += _adjustments_chart(phases, adj_for, powers)
     for idx_data, title in (
-        (aggression_by_phase, "Aggression index (cumulative)"),
-        (defense_by_phase, "Defense index (cumulative)"),
+        (aggression_by_phase, "Offence score (cumulative)"),
+        (defense_by_phase, "Defence score (cumulative)"),
     ):
         if idx_data:
             idx_series = {
@@ -1707,11 +1707,12 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
                     e.get("power", "")
                 ] = net
 
-    # Aggression and defense indices, accumulated per power per phase, for the
-    # trajectory charts. Aggression scores supply-center swings: +2 for taking
-    # an occupied center (dislodging a defender), +1 for an uncontested one;
-    # -1 for losing a center you garrisoned, -2 for losing an undefended one.
-    # Defense scores units under attack each movement phase: +2/+1 for a unit
+    # Offence and defence scores, accumulated per power per phase, for the
+    # trajectory charts. Offence rewards taking ground each movement phase: +2
+    # for dislodging an enemy (taking a province it occupied, land or sea), +1
+    # for advancing into a vacant province; plus a territorial penalty of -1 for
+    # losing a garrisoned supply center, -2 for losing an undefended one.
+    # Defence scores units under attack each movement phase: +2/+1 for a unit
     # that held against a supported/unsupported attack, -2/-1 for a unit
     # dislodged on a supply center / elsewhere. Both are cumulative net.
     owner_snaps: list[tuple[str, dict[str, str]]] = []  # (phase, {sc_base: power})
@@ -1745,21 +1746,45 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     powers_all = sorted({pw for _, ow in owner_snaps for pw in ow.values()})
 
     agg_delta: dict[str, dict[str, int]] = {}
+    # Loss side: a supply center that changed owner costs the old owner -1 if it
+    # garrisoned the center, -2 if it left it undefended.
     for i in range(1, len(owner_snaps)):
         prev_ph, prev_ow = owner_snaps[i - 1]
         cur_ph, cur_ow = owner_snaps[i]
         prev_occ = occ_by_phase.get(prev_ph, {})
-        d: dict[str, int] = {}
         for sc in set(prev_ow) | set(cur_ow):
             a, b = prev_ow.get(sc), cur_ow.get(sc)
-            if a == b:
+            if a is None or a == b:
                 continue
-            if b is not None:
-                d[b] = d.get(b, 0) + (2 if prev_occ.get(sc) is not None else 1)
-            if a is not None:
-                d[a] = d.get(a, 0) + (-1 if prev_occ.get(sc) == a else -2)
-        if d:
-            agg_delta[cur_ph] = d
+            d = agg_delta.setdefault(cur_ph, {})
+            d[a] = d.get(a, 0) + (-1 if prev_occ.get(sc) == a else -2)
+    # Gain side: every successful move at a movement phase. +2 for dislodging an
+    # enemy out of the destination, +1 for advancing into a vacant province (a
+    # follow into a square the enemy merely vacated scores +1, not +2).
+    for e in events:
+        if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
+            continue
+        ph = e.get("phase", "")
+        power = e.get("power", "")
+        pre = entering_units.get(ph, {})
+        res = results_by_phase.get(ph, {})
+        for o in e.get("valid", []):
+            if " - " not in o or " S " in o or " C " in o:
+                continue
+            unit = o.split(" - ", 1)[0].strip()
+            dest = o.split(" - ", 1)[1].split()[0].split("/")[0]
+            if any(t in ("bounce", "void", "dislodged") for t in res.get(unit, [])):
+                continue  # the move did not happen
+            occ = pre.get(dest)
+            if occ is None:
+                gain = 1
+            elif occ[0] != power:
+                gain = 2 if any("dislodged" in t for t in res.get(occ[1], [])) else 1
+            else:
+                continue  # moved into a square one of your own units held
+            d = agg_delta.setdefault(ph, {})
+            d[power] = d.get(power, 0) + gain
+    agg_delta = {ph: d for ph, d in agg_delta.items() if d}
 
     moves_by_phase: dict[str, dict[str, list[str]]] = {}  # phase -> dest_base -> [mover]
     supp_by_phase: dict[str, dict[str, int]] = {}         # phase -> dest_base -> support count
@@ -2062,13 +2087,13 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         agg_final = aggression_by_phase.get(last_ph, {})
         def_final = defense_by_phase.get(last_ph, {})
         scatter = _scatter_chart(
-            "Aggression vs defense (endgame)",
+            "Offence vs defence (endgame)",
             [(p, agg_final.get(p, 0), def_final.get(p, 0)) for p in powers_all],
-            xlabel="Aggression index", ylabel="Defense index",
+            xlabel="Offence score", ylabel="Defence score",
             width=640, height=550,
         )
         if scatter:
-            index_body.append("<h2>Aggression vs defense (endgame)</h2>")
+            index_body.append("<h2>Offence vs defence (endgame)</h2>")
             index_body.append(
                 f"<div class='kpi-row'><div class='kpi-scatter'>{scatter}</div>"
                 f"{_kpi_legend(powers_all)}</div>"

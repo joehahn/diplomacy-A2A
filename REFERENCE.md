@@ -1066,31 +1066,33 @@ slideshow:
   promises that lack the keyword markers are missed entirely. A short
   stop-list (`IF`, `AND`, `BUT`, `THE`, `OUR`, `ALL`, …) filters the
   most common false-positive 3-letter tokens.
-- **Aggression index** (per-power cumulative line chart on the dashboard index,
-  signed): scores supply-center swings from consecutive
-  `phase_resolved.centers` snapshots. When a center changes hands the gainer
-  earns **+2** for taking an *occupied* center (a unit sat on it the prior
-  snapshot, i.e. a defender was dislodged) or **+1** for an uncontested one; the
-  former owner loses **-1** if it garrisoned the center, **-2** if it left it
-  undefended. Cumulative net per power. Tracks net territorial dominance, and
-  because it is essentially weighted SC growth it correlates strongly with final
-  standing.
-- **Defense index** (per-power cumulative line chart, signed): scores units
+- **Offence score** (per-power cumulative line chart on the dashboard index,
+  signed): rewards taking ground each movement phase. Every successful move earns
+  **+2** for **dislodging an enemy** (taking a province it occupied, land or sea)
+  or **+1** for **advancing into a vacant province** (a follow into a square the
+  enemy merely vacated scores +1, not +2); separately, losing a supply center
+  costs **-1** if you garrisoned it, **-2** if you left it undefended. Cumulative
+  net per power. Because it credits maneuvering, not just captures, it is
+  decoupled from the final standings: a power that probes and advances a lot can
+  outscore the eventual winner (in the canonical game England wins on 8 centers
+  with offence 13, while France and Italy maneuver more for offence 20 each).
+- **Defence score** (per-power cumulative line chart, signed): scores units
   *under attack* each movement phase. A unit is attacked when an enemy ordered a
   move into its province. If it **held** (not dislodged): **+2** vs a supported
   attack, **+1** vs an unsupported one. If it was **dislodged**: **-2** on a
-  supply center, **-1** elsewhere. Unattacked units score nothing. Cumulative
-  net per power. Measures tactical unit survival, distinct from territory: a
-  power can stay positive on defense while losing centers it never garrisoned
-  (those losses fall on the aggression index instead).
-- **Aggression-vs-defense scatter** (dashboard index): one power-colored dot per
-  nation, final aggression (x) vs final defense (y), with dashed zero crosshairs
-  marking the four offense/defense quadrants. In the canonical game the x-axis
-  (aggression) tracks final standing closely while the y-axis (defense) is
-  nearly orthogonal to it, style rather than quality: France finished 2nd with
-  low defense (a "glass cannon"), Russia 5th with the highest defense (a
-  "turtle"). All three are n=1 per game and, in self-play, reflect the seat's
-  situation under one model, not cross-model skill.
+  supply center, **-1** elsewhere. Unattacked units score nothing. Cumulative net
+  per power. Measures tactical unit survival, distinct from territory: a power can
+  stay positive on defence while losing centers it never garrisoned (those losses
+  fall on the offence score instead). The **+2 dislodge** line on offence mirrors
+  the dislodge line here: an attack you land is the same event the defender
+  survives or falls to.
+- **Offence-vs-defence scatter** (dashboard index): one power-colored dot per
+  nation, final offence (x) vs final defence (y), with dashed zero crosshairs
+  marking the four offence/defence quadrants. Read it as play *style*: the x-axis
+  is how hard a power pushed forward, the y-axis how its units fared under fire
+  (e.g. in the canonical game France runs low on defence, a "glass cannon", while
+  Russia runs highest, a "turtle"). All values are n=1 per game and, in
+  self-play, reflect the seat's situation under one model, not cross-model skill.
 - **Self-bounces** (index Outcomes, sub-row of Bounces; comparison table):
   count of move orders that bounced into a province the moving power occupies
   after resolution, i.e. a unit ordered into its own held square, or two of a
