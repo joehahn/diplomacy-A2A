@@ -1,5 +1,5 @@
 # Model-capability axis:
-### three T-shirt sized LLMs play Diplomacy
+### Three T-shirt sized LLMs play Diplomacy
 
 This study compares 3 LLMs across the price/capability spectrum using mimo-v2.5
 (small budget LLM), Claude Sonnet 4.6 (medium mid-tier model), and Claude Opus 4.8
@@ -15,7 +15,7 @@ This study compares 3 LLMs across the price/capability spectrum using mimo-v2.5
    rotate through every nation once, which averages out board position and lets us
    build an LLM leaderboard for Diplomacy gameplay.
 
-## The three models in self-play (style)
+## The three models in self-play (style analysis)
 
 **MiMo (S, budget): the talkative brawler.** The most talkative and most
 aggressive negotiator of the three (~1500 messages, the most real betrayals),
@@ -76,7 +76,7 @@ Three patterns recur across all three games, regardless of model family or price
 A longer Opus-vs-Sonnet read lives in [`REFERENCE.md`](../../REFERENCE.md) under
 "Opus vs Sonnet: play style."
 
-## The head-to-head rotation (level-field comparison)
+## Three LLMs head-to-head (the leaderboard)
 
 Seven counterbalanced games run by
 [`experiments/llm_axis.py`](../../experiments/llm_axis.py): Opus (frontier) and
