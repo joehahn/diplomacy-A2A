@@ -12,42 +12,6 @@ This study compares 3 LLMs across the price/capability spectrum using mimo-v2.5
    board across seven counterbalanced games, where each LLM rotates through every
    power, which allows us to build an LLM leaderboard for Diplomacy gameplay.
 
-Read the top half as personalities; read the bottom half as the level-field
-comparison.
-
-## Cost: the price spread these tiers represent
-
-The headline cost of one 10-year self-play game per model:
-
-| tier | model | 10-year self-play cost | input tokens | output tokens | wall time |
-|------|-------|------------------------|--------------|---------------|-----------|
-| S (budget) | xiaomi/mimo-v2.5 | $1.66 | 11.2M (uncached) | 334K | 32 min |
-| M (mid) | Claude Sonnet 4.6 | $25.62 | 11.9M (48% cached) | 347K | 34 min |
-| L (frontier) | Claude Opus 4.8 | $184.16 | 17.4M (45% cached) | 369K | 25 min |
-
-Roughly a 110x cost spread from budget to frontier, driven by per-token rates,
-not volume: all three games run a comparable number of LLM calls (~880) and
-land within 2x on tokens and wall time. Cached input (the bracketed share
-above) is billed at 10% of the full input rate. Per-token rates and the full
-six-model cost-and-competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
-
-Where those tokens go, using the canonical Sonnet game (885 calls, 11.9M
-input + 347K output) as the budget. Every call is one of three kinds, and the three
-account for the whole budget; there is no other token sink.
-
-| call type | calls | input (prompt + context) | output | share of all tokens |
-|-----------|-------|--------------------------|--------|---------------------|
-| negotiation | 420 | 5.6M | 243K | 48% |
-| strategy | 280 | 3.8M | 37K | 31% |
-| moves | 185 | 2.5M | 68K | 21% |
-| **total** | **885** | **11.9M** | **347K** | **100%** |
-
-Two things stand out. There is no separate "prompt" line because the prompt
-*is* the input side of every call: about 97% of all tokens are input (the board
-state, rules, persona, and running history re-sent on each call) and only ~3%
-are model output. And negotiation is the single largest consumer at ~48%, which
-fits the project's premise that the dialogue, not the move, is the deliverable.
-
 ## The three models in self-play (style)
 
 **MiMo (S, budget): the talkative brawler.** The most talkative and most
@@ -146,3 +110,36 @@ so read that panel as indicative, not decisive.)
 The headline: at this game length the three models are nearly indistinguishable on
 the scoreboard but clearly tiered on how cleanly they execute. Turning the
 execution gap into a center gap would take a longer rotation.
+
+## Cost: the price spread these tiers represent
+
+The headline cost of one 10-year self-play game per model:
+
+| tier | model | 10-year self-play cost | input tokens | output tokens | wall time |
+|------|-------|------------------------|--------------|---------------|-----------|
+| S (budget) | xiaomi/mimo-v2.5 | $1.66 | 11.2M (uncached) | 334K | 32 min |
+| M (mid) | Claude Sonnet 4.6 | $25.62 | 11.9M (48% cached) | 347K | 34 min |
+| L (frontier) | Claude Opus 4.8 | $184.16 | 17.4M (45% cached) | 369K | 25 min |
+
+Roughly a 110x cost spread from budget to frontier, driven by per-token rates,
+not volume: all three games run a comparable number of LLM calls (~880) and
+land within 2x on tokens and wall time. Cached input (the bracketed share
+above) is billed at 10% of the full input rate. Per-token rates and the full
+six-model cost-and-competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
+
+Where those tokens go, using the canonical Sonnet game (885 calls, 11.9M
+input + 347K output) as the budget. Every call is one of three kinds, and the three
+account for the whole budget; there is no other token sink.
+
+| call type | calls | input (prompt + context) | output | share of all tokens |
+|-----------|-------|--------------------------|--------|---------------------|
+| negotiation | 420 | 5.6M | 243K | 48% |
+| strategy | 280 | 3.8M | 37K | 31% |
+| moves | 185 | 2.5M | 68K | 21% |
+| **total** | **885** | **11.9M** | **347K** | **100%** |
+
+Two things stand out. There is no separate "prompt" line because the prompt
+*is* the input side of every call: about 97% of all tokens are input (the board
+state, rules, persona, and running history re-sent on each call) and only ~3%
+are model output. And negotiation is the single largest consumer at ~48%, which
+fits the project's premise that the dialogue, not the move, is the deliverable.
