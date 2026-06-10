@@ -30,8 +30,8 @@ land within 2x on tokens and wall time. Cached input (the bracketed share
 above) is billed at 10% of the full input rate. Per-token rates and the full
 six-model cost-and-competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
 
-Where those tokens go, using the canonical Sonnet game (885 calls, 11.9M input
-+ 347K output) as the budget. Every call is one of three kinds, and the three
+Where those tokens go, using the canonical Sonnet game (885 calls, 11.9M
+input + 347K output) as the budget. Every call is one of three kinds, and the three
 account for the whole budget; there is no other token sink.
 
 | call type | calls | input (prompt + context) | output | share of all tokens |
