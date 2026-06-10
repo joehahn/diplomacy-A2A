@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset='utf-8'><title>Negotiation — SPRING 1908 MOVEMENT (S1908M) — 2026-06-10.22.02.13</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px;
+       margin: 0 auto; padding: 20px; color: #222; }
+h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
+h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
+.meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+.settings-outcomes { display: flex; gap: 28px; flex-wrap: wrap;
+                     align-items: flex-start; margin: 28px 0 20px; }
+.so-col { flex: 0 1 auto; min-width: 0; }
+.so-chart-col { flex: 1 1 320px; }
+.so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 700;
+              text-transform: uppercase; letter-spacing: 0.04em; color: #333; }
+.standings-svg { width: 100%; max-width: 340px; height: auto; }
+.standings-label { font: 12px -apple-system, system-ui, sans-serif;
+                   font-weight: 600; }
+.standings-count { font: 12px -apple-system, system-ui, sans-serif;
+                   fill: #333; font-weight: 600; }
+table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
+table.settings tr.subrow th { padding-left: 18px; color: #888; font-weight: 400; }
+table.settings tr.subrow td { color: #555; }
+table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
+                                       vertical-align: top; }
+table.settings th { font-weight: 600; color: #555; white-space: nowrap;
+                    min-width: 160px; }
+table.settings td { color: #222; }
+nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
+      gap: 8px; }
+nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
+                   font-size: 0.95em; }
+nav a { background: #eef; color: #224; }
+nav a:hover { background: #dde; }
+nav span.disabled { background: #f5f5f5; color: #bbb; }
+img.map { max-width: 100%; border: 1px solid #ddd; }
+h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em; }
+h3.retreats-cap { margin: 14px 0 4px 0; font-size: 0.8em; color: #888;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
+          margin: 12px 0; font-size: 0.9em; }
+.orders .power { margin: 4px 0; }
+.orders .power b { display: inline-block; min-width: 80px; }
+.invalid { color: #c33; }
+ol.phases { line-height: 1.8; }
+.legend { font-size: 0.78em; color: #666; margin: 6px 0 10px; }
+.legend .chip { display: inline-block; padding: 1px 8px; margin: 2px 4px 2px 0;
+                border-radius: 10px; color: #fff; font-weight: 600; }
+.thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
+.thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
+.thread-head .arr { color: #aaa; font-weight: 400; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-items: start; }
+.bubble { padding: 7px 11px; border-radius: 12px; border-top-left-radius: 3px;
+          background: #f6f6f8; border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.empty { background: none; border: none; }
+.bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
+                 letter-spacing: 0.02em; }
+.bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
+               margin-left: 6px; font-weight: 700; }
+.bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
+.kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+           margin: 10px 0; }
+.kpi-stack { flex: 0 1 966px; min-width: 0; max-width: 1035px;
+             display: flex; flex-direction: column; gap: 4px; }
+.kpi-scatter { flex: 0 1 640px; min-width: 0; }
+.kpi-standings-side { flex: 0 1 auto; min-width: 0; }
+.kpi-notes { display: flex; gap: 48px; flex-wrap: wrap; margin: 6px 0 16px; }
+.kpi-note { font-size: 0.85em; color: #555; line-height: 1.5; margin: 0; }
+.kpi-svg { display: block; width: 100%; max-width: 1035px; height: auto;
+           background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
+.kpi-svg .dot-wrap:hover circle:nth-child(2) { r: 4.5; }
+.kpi-svg .dot-wrap:hover circle.sc-final { r: 7; }
+.sc-label { font-size: 13.5px; font-weight: 600; }
+.kpi-svg .dot-tip { opacity: 0; pointer-events: none; }
+.kpi-svg .dot-wrap:hover .dot-tip { opacity: 1; }
+.kpi-svg .dot-tip-bg { fill: #222; fill-opacity: 0.92; }
+.kpi-svg .dot-tip-text { fill: #fff; font: 11px -apple-system, system-ui, sans-serif; }
+.kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
+.kpi-axis { stroke: #bbb; stroke-width: 0.6; }
+.kpi-tick { font-size: 9px; fill: #888; }
+.kpi-axis-label { font-size: 9.5px; fill: #666; font-weight: 500; }
+.kpi-legend { flex: 0 0 auto; font-size: 0.78em; line-height: 1.6;
+              padding: 6px 10px; background: #fafafa; border: 1px solid #eee;
+              border-radius: 4px; }
+.kpi-legend .leg-row { display: flex; align-items: center; gap: 6px; }
+.kpi-legend .leg-swatch { display: inline-block; width: 14px; height: 8px;
+                          border-radius: 2px; flex: 0 0 auto; }
+.kpi-legend .leg-label { font-weight: 600; color: #444; }
+.narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
+        margin: 10px 0; font-size: 0.9em; }
+.narr .nrow { margin: 4px 0; line-height: 1.4; }
+.narr .nrow > b:first-child { display: inline-block; min-width: 78px; }
+.orders-link { display: inline-block; margin: 2px 0 12px; padding: 4px 11px; font-size: 0.85em;
+               background: #eef; color: #224; border-radius: 4px; text-decoration: none; }
+.orders-link:hover { background: #dde; }
+.modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; }
+.modal:target { display: block; }
+.modal-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+                  background: rgba(0, 0, 0, 0.45); }
+.modal-card { position: relative; margin: 6vh auto; background: #fff; max-width: 620px;
+              max-height: 82vh; overflow: auto; padding: 14px 22px 20px; border-radius: 8px;
+              box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.modal-card h2 { margin-top: 4px; }
+.modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
+               color: #999; text-decoration: none; }
+.modal-close:hover { color: #333; }
+.commentary { background: #f0f4ff; border-left: 3px solid #7a8fd8; padding: 10px 14px;
+              margin: 14px 0; font-size: 0.92em; line-height: 1.5; font-style: italic;
+              color: #333; }
+.commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
+                      text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
+                      display: block; margin-bottom: 6px; }
+.commentary .clist { margin: 0; padding-left: 20px; }
+.commentary .clist li { margin: 5px 0; }
+.nego-link { display: inline-block; margin: 14px 0; padding: 9px 16px; font-size: 0.95em;
+             font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
+             border-radius: 6px; text-decoration: none; }
+.nego-link:hover { background: #fde0ec; }
+.narr .r-fail { color: #0a8fa8; }
+.narr .r-bad { color: #c0392b; }
+.narr .r-warn { color: #c77a0a; }
+.strategies { background: #fbf6ee; border-left: 3px solid #d8b870; padding: 8px 14px;
+              margin: 14px 0; font-size: 0.92em; }
+.strategies summary { cursor: pointer; }
+.strategies .slist { margin-top: 8px; }
+.strategies .srow { padding: 6px 0; border-top: 1px dotted #e8d8b8; }
+.strategies .srow:first-child { border-top: none; }
+.strategies .srow b { display: inline-block; min-width: 78px; }
+.strategies .sline { margin: 3px 0 3px 80px; line-height: 1.4; }
+.strategies .stag { display: inline-block; font-size: 0.72em; font-weight: 700;
+                    text-transform: uppercase; color: #8a6a2e; min-width: 56px;
+                    margin-right: 6px; letter-spacing: 0.04em; }
+</style>
+</head><body>
+<nav><a href='S1908M.html'>← back to SPRING 1908 MOVEMENT (S1908M)</a><a href='index.html'>index</a></nav>
+<h2>Negotiation before SPRING 1908 MOVEMENT</h2>
+<div class='legend'><span class='chip' style='background:#c0392b'>AUSTRIA</span> <span class='chip' style='background:#2c5fa8'>ENGLAND</span> <span class='chip' style='background:#1f8aa8'>FRANCE</span> <span class='chip' style='background:#555555'>GERMANY</span> <span class='chip' style='background:#2e8b57'>ITALY</span> <span class='chip' style='background:#7d3c98'>RUSSIA</span> <span class='chip' style='background:#cc8a00'>TURKEY</span></div>
+<div class='pair-filter'>
+<h3>Filter to one pair</h3>
+<p class='hint'>Click any cell to show only that pair's conversation. The diagonal cells are each power's own row/column label.</p>
+<table class='pair-grid'>
+<thead><tr><th></th><th>AUS</th><th>ENG</th><th>FRA</th><th>GER</th><th>ITA</th><th>RUS</th><th>TUR</th></tr></thead><tbody>
+<tr><th>AUS</th><td class='diag'>—</td><td><a href='#pair-AUSTRIA-ENGLAND'>·</a></td><td><a href='#pair-AUSTRIA-FRANCE'>·</a></td><td><a href='#pair-AUSTRIA-GERMANY'>·</a></td><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td></tr>
+<tr><th>ENG</th><td><a href='#pair-AUSTRIA-ENGLAND'>·</a></td><td class='diag'>—</td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td><a href='#pair-ENGLAND-ITALY'>·</a></td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>FRA</th><td><a href='#pair-AUSTRIA-FRANCE'>·</a></td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td class='diag'>—</td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td><a href='#pair-FRANCE-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>GER</th><td><a href='#pair-AUSTRIA-GERMANY'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td><a href='#pair-GERMANY-TURKEY'>·</a></td></tr>
+<tr><th>ITA</th><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td><a href='#pair-ENGLAND-ITALY'>·</a></td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ITALY-RUSSIA'>·</a></td><td><a href='#pair-ITALY-TURKEY'>·</a></td></tr>
+<tr><th>RUS</th><td><a href='#pair-AUSTRIA-RUSSIA'>·</a></td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td><a href='#pair-FRANCE-RUSSIA'>·</a></td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td><a href='#pair-ITALY-RUSSIA'>·</a></td><td class='diag'>—</td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td></tr>
+<tr><th>TUR</th><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-GERMANY-TURKEY'>·</a></td><td><a href='#pair-ITALY-TURKEY'>·</a></td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td><td class='diag'>—</td></tr>
+</tbody></table>
+<a class='clear' href='#'>Show all pairs</a>
+</div>
+<div class='thread' id='pair-ENGLAND-FRANCE'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R1</span></div><div class='btext'>MUN was the right move—you've anchored the center and reset the western coalition. I'm holding my seven centers defensively this spring and moving A BUR to support your flank. If Italy or Turkey breaks the Mediterranean stalemate this fall, we reset north-south to bleed them before one runs away with the game. Confirmed?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Italy at 6 is the critical threat now—if Turkey and Italy both reach 7 this year while you consolidate at 7, the board locks and we all lose. I'm pressing south hard this spring (MUN into KIE/BER) to bleed Italy's flank. If you anchor the north defensively and signal no western escalation, we contain Italy together by fall and reset the board before Turkey locks us both out. Are you willing to coordinate a southern squeeze?</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R2</span></div><div class='btext'>MUN was strong. I'm supporting your southern pivot this spring: A BUR moves to anchor the center and bleed Italy's flank alongside you. If Italy or Turkey breaks the Mediterranean stalemate this fall, we reset north-south together. Are you committing to a hard squeeze on Italy by fall?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>MUN into KIE this turn anchors the center and signals Rhine stability to Germany. You hold seven defensively; I hold six and bleed Italy from the east. Confirm: no western escalation from you, no Rhine pressure from me, and we reset south together if Italy or Turkey breaks the stalemate by fall. Deal?</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R3</span></div><div class='btext'>Confirming the squeeze: I hold the west defensively (A BUR supports your flank into KIE/BER). Italy consolidates toward 7 this fall if we don't bleed it now. Are you committing hard south, or pivoting back west?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>Rhine holds firm. I'm pressing south hard this spring: A MUN into KIE, A SIL into BER. Italy's flank breaks if we both commit now. You anchor the north; I'll bleed the Mediterranean. Confirmed?</div></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-RUSSIA'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I'm pivoting away from the east this spring—no more SIL pressure. A SIL holds defensively to guard the center, A MUN pushes south against Italy. The Rhine is stable. Hold the north and east; I'll anchor the center and bleed the Mediterranean. Deal?</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Italy and Turkey consolidating unchecked while we both bleed. If you press south against Italy this turn, I'll anchor the east and push F RUM into SEV to crack Turkey's hold—mutual pressure breaks their coalition. Coordinate the squeeze?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>I'm moving A MUN into KIE this turn to anchor the center and signal southern pressure on Italy. You crack Turkey's flank with F RUM into SEV as proposed. If we both press simultaneously this spring, Italy fractures by fall and we reset the board before one locks at 7+. Confirmed?</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → FRANCE<span class='rnd'>R2</span></div><div class='btext'>You're pivoting south against Italy—good. I'm pressing F RUM into SEV this spring to reclaim my rebuild slot from Turkey. If we both gain ground simultaneously, we break their coalition and reach 6+ centers each by winter. Confirm you're holding SIL defensively and not pivoting back east, and I'll anchor the east while you bleed Italy.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>Pivoting harder south than planned—A SIL moves into BER, not holding defensively. Italy consolidates too fast; we need to break them now. You crack Turkey with F RUM into SEV; I'll hit Italy from the west. If we both gain ground this turn, we reset the board by winter.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → FRANCE<span class='rnd'>R3</span></div><div class='btext'>I'm pressing F RUM into SEV this turn to crack Turkey's flank—confirmed. You press south against Italy. If we both gain ground simultaneously, we break their coalition by fall. Hold SIL and MUN; I anchor the east and support your southern squeeze. Mutual growth.</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-RUSSIA'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Balkans remain defensively held. Confirm you're anchoring the north and east this spring without escalation, and we coexist. If you pivot south toward my core, that's escalation and I respond accordingly.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Turkey locked my rebuild slot by holding SEV. If you pivot south this spring and press RUM or BUL, I'll anchor the east defensively and support your flank—we both gain ground at Turkey's expense and prevent Italy/Turkey from running away with the game. Deal?</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Turkey consolidated east and abandoned the dual squeeze. The Balkans pact is broken. This spring I'm pivoting south and pressing your flank via GAL. Expect escalation.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>You're holding the Balkans defensively—good. Turkey locked my rebuild slot by holding SEV. If you pivot south this spring and press BUL or RUM while I press F RUM into SEV, we break Turkey's consolidation and both reach 6+ centers by winter. I hold the east defensively and support your flank. Worth discussing, or do you prefer coexistence while Italy and Turkey run away with the game?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>You pivoted south this spring—that's escalation. I'm pressing F RUM into SEV and anchoring my core defensively. The coexistence pact is finished. We're now competitors for the Balkans. Expect pressure if you continue south.</div></div>
+</div></div>
+<div class='thread' id='pair-GERMANY-RUSSIA'>
+<div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Your neutral pact kept me quiet this fall, but it leaves me at 2 centers with no growth path and no survival long-term. This spring I'm moving east to probe for a seizable center or a concrete survival offer from you. If neither materializes by winter, I'm destabilizing your position next turn while Austria and Turkey press from the south. Offer me growth or accept an eastern spoiler.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R1</span></div><div class='btext'>You're at 2 centers facing west. Hold KIE defensively—I'm not pressing you and won't support Austria or France if they pivot east to eliminate you. We both survive longer if you focus west and I consolidate the east. Stay neutral and I'll leave you alone.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Your neutral pact kept me quiet but leaves me dead at 2 centers with no growth. I'm moving east this spring to probe for a seizable center or a survival offer from you. Offer me concrete growth (a center or a build guarantee by winter) or accept that I'm destabilizing your position while Austria and Turkey press from the south.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R2</span></div><div class='btext'>You signaled a probe east this spring. Before you commit: if you're genuinely destabilizing my flank, I anchor it tighter and abandon my southern push—we both lose. If you're bluffing for a survival offer, here it is: hold KIE defensively, stay out of the east, and I guarantee you non-aggression through fall 1908 and won't support Austria if it pivots north against you. Growth path? Not yet, but survival. Take it or escalate and watch Austria press south while I hold the line against you—we both get bled.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R3</span></div><div class='btext'>Hold KIE defensively this spring. I'm not pressing you and won't support Austria if it pivots north. Non-aggression through fall 1908 confirmed. Stay out of the east and we both survive longer. Growth path comes if the board opens—focus west for now.</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-ENGLAND'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#2c5fa8'>ENGLAND</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Russia is weakened at 4 centers and the north is unstable. If you're willing to press north this spring while I push south against Turkey or Italy, we reset the board together. Otherwise, I'm pivoting to a Mediterranean partition and you're on your own against Russia.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>France has pivoted south into MUN and reset the western coalition. Italy and Turkey remain locked at 6 each. If either breaks the Mediterranean stalemate this fall, I'm willing to reset north-south with you and France to squeeze them before one reaches 8. Hold the Balkans defensively and signal if you're committed. Are you in?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>I appreciate the north-south proposal, but Russia at 4 is too weak—if I press north, Austria pivots south and locks the board before I can reposition. Instead: I'm anchoring the west defensively and supporting France's southern squeeze on Italy. If Italy consolidates toward 7 this fall, we all lose. Are you willing to pivot north against Italy/Turkey instead of south?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>Italy and Turkey lock the board this fall if neither fractures. You pivot north into RUM/SEV while France and I bleed Italy from the west and center—we reset the board together by fall. In or out?</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-FRANCE'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Russia locked at 4, Italy and Turkey at 6 each, me at 3. The north is frozen and a three-power squeeze won't materialize. Are you willing to reset south with me against Italy and Turkey this fall, or should I assume you're anchoring the center defensively while I reshape the board alone?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Russia locked at 8, Turkey consolidating at 6—I see your Balkans pivot. I'm moving south this spring to bleed Italy's flank (MUN and SIL pushing toward BER/KIE), leaving GAL and the center stable for your Balkans squeeze. No Rhine pressure from me. Focus on Turkey; I'll focus on Italy.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → FRANCE<span class='rnd'>R2</span></div><div class='btext'>You're pivoting south into MUN and pressing Italy/Germany. I'm moving A BUD into VIE to anchor my expansion south. Are we coordinating a three-power squeeze on Italy and Turkey by fall, or are you consolidating the center defensively?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>I'm pressing south hard this spring: A MUN into KIE, A SIL into BER. You focus on Turkey in the Balkans. If we both gain ground simultaneously, we break the Mediterranean coalition and reset the board by winter. Coordinate?</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-ITALY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R1</span></div><div class='btext'>Your F ADR is one move from TRI. Is that defensive positioning against Turkey, or are you staging for an attack on my core? Answer directly—if you're attacking TRI, I defend it; if you're defending against Turkey, we coexist and I pivot south.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>France has pivoted east and holds MUN—they're no longer Rhine-locked. If they're eyeing the center and Balkans, we should coordinate. Non-aggression between us holds firm. Do you see France as a threat to your position this spring?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>F ADR is defensive positioning against France's eastward pivot into MUN and BER, not prep for TRI. France is now equidistant from both our cores. Should we both watch their next move carefully? I'll keep my focus on the center.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>F ADR is defensive positioning against France's eastward pivot, not prep for TRI. Non-aggression holds firm. This spring I'll reposition A TUN north via convoy to pressure France's center from the south—easing Russia's pressure on you from the north. We both benefit if France is forced to split their forces. Confirm we're aligned on this?</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-GERMANY'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R1</span></div><div class='btext'>Your only survival path is east—pivot to bleed Russia's northern flank and destabilize the board leader's support. Testing my western seams (BEL, HOL) fails and guarantees your elimination. Pivot east and you become a chaos agent worth keeping alive as a counterweight. Your call.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>F NWY stays east this spring, honoring the pivot. I'm not testing your seams—I'm focused on destabilizing Russia's position next turn while you consolidate the west. Non-aggression holds on our border.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Your eastern pivot is acceptable—destabilizing Russia's position weakens the board and gives us both breathing room. But do not collapse Russia entirely; if you do, Austria pivots south and locks the board before I can reposition. Bleed Russia carefully and stay neutral on my western border. Understood?</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>F NWY swings east this spring toward STP/NC to destabilize Russia's northern flank, honoring the pivot strategy we discussed. I'm a chaos agent worth keeping alive—I bleed the board leader while you consolidate the west. Non-aggression on our border holds.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-RUSSIA'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Northern border remains stable this spring—I'm holding my seven centers defensively and not pressing into your territory. Germany is weakening and may pivot east to destabilize your flank next turn. Watch the east carefully and signal if you need coordination against an eastern spoiler. We both benefit from containing the Mediterranean powers before one runs away with the game.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Turkey and Italy both at 6 centers while we slip. If you pivot south this spring to bleed Italy's flank, I'll hold the east defensively and press F RUM into SEV to reclaim my rebuild slot—we both grow at the Mediterranean powers' expense. Worth coordinating before one locks the board?</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Northern border holds firm this spring. I'm consolidating defensively at 7 and supporting France's southern squeeze on Italy—not pivoting north to destabilize you. Germany is pivoting east; watch your flank carefully. If Italy or Turkey breaks the Mediterranean stalemate, we both benefit from containing them. Confirmed?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>Germany destabilizes your flank this spring; I'm not pressing north. Hold the east defensively and we both benefit from Italy/Turkey fracturing. Non-aggression holds. Confirmed?</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-ITALY'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>You've consolidated at 6 centers and pushed east into MUN. Clarify your direction: are you committed to the Rhine border with England, or are you pivoting toward the center and Balkans? I'm defending my core defensively this spring, but I need to know if we're still neighbors or rivals.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R2</span></div><div class='btext'>Rhine border holds firm with England. I'm anchoring the center defensively this spring (A SIL holds, A MUN stabilizes at KIE), not pivoting toward your core. You and Turkey are consolidating unchecked while Russia and I bleed—long-term, the board resets south if neither of you escalates west. Stay neutral on the Rhine and we coexist through winter.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R2</span></div><div class='btext'>You've consolidated at 6 and pushed east into MUN. Direct question: are you committed to the Rhine border with England, or are you pivoting toward the center and Balkans? My next moves depend on your answer.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R3</span></div><div class='btext'>You've pivoted east into MUN. This spring I'm consolidating defensively (A NAP holds, fleets anchor the Mediterranean), not attacking you. But I'm repositioning A TUN north to contest the center if you continue expanding east. You're now equidistant from my core and Russia's—don't overextend.</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-GERMANY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>This spring I'm positioning to support an eastern push next turn. F KIE can move to BAL or support your moves into RUM; F NWY can swing toward STP/NC to threaten Russia's northern flank. Can you commit A UKR or A GAL to RUM or SEV in spring 1908? Coordinate now and we both gain from Russia's collapse.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → GERMANY<span class='rnd'>R2</span></div><div class='btext'>A UKR moves to GAL this spring to threaten RUM next turn. F KIE to BAL and F NWY toward STP/NC—we coordinate a pincer against Russia. Russia is weak; let's bleed them together.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>This spring I'm moving F KIE south toward BAL and F NWY to threaten Russia's northern flank (STP/NC or BAR). If you move A GAL or A UKR toward RUM or SEV this turn, I'll support your attack next spring and we bleed Russia together. Commit now: can you hit RUM or SEV this spring?</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-TURKEY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Your A SEV moved into RUM last fall as promised. This spring, are you pressing north from RUM toward SEV or BUL to execute the dual squeeze, or are you consolidating the east and pivoting west? Clarity now determines my whole direction.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R2</span></div><div class='btext'>You moved A SEV into RUM as promised, but you're consolidating east and silent on the dual squeeze next spring. The pact is broken. I'm pivoting south this turn; expect different terms next fall.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>I held A SEV defensively this fall, not moved into RUM—I needed flexibility to preserve Russia's rebuild slot while I consolidated the east. This spring, I'm anchoring the straits and east defensively. I'm not pressing north into RUM/SEV, but if Russia collapses or you pivot hard on the Balkans, I'll reassess and press north next fall. My commitment is to the east; let me know if that works for your plan.</div></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-GERMANY'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R1</span></div><div class='btext'>Rhine holds firm. I'm pivoting south this spring (A MUN into KIE, A SIL into BER) to pressure Italy, not north. Your center at KIE is safe from my moves. Stay neutral on the Rhine and we both survive to winter. Agreed?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R2</span></div><div class='btext'>Rhine holds firm. A MUN moves into KIE to anchor the center against Italy's consolidation, not to threaten you. Your probes in HOL/BEL are uncontested. Stay west of KIE and we both survive to winter. Agreed?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R3</span></div><div class='btext'>Rhine holds firm. A MUN moves into KIE to anchor the center, not north. Stay neutral and we both survive to winter.</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-GERMANY-TURKEY'>
+<div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Russia dominates the board at 4 centers and controls the north-east. I'm pivoting east this spring to bleed their northern flank while you anchor the south. Can you commit to a coordinated pincer against Russia in spring 1908? Non-aggression between us in the Balkans if you're willing to weaken the board leader together.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → TURKEY<span class='rnd'>R2</span></div><div class='btext'>Russia dominates at 4 centers and controls the north-east. I'm moving F NWY toward STP/NC and F KIE toward BAL to threaten their northern flank this spring. If you commit A SEV or moves into BUL/RUM, we coordinate a three-way pincer next turn and both gain. Non-aggression in the Balkans if you're willing.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → GERMANY<span class='rnd'>R2</span></div><div class='btext'>I'm locked defensively in the east and straits this spring—A SEV and A SYR hold, fleets anchor. I can't coordinate a pincer against Russia without breaking my pacts with Italy and Russia themselves. Focus your pressure north; that's where the board breaks. I'll watch for fractures and pivot west into chaos once the northern powers exhaust each other.</div></div>
+</div></div>
+<div class='thread' id='pair-ITALY-TURKEY'>
+<div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Mediterranean pact holds firm on my end. France is pivoting east and away from the Rhine. If they destabilize Russia and threaten the Balkans next, we may need to coordinate containment. Are you stable in the straits this spring?</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R1</span></div><div class='btext'>Mediterranean pact holds firm this spring. I'm consolidating defensively (A SYR holds, straits anchored). You keep your core; I keep mine. We both survive to winter—confirmed?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R2</span></div><div class='btext'>Mediterranean pact holds firm this spring. A SYR and A SEV anchor the east defensively; straits remain locked. You keep your core; I keep mine. We both survive to winter. Confirmed.</div></div>
+</div></div>
+<div class='thread' id='pair-ITALY-RUSSIA'>
+<div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>France has pivoted east and holds MUN—they're weakening your position. I'm defending my core this spring. If you pivot west to contain France, I won't threaten your flank. Coordinate?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>France has pivoted east and overextended into MUN. This spring I'm repositioning A TUN north via convoy to threaten the center and force France to defend multiple fronts. That eases their pressure on you. We both gain if France is contained. Coordinate?</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-ITALY'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>You're the board leader at 7 centers. France has just pivoted east away from the Rhine and toward the center—that reshapes the board dynamics. I'm consolidating defensively, but watch France's direction next turn.</div></div>
+</div></div>
+<div class='thread' id='pair-RUSSIA-TURKEY'>
+<div class='thread-head'><span style='color:#7d3c98'>RUSSIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>A SEV holds defensively this spring—your rebuild slot is secure. I'm not pivoting into RUM or pressing you. Stabilize and we both survive the northern grind. Hold the line.</div></div>
+</div></div>
+<nav><a href='S1908M.html'>← back to SPRING 1908 MOVEMENT (S1908M)</a><a href='index.html'>index</a></nav>
+</body></html>

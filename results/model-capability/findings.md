@@ -6,7 +6,8 @@ This study compares 3 LLMs across the price/capability spectrum using mimo-v2.5
 (large frontier LLM), and this investigation has two parts:
 
 1. **Assessing self-play**: the same LLM plays against itself while driving all 7
-   players in a game, three games for 3 LLMs. These games don't rank models, they
+   players in a game, three games for the 3 tier models (plus a fourth for Claude
+   Haiku, the budget runner-up MiMo beat out). These games don't rank models, they
    instead characterize each LLM's playing styles which are quite different.
 2. **LLM head-to-head**: the three models meet on one board across seven
    counterbalanced games. Each game pits one Opus player and one MiMo player
@@ -76,6 +77,30 @@ Three patterns recur across all three games, regardless of model family or price
 A longer Opus-vs-Sonnet read lives in [`REFERENCE.md`](../../REFERENCE.md) under
 "Opus vs Sonnet: play style."
 
+### The budget runner-up: Haiku
+
+Before MiMo was chosen as the budget tier, Claude Haiku 4.5 (~20B by third-party
+estimate) was the other candidate; it lost the budget-tier playoff to MiMo, and
+its 10-year self-play game shows why.
+
+**Haiku: the agreeable diplomat.** The most *social* of the four models and the
+least *forceful*. It runs the table on coalition-talk: the highest alliance
+language of any model (43% of messages, more than double the next) and the most
+questions (39%), forever proposing partnerships ("Turkey and Italy are natural
+partners... shall we coordinate?"; "let's both grow in our zones and watch Russia
+together"). But the warmth is soft, among the lowest conditional bargaining (28%)
+and barely any betrayal (1.4%), so it offers friendship freely yet rarely turns it
+into a hard, conditional deal or breaks its word. On the board it is the most
+passive game run: the highest hold rate (56%), the lowest support rate (8%), the
+fewest dislodgements (6), and a single cut support all game, so it sits still,
+barely coordinates, and never breaks a wall by cutting its defender. The bill for
+all that peace is 21 disbands, the most contraction of any game: it talks
+coalitions but does not take or hold ground. That is the gap MiMo exploits.
+Diplomacy is won by seizing centers, and where MiMo coerces ("let me have TRI
+peacefully... if you refuse I'll take it by force"), Haiku asks permission and
+keeps the peace. The genial diplomat loses to the brawler.
+Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
+
 ## Three LLMs head-to-head (the leaderboard)
 
 Seven counterbalanced games run by
@@ -121,14 +146,17 @@ The headline cost of one 10-year self-play game per model:
 | tier | model | 10-year self-play cost | input tokens | output tokens | wall time |
 |------|-------|------------------------|--------------|---------------|-----------|
 | S (budget) | xiaomi/mimo-v2.5 | $1.66 | 11.2M (uncached) | 334K | 32 min |
+| S (alt) | Claude Haiku 4.5 | $7.30 | 10.3M (58% cached) | 453K | 32 min |
 | M (mid) | Claude Sonnet 4.6 | $25.62 | 11.9M (48% cached) | 347K | 34 min |
 | L (frontier) | Claude Opus 4.8 | $184.16 | 17.4M (45% cached) | 369K | 25 min |
 
 Roughly a 110x cost spread from budget to frontier, driven by per-token rates,
-not volume: all three games run a comparable number of LLM calls (~880) and
+not volume: all four games run a comparable number of LLM calls (~880) and
 land within 2x on tokens and wall time. Cached input (the bracketed share
-above) is billed at 10% of the full input rate. Per-token rates and the full
-six-model cost-and-competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
+above) is billed at 10% of the full input rate. The budget runner-up, Claude
+Haiku, lands in between, a Claude-family budget model at roughly 4x MiMo's cost
+but a quarter of Sonnet's. Per-token rates and the full six-model
+cost-and-competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
 
 Where those tokens go, using the canonical Sonnet game (885 calls, 11.9M
 input + 347K output) as the budget. Every call is one of three kinds, and the three

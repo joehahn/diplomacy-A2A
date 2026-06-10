@@ -1673,6 +1673,7 @@ _REPO_BLOB = "https://github.com/joehahn/diplomacy-A2A/blob/main"
 # writeup and the project README; any other run renders no nav.
 _SELF_PLAY_DASHBOARDS = [
     ("mimo-reference", "MiMo", "mimo-reference/2026-06-09.03.23.24"),
+    ("haiku-reference", "Haiku", "haiku-reference/2026-06-10.22.02.13"),
     ("canonical", "Sonnet", "canonical/2026-06-04.14.48.20"),
     ("opus-reference", "Opus", "opus-reference/2026-06-09.17.03.53"),
 ]
