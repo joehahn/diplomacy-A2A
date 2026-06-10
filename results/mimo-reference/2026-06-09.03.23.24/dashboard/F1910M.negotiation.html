@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset='utf-8'><title>Negotiation — FALL 1910 MOVEMENT (F1910M) — 2026-06-09.03.23.24</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px;
+       margin: 0 auto; padding: 20px; color: #222; }
+h1 { margin: 12px 0 4px 0; font-size: 1.4em; }
+h2 { margin: 24px 0 8px 0; font-size: 1.1em; color: #555; }
+.meta { color: #777; font-size: 0.9em; margin-bottom: 16px; }
+.settings-outcomes { display: flex; gap: 28px; flex-wrap: wrap;
+                     align-items: flex-start; margin: 28px 0 20px; }
+.so-col { flex: 0 1 auto; min-width: 0; }
+.so-chart-col { flex: 1 1 320px; }
+.so-heading { margin: 0 0 4px; font-size: 0.95em; font-weight: 700;
+              text-transform: uppercase; letter-spacing: 0.04em; color: #333; }
+.standings-svg { width: 100%; max-width: 340px; height: auto; }
+.standings-label { font: 12px -apple-system, system-ui, sans-serif;
+                   font-weight: 600; }
+.standings-count { font: 12px -apple-system, system-ui, sans-serif;
+                   fill: #333; font-weight: 600; }
+table.settings { border-collapse: collapse; margin: 6px 0 20px; font-size: 0.92em; }
+table.settings tr.subrow th { padding-left: 18px; color: #888; font-weight: 400; }
+table.settings tr.subrow td { color: #555; }
+table.settings th, table.settings td { padding: 3px 18px 3px 0; text-align: left;
+                                       vertical-align: top; }
+table.settings th { font-weight: 600; color: #555; white-space: nowrap;
+                    min-width: 160px; }
+table.settings td { color: #222; }
+nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0;
+      gap: 8px; }
+nav a, nav span { padding: 8px 14px; border-radius: 4px; text-decoration: none;
+                   font-size: 0.95em; }
+nav a { background: #eef; color: #224; }
+nav a:hover { background: #dde; }
+nav span.disabled { background: #f5f5f5; color: #bbb; }
+img.map { max-width: 100%; border: 1px solid #ddd; }
+h3.mapcap { margin: 16px 0 4px 0; font-size: 0.8em; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em; }
+h3.retreats-cap { margin: 14px 0 4px 0; font-size: 0.8em; color: #888;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.orders { background: #fafafa; border-left: 3px solid #aac; padding: 10px 14px;
+          margin: 12px 0; font-size: 0.9em; }
+.orders .power { margin: 4px 0; }
+.orders .power b { display: inline-block; min-width: 80px; }
+.invalid { color: #c33; }
+ol.phases { line-height: 1.8; }
+.legend { font-size: 0.78em; color: #666; margin: 6px 0 10px; }
+.legend .chip { display: inline-block; padding: 1px 8px; margin: 2px 4px 2px 0;
+                border-radius: 10px; color: #fff; font-weight: 600; }
+.thread { border-top: 1px solid #eee; padding: 10px 0 6px; }
+.thread-head { margin: 6px 0 8px; font-size: 0.98em; font-weight: 700; }
+.thread-head .arr { color: #aaa; font-weight: 400; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-items: start; }
+.bubble { padding: 7px 11px; border-radius: 12px; border-top-left-radius: 3px;
+          background: #f6f6f8; border: 1px solid #e6e6ec; font-size: 0.9em; }
+.bubble.empty { background: none; border: none; }
+.bubble .bmeta { font-size: 0.72em; font-weight: 700; margin-bottom: 3px;
+                 letter-spacing: 0.02em; }
+.bubble .rnd { background: #888; color: #fff; border-radius: 8px; padding: 0 6px;
+               margin-left: 6px; font-weight: 700; }
+.bubble .btext { color: #222; line-height: 1.35; }
+/* Pair filter grid (7x7) at top of negotiation page, plus CSS-only
+   filter behavior: when a thread is targeted via URL fragment, the
+   :has() rule hides every other thread on the page. Requires :has()
+   support (Safari 15.4+, Chrome 105+, Firefox 121+). */
+.pair-filter { margin: 14px 0 22px; }
+.pair-filter h3 { margin: 0 0 6px; font-size: 0.88em; color: #555;
+                  font-weight: 600; }
+.pair-filter .hint { font-size: 0.78em; color: #888; margin: 0 0 8px; }
+.pair-grid { border-collapse: separate; border-spacing: 2px;
+             font-size: 0.78em; }
+.pair-grid th, .pair-grid td { padding: 0; text-align: center; }
+.pair-grid th { font-weight: 700; color: #555; min-width: 38px;
+                padding: 3px 5px; background: #f8f8f8; }
+.pair-grid td.diag { background: #f0f0f0; color: #aaa; padding: 4px; }
+.pair-grid a { display: block; padding: 5px 8px; background: #eef;
+               color: #224; text-decoration: none; border-radius: 3px; }
+.pair-grid a:hover { background: #dde; }
+.pair-filter .clear { display: inline-block; margin-top: 10px;
+                      padding: 5px 12px; background: #f5f5f5; color: #555;
+                      border-radius: 4px; text-decoration: none;
+                      font-size: 0.85em; }
+.pair-filter .clear:hover { background: #eee; }
+body:has(.thread:target) .thread { display: none; }
+body:has(.thread:target) .thread:target { display: block; }
+.kpi-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+           margin: 10px 0; }
+.kpi-stack { flex: 0 1 966px; min-width: 0; max-width: 1035px;
+             display: flex; flex-direction: column; gap: 4px; }
+.kpi-scatter { flex: 0 1 640px; min-width: 0; }
+.kpi-svg { display: block; width: 100%; max-width: 1035px; height: auto;
+           background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.kpi-svg .dot-hit { fill: transparent; pointer-events: all; }
+.kpi-svg .dot-wrap:hover circle:nth-child(2) { r: 4.5; }
+.kpi-svg .dot-tip { opacity: 0; pointer-events: none; }
+.kpi-svg .dot-wrap:hover .dot-tip { opacity: 1; }
+.kpi-svg .dot-tip-bg { fill: #222; fill-opacity: 0.92; }
+.kpi-svg .dot-tip-text { fill: #fff; font: 11px -apple-system, system-ui, sans-serif; }
+.kpi-title { font-size: 11px; fill: #555; font-weight: 600; }
+.kpi-axis { stroke: #bbb; stroke-width: 0.6; }
+.kpi-tick { font-size: 9px; fill: #888; }
+.kpi-axis-label { font-size: 9.5px; fill: #666; font-weight: 500; }
+.kpi-legend { flex: 0 0 auto; font-size: 0.78em; line-height: 1.6;
+              padding: 6px 10px; background: #fafafa; border: 1px solid #eee;
+              border-radius: 4px; }
+.kpi-legend .leg-row { display: flex; align-items: center; gap: 6px; }
+.kpi-legend .leg-swatch { display: inline-block; width: 14px; height: 8px;
+                          border-radius: 2px; flex: 0 0 auto; }
+.kpi-legend .leg-label { font-weight: 600; color: #444; }
+.narr { background: #fafafa; border-left: 3px solid #ccd; padding: 8px 14px;
+        margin: 10px 0; font-size: 0.9em; }
+.narr .nrow { margin: 4px 0; line-height: 1.4; }
+.narr .nrow > b:first-child { display: inline-block; min-width: 78px; }
+.orders-link { display: inline-block; margin: 2px 0 12px; padding: 4px 11px; font-size: 0.85em;
+               background: #eef; color: #224; border-radius: 4px; text-decoration: none; }
+.orders-link:hover { background: #dde; }
+.modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; }
+.modal:target { display: block; }
+.modal-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+                  background: rgba(0, 0, 0, 0.45); }
+.modal-card { position: relative; margin: 6vh auto; background: #fff; max-width: 620px;
+              max-height: 82vh; overflow: auto; padding: 14px 22px 20px; border-radius: 8px;
+              box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.modal-card h2 { margin-top: 4px; }
+.modal-close { position: absolute; top: 6px; right: 14px; font-size: 1.5em; line-height: 1;
+               color: #999; text-decoration: none; }
+.modal-close:hover { color: #333; }
+.commentary { background: #f0f4ff; border-left: 3px solid #7a8fd8; padding: 10px 14px;
+              margin: 14px 0; font-size: 0.92em; line-height: 1.5; font-style: italic;
+              color: #333; }
+.commentary .clabel { font-style: normal; font-weight: 700; font-size: 0.75em;
+                      text-transform: uppercase; letter-spacing: 0.05em; color: #5566bb;
+                      display: block; margin-bottom: 6px; }
+.commentary .clist { margin: 0; padding-left: 20px; }
+.commentary .clist li { margin: 5px 0; }
+.nego-link { display: inline-block; margin: 14px 0; padding: 9px 16px; font-size: 0.95em;
+             font-weight: 600; background: #fff0f6; color: #883366; border: 1px solid #e8b8cf;
+             border-radius: 6px; text-decoration: none; }
+.nego-link:hover { background: #fde0ec; }
+.narr .r-fail { color: #0a8fa8; }
+.narr .r-bad { color: #c0392b; }
+.narr .r-warn { color: #c77a0a; }
+.strategies { background: #fbf6ee; border-left: 3px solid #d8b870; padding: 8px 14px;
+              margin: 14px 0; font-size: 0.92em; }
+.strategies summary { cursor: pointer; }
+.strategies .slist { margin-top: 8px; }
+.strategies .srow { padding: 6px 0; border-top: 1px dotted #e8d8b8; }
+.strategies .srow:first-child { border-top: none; }
+.strategies .srow b { display: inline-block; min-width: 78px; }
+.strategies .sline { margin: 3px 0 3px 80px; line-height: 1.4; }
+.strategies .stag { display: inline-block; font-size: 0.72em; font-weight: 700;
+                    text-transform: uppercase; color: #8a6a2e; min-width: 56px;
+                    margin-right: 6px; letter-spacing: 0.04em; }
+</style>
+</head><body>
+<nav><a href='F1910M.html'>← back to FALL 1910 MOVEMENT (F1910M)</a><a href='index.html'>index</a></nav>
+<h2>Negotiation before FALL 1910 MOVEMENT</h2>
+<div class='legend'><span class='chip' style='background:#c0392b'>AUSTRIA</span> <span class='chip' style='background:#2c5fa8'>ENGLAND</span> <span class='chip' style='background:#1f8aa8'>FRANCE</span> <span class='chip' style='background:#555555'>GERMANY</span> <span class='chip' style='background:#2e8b57'>ITALY</span> <span class='chip' style='background:#7d3c98'>RUSSIA</span> <span class='chip' style='background:#cc8a00'>TURKEY</span></div>
+<div class='pair-filter'>
+<h3>Filter to one pair</h3>
+<p class='hint'>Click any cell to show only that pair's conversation. The diagonal cells are each power's own row/column label.</p>
+<table class='pair-grid'>
+<thead><tr><th></th><th>AUS</th><th>ENG</th><th>FRA</th><th>GER</th><th>ITA</th><th>RUS</th><th>TUR</th></tr></thead><tbody>
+<tr><th>AUS</th><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-AUSTRIA-FRANCE'>·</a></td><td><a href='#pair-AUSTRIA-GERMANY'>·</a></td><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td class='diag'>—</td><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td></tr>
+<tr><th>ENG</th><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td><a href='#pair-ENGLAND-ITALY'>·</a></td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td><a href='#pair-ENGLAND-TURKEY'>·</a></td></tr>
+<tr><th>FRA</th><td><a href='#pair-AUSTRIA-FRANCE'>·</a></td><td><a href='#pair-ENGLAND-FRANCE'>·</a></td><td class='diag'>—</td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td><a href='#pair-FRANCE-RUSSIA'>·</a></td><td class='diag'>—</td></tr>
+<tr><th>GER</th><td><a href='#pair-AUSTRIA-GERMANY'>·</a></td><td><a href='#pair-ENGLAND-GERMANY'>·</a></td><td><a href='#pair-FRANCE-GERMANY'>·</a></td><td class='diag'>—</td><td><a href='#pair-GERMANY-ITALY'>·</a></td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td><a href='#pair-GERMANY-TURKEY'>·</a></td></tr>
+<tr><th>ITA</th><td><a href='#pair-AUSTRIA-ITALY'>·</a></td><td><a href='#pair-ENGLAND-ITALY'>·</a></td><td><a href='#pair-FRANCE-ITALY'>·</a></td><td><a href='#pair-GERMANY-ITALY'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-ITALY-TURKEY'>·</a></td></tr>
+<tr><th>RUS</th><td class='diag'>—</td><td><a href='#pair-ENGLAND-RUSSIA'>·</a></td><td><a href='#pair-FRANCE-RUSSIA'>·</a></td><td><a href='#pair-GERMANY-RUSSIA'>·</a></td><td class='diag'>—</td><td class='diag'>—</td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td></tr>
+<tr><th>TUR</th><td><a href='#pair-AUSTRIA-TURKEY'>·</a></td><td><a href='#pair-ENGLAND-TURKEY'>·</a></td><td class='diag'>—</td><td><a href='#pair-GERMANY-TURKEY'>·</a></td><td><a href='#pair-ITALY-TURKEY'>·</a></td><td><a href='#pair-RUSSIA-TURKEY'>·</a></td><td class='diag'>—</td></tr>
+</tbody></table>
+<a class='clear' href='#'>Show all pairs</a>
+</div>
+<div class='thread' id='pair-ENGLAND-FRANCE'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 is the crisis we both face. I'm taking STP from Russia this fall to reach 6 centers. I need you pressuring Germany's western front — push A BUR into RUH or HOL with support. If Germany is forced to defend RUH, they can't reinforce their eastern holdings. What's your exact plan against Germany this fall?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Your F NTH threatens HOL — if you move against HOL this fall, Germany loses RUH support and I break through with A BUR. Can you commit to attacking HOL? We split Germany's western holdings together. I'll take GAS this turn to reach 6 and position for a bigger push.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R2</span></div><div class='btext'>I can't support A BUR → RUH — BEL isn't adjacent to RUH. But I'm pushing F NTH toward HOL this fall to cut Germany's western position. If you commit A BUR → RUH, Germany may have to choose between defending RUH or HOL. Either way, Germany loses ground. What's your exact plan?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Your F NTH is adjacent to HOL — if you move F NTH → HOL this fall, you cut Germany's support to RUH and I take RUH with A BUR alone. Germany drops to 7, you gain HOL, we both grow. This is the move that breaks Germany's western wall. Do you commit F NTH → HOL?</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → FRANCE<span class='rnd'>R3</span></div><div class='btext'>I'm taking STP with A FIN (Russian support confirmed) and pushing F NTH → HOL this fall. Germany's HOL support to RUH gets cut, leaving RUH at strength 1 — your A BUR can take it unsupported. We both grow while Germany drops to 7. Confirm A BUR → RUH and I'll lock F NTH → HOL.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>I'm taking GAS this fall — it's empty and gets me to 6 centers. Germany at 8 is still the crisis. Can you push F NTH → HOL to cut Germany's western position? Even if RUH holds, threatening HOL forces Germany to split defenses. We both grow while Germany shrinks.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-GERMANY'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R1</span></div><div class='btext'>I'm taking STP from Russia this fall — that's my growth path, not your territory. After I hit 6, I'll be positioned to help contain Turkey. But if you try to reinforce HOL or DEN against me, I'll redirect my fleets against your northern coast. Confirm you're not moving toward HOL and we stay peaceful in the Channel.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>I'm focused east against Turkey/Austria this turn — not pushing into HOL or DEN. Hold your fleets in place and I'll hold mine. A DMZ works if you commit to not pushing BEL toward HOL.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R2</span></div><div class='btext'>I'm taking STP from Russia this fall to reach 6 — not targeting your centers. F NTH stays in position or moves for Channel control. If you keep your armies east, we stay peaceful in the west. Confirm you're not moving toward HOL or DEN?</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>You grabbed FIN and are positioned in NTH — solid moves. I'm not contesting your northern expansion. I'm focused on defending RUH from France and consolidating east. Keep your fleets in NTH and NWG and we stay out of each other's way. A DMZ on HOL/DEN holds if you don't push.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → GERMANY<span class='rnd'>R3</span></div><div class='btext'>I'm taking STP from Russia this fall — that's my growth, not your territory. F NTH holds or moves for Channel control, not targeting your centers. Keep your armies east and we stay peaceful in the north. What's your move against Turkey?</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>Final commitment: I'm not moving toward HOL or DEN this fall. I'm pushing east against Turkey. Keep your fleets in NTH and NWG and we maintain the DMZ. Don't push BEL toward HOL.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-TURKEY'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → TURKEY<span class='rnd'>R1</span></div><div class='btext'>You reclaimed RUM — good, you're at 6 now. Germany's at 8 and growing. I'm taking STP this fall to reach 6. After that, I need you pushing toward Germany's MOS or supporting an attack on their eastern positions. We squeeze them from both sides this fall. What's your specific move against Germany?</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 is the runaway leader. I'm reclaiming RUM from Austria this fall to stabilize at 6. After that, I can pressure Germany's eastern flank from RUM. Push their northern holdings hard — we squeeze them from both sides.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → TURKEY<span class='rnd'>R2</span></div><div class='btext'>Take RUM from Austria if you need to. After that, push toward Germany's MOS or support an attack on their eastern positions. I'm taking STP from Russia this fall to reach 6, then I can help contain Germany from the north. We squeeze them from both sides this year.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Germany told me they're pushing A MOS → SEV this spring — they're expanding into my neighbor's territory. I'll defend SEV with BLA support, but I need you pressuring their northern holdings (HOL, DEN) hard from your Channel fleets. If we squeeze Germany from north and south simultaneously, we can start reversing their lead.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → TURKEY<span class='rnd'>R3</span></div><div class='btext'>I'm taking STP from Russia (A FIN + F NWG support) to reach 6. You need to pressure Germany's eastern positions this fall — push toward MOS or hold SEV threatening WAR. We squeeze Germany from north and east simultaneously. What's your exact move against Germany?</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>Germany at 8 is the runaway leader. I'm reclaiming RUM from Austria this fall (A SEV + F BLA) to stabilize at 6. Push their northern holdings hard from your Channel fleets — we squeeze Germany from both sides this year.</div></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-GERMANY'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R1</span></div><div class='btext'>You're at 8 and the board is uniting against you. I'm willing to discuss a stable border — withdraw from RUH and HOL voluntarily and I stop at BUR. Fight on two fronts this fall and you lose both. Last chance.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>I'm not withdrawing from RUH or HOL — A HOL supports A RUH and you'll bounce again. I'm focused east this turn, not pushing into BUR or PIC. Attack RUH and waste a unit; keep your units in BUR and we stay out of each other's way.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R2</span></div><div class='btext'>You're at 8 and the board is uniting. I'm offering one more time: withdraw from RUH and HOL to a stable Rhine border. You keep your 6 eastern centers, I keep my western base. If you refuse, England is moving against HOL this fall and I'm taking RUH. Your choice.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R2</span></div><div class='btext'>I hear you — the board is watching my lead. Here's a real deal: I'll move A MOS toward WAR (not SEV) this fall, signaling I'm consolidating north, not pushing east further. In exchange, you keep A BUR in place and don't attack RUH. We both hold positions and reassess after winter. This is genuine — I'm not attacking you.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → GERMANY<span class='rnd'>R3</span></div><div class='btext'>I'm done trying to break RUH — it's not worth the fight. I'm taking GAS to reach 6 centers. Keep your Rhine positions and I keep mine. After winter, the coalition against you continues, but this turn I'm growing elsewhere.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → FRANCE<span class='rnd'>R3</span></div><div class='btext'>I'm not attacking you this fall — A MOS heads east, not west. A HOL supports A RUH so your A BUR bounces again. Keep A BUR in place and we stay out of each other's way. Push RUH and you waste a unit.</div></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-ITALY'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R1</span></div><div class='btext'>You're at 5 after taking GRE — Germany at 8 is now the crisis. In fall, can you push A VEN → TYR or A GRE toward MUN? We need southern pressure on Germany while I hit from the west. Three-front war breaks them.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 is the crisis. I'm committing A VEN to TYR this fall to pressure MUN from the south while you attack RUH. If England can push toward HOL or KIE, Germany faces three fronts. What's your exact attack on RUH — do you have support?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R2</span></div><div class='btext'>Germany at 8 is everyone's problem now. I know you're focused on Turkey, but after this fall, if Germany reaches 10, none of us catch up. In fall, can you commit A VEN → TYR to pressure MUN from the south? Even if it bounces, it ties down German units.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R2</span></div><div class='btext'>I'm committing A VEN → TYR this fall to pressure MUN from the south. If you're attacking RUH, that's two fronts on Germany. Can you confirm your exact RUH attack? We need England pushing HOL or KIE too — three fronts breaks them.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → ITALY<span class='rnd'>R3</span></div><div class='btext'>I'm taking GAS this fall to reach 6 centers. Germany at 8 is still everyone's problem. After winter, I'll be positioned to help pressure Germany's western front. Keep pushing Turkey if you can — weakening them keeps the coalition strong.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → FRANCE<span class='rnd'>R3</span></div><div class='btext'>I'm taking BUL from Turkey this fall to reach 6 centers. After winter I can redirect west. If you're pushing RUH, go ahead — Germany at 8 needs pressure from multiple directions. Confirm your RUH attack?</div></div>
+</div></div>
+<div class='thread' id='pair-ITALY-TURKEY'>
+<div class='thread-head'><span style='color:#2e8b57'>ITALY</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 is the real threat to both of us — they'll hit 10 by next winter if unchecked. I'm not pushing BUL this fall. Focus your forces on containing Germany's eastern expansion from SEV/BLA. We need the leader stopped before it's too late.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 is the threat to both of us. I'm reclaiming RUM from Austria this fall, not touching BUL or SER. Let's keep our ceasefire: I take RUM, you hold position. After winter, we coordinate against Germany together.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R2</span></div><div class='btext'>Germany at 8 is the real threat — I'm not pushing into your territory this fall. I'm redirecting A VEN toward TYR to pressure Germany's southern flank. Focus your forces on containing Germany's eastern expansion. We need the leader stopped before they hit 10.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R2</span></div><div class='btext'>Germany confirmed they're attacking SEV with A MOS this spring — they're the aggressor expanding everywhere. I'm defending SEV and can't push RUM right now. Keep your ceasefire: take GRE, hold position. After winter, we coordinate against Germany together. Can you support any move that pressures Germany's southern border?</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → TURKEY<span class='rnd'>R3</span></div><div class='btext'>Germany at 8 is the crisis. I'm taking BUL this fall — you can't hold it. But I'm not pushing further east. Focus your forces on containing Germany or reclaiming RUM from Austria. We need the leader stopped.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → ITALY<span class='rnd'>R3</span></div><div class='btext'>Ceasefire holds: I take RUM from Austria this fall (A SEV + F BLA), you hold position in SER/BUL area. Neither pushes into the other's territory. After winter, we coordinate against Germany together. Confirm?</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-FRANCE'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#1f8aa8'>FRANCE</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 is the clear leader — we need to coordinate pressure. I'm holding my eastern positions this turn, but in 1911 I can push toward TYR/MUN if you hit from the west. Can you commit to attacking Germany's RUH or MUN next turn? We need a two-front plan to stop them before they reach 10.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 is the runaway leader. I'm going to take GAS this turn to grow to 6. In fall, if you push A BOH → MUN while I attack RUH and England hits HOL, Germany faces three-front pressure. Can you commit to MUN in fall?</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → FRANCE<span class='rnd'>R2</span></div><div class='btext'>I'll push A BOH → MUN this fall to hit Germany's southern wall while you attack RUH. Two-front pressure works — but I need you to commit to supporting my MUN attack if Germany defends RUH heavily. Can F MAO or A BRE support into MUN's defense? No — just keep the western pressure strong and I'll handle the south.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>Germany at 8 is the crisis. I'm attacking RUH this fall — if England cuts HOL's support, I take it. Can you push A BOH → MUN or even A VIE → TYR to hit Germany's southern flank? Even a bounce there cuts a support. We need two-front pressure.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>I'm pivoting to take GAS this fall to grow to 6. Germany at 8 remains the threat. If you can push toward MUN or TYR in fall to pressure Germany's south, that splits their forces while I and England work the west. Can you commit to southern pressure?</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-ITALY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R1</span></div><div class='btext'>You took GRE — now honor the TRI deal. I need your confirmation that A VEN moves into TRI this fall or you vacate it in winter. I'm holding RUM against Turkey and won't move toward TRI by force if you keep your word. What's your exact plan for vacating TRI?</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>I'm following through this fall — A GRE moves out of the Balkans, freeing TRI for you. But I need you to commit forces against Germany's southern flank. If A BOH or A VIE can move toward MUN/TYR while France hits RUH, Germany faces a crisis. Can you commit to pressuring Germany this fall?</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → ITALY<span class='rnd'>R2</span></div><div class='btext'>You already have GRE — stop talking about taking it. The TRI deal is overdue: commit A VEN → TRI this fall or I'm done waiting. If you won't vacate TRI voluntarily, I'm taking it by force next turn. Right now, can you redirect A GRE toward MUN or TYR to pressure Germany? They're at 8 and growing.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>TRI deal confirmed — I'm moving A GRE out this turn so you can take it. But here's the price: I need A BOH or A VIE moving toward TYR/MUN to pressure Germany. France is attacking RUH and we need southern pressure. Move against Germany this fall and TRI is yours without argument.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>I have no unit in TRI — there's nothing to vacate. I'm attacking BUL from GRE this fall with F ION support. If you can support A GRE → BUL with F TRI (adjacent to BUL via ALB/SER), that helps us both — Turkey drops to 4 and I reach 6. Then we coordinate against Germany.</div></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-TURKEY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 is everyone's problem. I'm holding RUM — attacking it wastes your units on a bounce since GAL supports the hold. Redirect A MOS toward LVN or SEV toward Germany's WAR to contain them. I won't attack SEV this turn if you leave RUM alone. We both benefit from Germany losing centers, not from fighting each other.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 with MOS is the real threat. I'm attacking RUM this fall with A SEV supported by F BLA — you cannot hold it. Pull A RUM out now and redirect it against Germany's eastern positions. Keep RUM and we destroy each other while Germany wins.</div></div>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → TURKEY<span class='rnd'>R2</span></div><div class='btext'>Germany at 8 is the real threat — A MOS, A SEV, and F BLA all pointing at me won't stop Germany from reaching 10. I'm holding RUM with GAL support. Redirect your units north against Germany's WAR or LVN instead. Non-aggression in the east benefits us both while Germany runs away.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>Germany at 8 is pushing A MOS → SEV to take my center — they told me directly. If you're really focused on Germany, help me defend SEV by pulling GAL back from RUM support and pressuring MOS from the north. I'll leave RUM alone for now if Germany is the common enemy, but I need GAL not threatening my eastern flank.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>I'm attacking RUM this fall with A SEV supported by F BLA — you cannot hold it against two units. Pull A RUM out now and I'll focus entirely on containing Germany at 8. Keep RUM and you lose the unit for nothing.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-RUSSIA'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>I'm taking STP this fall with A FIN supported by F NWG — you can't defend it with just F STP/SC. Don't waste your last unit contesting it. Instead, consider supporting my push against Germany's positions afterward. Once I'm at 6, I'll be better positioned to help contain Germany than you can with one fleet.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Great work taking FIN — Germany drops to 7. This fall, push A FIN → LVN with my F STP/SC support. LVN borders WAR and BER, putting deep pressure on Germany's core. If they defend LVN, they split forces from the west where France is already pushing. Confirm A FIN → LVN and I'll lock the support.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>I appreciate the support into FIN. This fall, I need to take STP to eliminate you as a power — you're at 1 center and can't recover. Don't waste your fleet contesting it. If you hold F STP/SC defensively, I'll still take it with A FIN supported by F NWG. Consider supporting my push against Germany afterward if you survive.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Taking STP drops me to 0 and gives you 6, but then you're the target everyone coordinates against — just like Germany is now at 7. I'd rather survive and support your pushes against Germany. I can offer F STP/SC support into LVN next turn if you keep A FIN away from STP this fall. A Germany that loses LVN too is worth more to you than eliminating my one unit.</div></div>
+<div class='bubble' style='border-left:4px solid #2c5fa8'><div class='bmeta' style='color:#2c5fa8'>ENGLAND → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>I'm taking STP with A FIN this fall — confirmed. Your F STP/SC is dislodged and you'll be eliminated. No hard feelings — Germany at 8 is the real threat. If you want to go out swinging, support my push into LVN next turn with a disband order... but you won't have a unit to do it. Thanks for the support into FIN.</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-GERMANY-TURKEY'>
+<div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → GERMANY<span class='rnd'>R1</span></div><div class='btext'>I'm reclaiming RUM from Austria this fall — purely eastern, zero threat to you. Your A MOS sits in former Russian territory. After I stabilize, I have no reason to push toward your territory when Austria holds 5 centers with RUM, GAL, BOH, VIE, TRI.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → TURKEY<span class='rnd'>R2</span></div><div class='btext'>You're at 5 and I'm at 8 — the gap is real. I'm not pushing SEV this fall. Focus on Austria's RUM if you want to recover. I'm defending west against France. We have no reason to fight each other right now.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → GERMANY<span class='rnd'>R2</span></div><div class='btext'>I know you're pushing A MOS → SEV — you told me directly. I'm defending SEV with F BLA support, so that attack will bounce. Let's de-escalate: I'll hold SEV defensively if you keep your units in current positions. We're both growing, but Austria at 5 with RUM is the real threat in the east, not me at 5 recovering from losses.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → TURKEY<span class='rnd'>R3</span></div><div class='btext'>I'm pushing A MOS → SEV this fall — you can't hold it with just F BLA support. Focus on Austria's RUM instead of wasting units defending SEV. This is happening.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → GERMANY<span class='rnd'>R3</span></div><div class='btext'>I'm reclaiming RUM from Austria this fall — purely eastern, zero threat to you. Your A MOS sits in former Russian territory. After I stabilize, I have no reason to push toward your territory when Austria holds 5 centers with RUM, GAL, BOH, VIE, TRI.</div></div>
+</div></div>
+<div class='thread' id='pair-FRANCE-RUSSIA'>
+<div class='thread-head'><span style='color:#1f8aa8'>FRANCE</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → FRANCE<span class='rnd'>R1</span></div><div class='btext'>Germany is now at 7 and fighting on multiple fronts. Keep pushing their western SCs — BEL, HOL, RUH are all vulnerable while they scramble to defend the north. If you take even one more center, Germany drops to 6 and can't rebuild enough to threaten anyone. What's your fall plan for the west?</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → RUSSIA<span class='rnd'>R2</span></div><div class='btext'>Hold STP as long as possible. Germany needs every center to maintain their lead — every turn you survive costs them momentum. If you can disrupt anything in the north, do it.</div></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → FRANCE<span class='rnd'>R2</span></div><div class='btext'>England taking STP this fall makes them the new northern power at 6. Once Germany drops, England will look west toward your positions. You should push BEL or HOL hard this fall while Germany is scrambling — take the center before England's momentum shifts your way.</div></div>
+<div class='bubble' style='border-left:4px solid #1f8aa8'><div class='bmeta' style='color:#1f8aa8'>FRANCE → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>I'm growing to 6 by taking GAS. Germany at 8 is the crisis — hold STP as long as you can. Every center Germany can't take from you is momentum lost for them.</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-GERMANY-ITALY'>
+<div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ITALY<span class='rnd'>R1</span></div><div class='btext'>I'm pushing A MOS toward SEV this fall to seize another Turkish center — not toward TYR or BOH. You have a free hand against Turkey's BUL if you want it. We both grow at Turkey's expense this turn.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ITALY<span class='rnd'>R2</span></div><div class='btext'>You're at 6 now after taking GRE — well played. I'm not moving toward TYR or BOH this fall. If you want to push BUL from GRE, go ahead — Turkey is weakened. I'm focused on defending my western front against France. We can both grow at Turkey's expense if you stay south and I stay north.</div></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → GERMANY<span class='rnd'>R2</span></div><div class='btext'>You're at 8 and I'm at 6 — I need to grow or join the coalition against you. I'm moving A VEN toward TYR this fall. If you push toward TYR or BOH, we'll have a fight. Hold your southern positions and we can discuss this after winter.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → ITALY<span class='rnd'>R3</span></div><div class='btext'>I'm pushing A MOS toward SEV this fall — not TYR, not BOH. You have a free hand against Turkey's BUL or anything south. Keep A VEN out of TYR and we stay peaceful. What's your exact move this fall?</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-AUSTRIA-GERMANY'>
+<div class='thread-head'><span style='color:#c0392b'>AUSTRIA</span><span class='arr'> ⇄ </span><span style='color:#555555'>GERMANY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #c0392b'><div class='bmeta' style='color:#c0392b'>AUSTRIA → GERMANY<span class='rnd'>R1</span></div><div class='btext'>I'm keeping TYR quiet as agreed — no movement toward your southern border. France is pushing your western front. I have no interest in fighting you while Turkey and the board leader situation need attention. Let's maintain the status quo on our border.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → AUSTRIA<span class='rnd'>R2</span></div><div class='btext'>TYR stays quiet as agreed. I'm defending RUH from France this fall, not pushing east. Turkey may try RUM again — hold it. We both benefit from Turkey staying weak and contained.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → AUSTRIA<span class='rnd'>R3</span></div><div class='btext'>TYR stays quiet as always. I'm focused east against Turkey. Hold RUM against Turkey's push — we both benefit from Turkey staying weak at 5 centers.</div></div>
+</div></div>
+<div class='thread' id='pair-ENGLAND-ITALY'>
+<div class='thread-head'><span style='color:#2c5fa8'>ENGLAND</span><span class='arr'> ⇄ </span><span style='color:#2e8b57'>ITALY</span></div>
+<div class='rgrid'>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → ENGLAND<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 is about to win. I need you to push toward HOL or KIE this fall while France hits RUH and I pressure from TYR. We need a three-front attack. Can you commit F NTH or A FIN toward German positions?</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → ENGLAND<span class='rnd'>R2</span></div><div class='btext'>Germany at 8 is an existential threat to all of us. I'm moving A VEN → TYR to pressure MUN. Can you push F NTH toward HOL or A FIN toward KIE? Three-front war — France on RUH, me on TYR/MUN, you on the north — Germany can't answer all of it.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #2e8b57'><div class='bmeta' style='color:#2e8b57'>ITALY → ENGLAND<span class='rnd'>R3</span></div><div class='btext'>Germany at 8 is an existential threat. I'm attacking BUL this fall to grow, then I can redirect. Can you push toward HOL or KIE this fall? France is hitting RUH — we need three fronts on Germany.</div></div>
+</div></div>
+<div class='thread' id='pair-GERMANY-RUSSIA'>
+<div class='thread-head'><span style='color:#555555'>GERMANY</span><span class='arr'> ⇄ </span><span style='color:#7d3c98'>RUSSIA</span></div>
+<div class='rgrid'>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R1</span></div><div class='btext'>You're at 7 and losing ground — England took FIN, France is pressuring RUH, and now England's A FIN can push toward LVN with my support. You can't defend everywhere. Return WAR to me after fall and I'll keep F STP/SC out of your northern positions. That's a better deal than losing LVN too.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → GERMANY<span class='rnd'>R2</span></div><div class='btext'>England is about to take STP this fall, putting them at 6 and you at 6. Then France pushes your western SCs and you're fighting a three-front war. If you return WAR to me after fall, I'll keep F STP/SC out of your northern positions entirely. That keeps you at 7 and avoids another enemy.</div></div>
+<div class='bubble' style='border-left:4px solid #555555'><div class='bmeta' style='color:#555555'>GERMANY → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>England is taking STP this fall — that's done. I'm pushing A MOS toward SEV. After fall we can discuss WAR, but right now I need you to keep F STP/SC out of LVN. Don't support any move against my northern positions.</div></div>
+<div class='bubble empty'></div>
+</div></div>
+<div class='thread' id='pair-RUSSIA-TURKEY'>
+<div class='thread-head'><span style='color:#7d3c98'>RUSSIA</span><span class='arr'> ⇄ </span><span style='color:#cc8a00'>TURKEY</span></div>
+<div class='rgrid'>
+<div class='bubble' style='border-left:4px solid #7d3c98'><div class='bmeta' style='color:#7d3c98'>RUSSIA → TURKEY<span class='rnd'>R1</span></div><div class='btext'>Germany at 7 is still the biggest threat to everyone. You're at 5 and declining — fighting me over STP wastes your limited forces. If you pressure Germany's southern holdings like RUM or BUD, it splits their attention. A Germany that stabilizes at 7 rebuilds in winter and runs away with this game.</div></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R1</span></div><div class='btext'>Germany at 8 holds three former Russian home centers. Rather than fight over STP, shouldn't we both worry about Germany running away? If you can help pressure Germany's northern holdings while I reclaim RUM, we both benefit.</div></div>
+<div class='bubble empty'></div>
+<div class='bubble' style='border-left:4px solid #cc8a00'><div class='bmeta' style='color:#cc8a00'>TURKEY → RUSSIA<span class='rnd'>R3</span></div><div class='btext'>Germany at 8 holds three former Russian home centers. Rather than fight over STP, shouldn't we both worry about Germany running away? If you can help pressure Germany's northern holdings while I reclaim RUM, we both benefit.</div></div>
+</div></div>
+<nav><a href='F1910M.html'>← back to FALL 1910 MOVEMENT (F1910M)</a><a href='index.html'>index</a></nav>
+</body></html>
