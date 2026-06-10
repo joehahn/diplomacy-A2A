@@ -403,10 +403,6 @@ varying a single axis. Each gets its own writeup as it completes:
   (for example the supply-center tracker), forcing it to infer standings from
   unit positions and dialogue.
 
-The cheaper-model gateway that makes these sweeps affordable (any non-`claude-*`
-model id routes to OpenRouter; opt-in, reads its own `OPENROUTER_API_KEY`) is
-documented in the provider-boundary section of REFERENCE.md.
-
 ## Summary of Main Findings
 
 This section will fill in with empirical results from the goal-3
