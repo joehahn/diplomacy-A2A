@@ -1463,7 +1463,7 @@ def _scatter_chart(
     for power, xv, yv in points:
         cx, cy = x_for(xv), y_for(yv)
         color = POWER_COLORS.get(power, "#777")
-        tip = f"{power.title()}: offence {int(round(xv)):+d}, defence {int(round(yv)):+d}"
+        tip = f"{power.title()}: offence {int(round(yv)):+d}, defence {int(round(xv)):+d}"
         parts.append(
             f"<g class='dot-wrap'>"
             f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='9' class='dot-hit'/>"
@@ -2128,23 +2128,25 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
         last_ph = phase_order[-1]
         agg_final = aggression_by_phase.get(last_ph, {})
         def_final = defense_by_phase.get(last_ph, {})
+        # Offence on the vertical axis (up), Defence on the horizontal (right):
+        # x = defence, y = offence.
         trajectories = {
             p: [
-                (aggression_by_phase.get(ph, {}).get(p, 0),
-                 defense_by_phase.get(ph, {}).get(p, 0))
+                (defense_by_phase.get(ph, {}).get(p, 0),
+                 aggression_by_phase.get(ph, {}).get(p, 0))
                 for ph in phase_order
             ]
             for p in powers_all
         }
         scatter = _scatter_chart(
-            "Defence vs Offence (paths end at the labeled dot)",
-            [(p, agg_final.get(p, 0), def_final.get(p, 0)) for p in powers_all],
-            xlabel="Offence score", ylabel="Defence score",
+            "Offence vs Defence (paths end at the labeled dot)",
+            [(p, def_final.get(p, 0), agg_final.get(p, 0)) for p in powers_all],
+            xlabel="Defence score", ylabel="Offence score",
             width=640, height=550,
             trajectories=trajectories,
         )
         if scatter:
-            index_body.append("<h2>Defence vs Offence</h2>")
+            index_body.append("<h2>Offence vs Defence</h2>")
             standings_side = (
                 "<div class='kpi-standings-side'>"
                 "<h3 class='so-heading'>Final standings</h3>"
