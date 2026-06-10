@@ -64,7 +64,8 @@ def extract(games_dir: str) -> dict:
     final = {m: [] for m in ORDER}                       # final SC per power-game
     traj = collections.defaultdict(lambda: collections.defaultdict(list))  # yr->model->[sc]
     raw = collections.defaultdict(collections.Counter)   # model->counters
-    od_points = {m: [] for m in ORDER}                   # model->[(offence, defence)]
+    od_points = {m: [] for m in ORDER}                   # model->[(offence, defence)] finals
+    od_traj = {m: [] for m in ORDER}                     # model->[trajectory] per nation-game
 
     for path in paths:
         events = _load(path)
@@ -92,14 +93,16 @@ def extract(games_dir: str) -> dict:
 
         od = compute_offence_defence(events)
         for power, lbl in label.items():
-            o, d = od.get(power, (0, 0))
+            path = od.get(power, [(0, 0)])
+            o, d = path[-1]
             raw[lbl]["off_sum"] += o
             raw[lbl]["def_sum"] += d
             raw[lbl]["nations"] += 1  # power-games this model drove
             od_points[lbl].append((o, d))
+            od_traj[lbl].append(path)
 
-    return {"final": final, "traj": traj, "raw": raw,
-            "od_points": od_points, "n_games": len(paths)}
+    return {"final": final, "traj": traj, "raw": raw, "od_points": od_points,
+            "od_traj": od_traj, "n_games": len(paths)}
 
 
 def _competence(events: list[dict], label: dict, raw: dict) -> None:
@@ -225,13 +228,14 @@ def _negotiation(events: list[dict], label: dict, raw: dict) -> None:
                             break
 
 
-def compute_offence_defence(events: list[dict]) -> dict[str, tuple[int, int]]:
-    """Final cumulative (offence, defence) score per power, faithfully porting
-    the per-phase scoring in transcripts.render_html_viewer. Offence rewards
-    taking ground (+3 dislodge a hold-supported enemy, +2 a lone enemy, +1 a
-    vacant province; -1/-2 for losing a garrisoned/undefended SC). Defence scores
-    units under attack (+2/+1 holding vs a supported/unsupported attack; -2/-1
-    dislodged on a SC / elsewhere)."""
+def compute_offence_defence(events: list[dict]) -> dict[str, list[tuple[int, int]]]:
+    """Per-power cumulative (offence, defence) trajectory: a list of (off, def)
+    running totals starting at (0, 0) and stepping once per resolved phase, so
+    the last entry is the final score. Faithfully ports the per-phase scoring in
+    transcripts.render_html_viewer. Offence rewards taking ground (+3 dislodge a
+    hold-supported enemy, +2 a lone enemy, +1 a vacant province; -1/-2 for losing
+    a garrisoned/undefended SC). Defence scores units under attack (+2/+1 holding
+    vs a supported/unsupported attack; -2/-1 dislodged on a SC / elsewhere)."""
     results_by_phase: dict[str, dict] = {}
     owner_snaps: list[tuple[str, dict[str, str]]] = []
     occ_by_phase: dict[str, dict[str, str]] = {}
@@ -261,19 +265,20 @@ def compute_offence_defence(events: list[dict]) -> dict[str, tuple[int, int]]:
         occ_by_phase[rp] = occ
         entering_units[e.get("next_phase", "")] = ent
 
-    off: collections.Counter = collections.Counter()
-    deff: collections.Counter = collections.Counter()
+    # per-phase deltas: phase -> power -> points
+    agg_delta: dict = collections.defaultdict(lambda: collections.defaultdict(int))
+    def_delta: dict = collections.defaultdict(lambda: collections.defaultdict(int))
 
     # loss side: a supply center that changed owner costs the old owner
     for i in range(1, len(owner_snaps)):
         prev_ph, prev_ow = owner_snaps[i - 1]
-        _, cur_ow = owner_snaps[i]
+        cur_ph, cur_ow = owner_snaps[i]
         prev_occ = occ_by_phase.get(prev_ph, {})
         for sc in set(prev_ow) | set(cur_ow):
             a, b = prev_ow.get(sc), cur_ow.get(sc)
             if a is None or a == b:
                 continue
-            off[a] += -1 if prev_occ.get(sc) == a else -2
+            agg_delta[cur_ph][a] += -1 if prev_occ.get(sc) == a else -2
 
     hold_supported: dict[str, set[str]] = {}
     for e in events:
@@ -310,7 +315,7 @@ def compute_offence_defence(events: list[dict]) -> dict[str, tuple[int, int]]:
                     gain = 1
             else:
                 continue
-            off[power] += gain
+            agg_delta[ph][power] += gain
 
     # defence side
     moves_by_phase: dict[str, dict[str, list[str]]] = {}
@@ -338,11 +343,24 @@ def compute_offence_defence(events: list[dict]) -> dict[str, tuple[int, int]]:
             if not any(pw != owner for pw in mv.get(base, [])):
                 continue
             if any("dislodged" in t for t in res.get(unit, [])):
-                deff[owner] += -2 if base in sc_set else -1
+                def_delta[ph][owner] += -2 if base in sc_set else -1
             else:
-                deff[owner] += 2 if sp.get(base, 0) > 0 else 1
+                def_delta[ph][owner] += 2 if sp.get(base, 0) > 0 else 1
 
-    return {p: (off.get(p, 0), deff.get(p, 0)) for p in set(off) | set(deff)}
+    # accumulate into a (off, def) trajectory per power, one step per phase
+    phase_seq = [p for p, _ in owner_snaps]
+    powers = sorted({pw for _, ow in owner_snaps for pw in ow.values()})
+    traj: dict[str, list[tuple[int, int]]] = {p: [(0, 0)] for p in powers}
+    ro: dict[str, int] = {p: 0 for p in powers}
+    rd: dict[str, int] = {p: 0 for p in powers}
+    for ph in phase_seq:
+        for p, dv in agg_delta.get(ph, {}).items():
+            ro[p] = ro.get(p, 0) + dv
+        for p, dv in def_delta.get(ph, {}).items():
+            rd[p] = rd.get(p, 0) + dv
+        for p in powers:
+            traj[p].append((ro.get(p, 0), rd.get(p, 0)))
+    return traj
 
 
 # --- SVG primitives ---------------------------------------------------------
@@ -622,33 +640,27 @@ def plot_negotiation(raw: dict) -> str:
     return _bar_panels(4, "Negotiation by model", panels, show_values=True)
 
 
-def plot_offence_defence_bars(od_points: dict) -> str:
-    """Offence and defence per nation as bars with standard-error whiskers
-    (sigma of the mean across each model's nation-games)."""
+def plot_od_means(od_points: dict) -> str:
+    """Mean final offence (y) vs defence (x) per model, one point each, with
+    horizontal and vertical 1-sigma standard-error whiskers across the model's
+    nation-games."""
     def stat(vals):
         mean = statistics.mean(vals)
         sem = statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
-        return (mean, (sem, False))
+        return mean, sem
 
-    panels = [
-        ("Offence / nation", "ground taken · higher is more aggressive",
-         {m: stat([o for o, _ in od_points[m]]) for m in ORDER}, "{:+.1f}"),
-        ("Defence / nation", "attacks survived · higher is more solid",
-         {m: stat([d for _, d in od_points[m]]) for m in ORDER}, "{:+.1f}"),
-    ]
-    return _bar_panels(5, "Offence and defence by model", panels, show_values=True)
+    st = {}  # model -> (mean_o, sem_o, mean_d, sem_d)
+    for m in ORDER:
+        mo, so = stat([o for o, _ in od_points[m]])
+        md, sd = stat([d for _, d in od_points[m]])
+        st[m] = (mo, so, md, sd)
 
-
-# --- plot 4: offence vs defence scatter -------------------------------------
-
-def plot_scatter(od_points: dict) -> str:
-    w, h = 620, 460
+    w, h = 560, 440
     pad_l, pad_r, pad_b, pad_t = 58, 150, 52, 44
-    allpts = [p for m in ORDER for p in od_points[m]]
-    xs = [d for _, d in allpts]
-    ys = [o for o, _ in allpts]
-    x0, x1 = min(xs) - 2, max(xs) + 2
-    y0, y1 = min(ys) - 2, max(ys) + 2
+    x0 = min(st[m][2] - st[m][3] for m in ORDER) - 0.6
+    x1 = max(st[m][2] + st[m][3] for m in ORDER) + 0.6
+    y0 = min(st[m][0] - st[m][1] for m in ORDER) - 0.6
+    y1 = max(st[m][0] + st[m][1] for m in ORDER) + 0.6
     plot_w, plot_h = w - pad_l - pad_r, h - pad_b - pad_t
 
     def xf(v):
@@ -657,13 +669,79 @@ def plot_scatter(od_points: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "6. Offence vs Defence (per nation)")
-    # axis frame
+    s = _svg_open(w, h, "5. Mean offence vs defence per model")
     s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
              f"stroke='#bbb' stroke-width='0.8'/>")
     s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
              f"y2='{pad_t+plot_h}' stroke='#bbb' stroke-width='0.8'/>")
-    # integer-ish ticks (step 2)
+    for v in range(math.ceil(x0), int(x1) + 1):
+        s.append(f"<text x='{xf(v):.1f}' y='{pad_t+plot_h+16:.0f}' text-anchor='middle' "
+                 f"font-size='9' fill='#999'>{v}</text>")
+    for v in range(math.ceil(y0), int(y1) + 1):
+        s.append(f"<text x='{pad_l-7}' y='{yf(v)+3:.1f}' text-anchor='end' "
+                 f"font-size='9' fill='#999'>{v}</text>")
+    s.append(f"<text x='{pad_l+plot_w/2:.0f}' y='{h-6}' text-anchor='middle' "
+             f"font-size='10' fill='#777'>Defence score per nation</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+             f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
+             f"text-anchor='middle'>Offence score per nation</text>")
+    for m in ORDER:
+        mo, so, md, sd = st[m]
+        cx, cy = xf(md), yf(mo)
+        col = COLOR[m]
+        # horizontal whisker (defence)
+        s.append(f"<line x1='{xf(md-sd):.1f}' y1='{cy:.1f}' x2='{xf(md+sd):.1f}' "
+                 f"y2='{cy:.1f}' stroke='{col}' stroke-width='1.6'/>")
+        for xx in (xf(md - sd), xf(md + sd)):
+            s.append(f"<line x1='{xx:.1f}' y1='{cy-5:.1f}' x2='{xx:.1f}' "
+                     f"y2='{cy+5:.1f}' stroke='{col}' stroke-width='1.6'/>")
+        # vertical whisker (offence)
+        s.append(f"<line x1='{cx:.1f}' y1='{yf(mo-so):.1f}' x2='{cx:.1f}' "
+                 f"y2='{yf(mo+so):.1f}' stroke='{col}' stroke-width='1.6'/>")
+        for yy in (yf(mo - so), yf(mo + so)):
+            s.append(f"<line x1='{cx-5:.1f}' y1='{yy:.1f}' x2='{cx+5:.1f}' "
+                     f"y2='{yy:.1f}' stroke='{col}' stroke-width='1.6'/>")
+        s.append(f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='6' fill='{col}' "
+                 f"stroke='#222' stroke-width='1.4'/>")
+    # legend at right
+    lx = w - pad_r + 22
+    ly0 = pad_t + plot_h / 2 - 22
+    for i, m in enumerate(["MiMo", "Sonnet", "Opus"]):
+        ly = ly0 + i * 24
+        s.append(f"<circle cx='{lx+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
+                 f"stroke='#222' stroke-width='1.2'/>")
+        s.append(f"<text x='{lx+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
+                 f"{m} <tspan fill='#999'>{TIER[m]}</tspan></text>")
+    s.append("</svg>")
+    return "\n".join(s)
+
+
+# --- plot 6: offence/defence trajectories -----------------------------------
+
+def plot_od_trajectories(od_traj: dict) -> str:
+    """One translucent connected curve per nation-game: its cumulative offence
+    (y) vs defence (x) path from (0,0) to the final score, colored by the model
+    that drove that nation."""
+    w, h = 620, 460
+    pad_l, pad_r, pad_b, pad_t = 58, 150, 52, 44
+    allpts = [p for m in ORDER for tr in od_traj[m] for p in tr]
+    xs = [d for _, d in allpts]
+    ys = [o for o, _ in allpts]
+    x0, x1 = min(xs) - 1, max(xs) + 1
+    y0, y1 = min(ys) - 1, max(ys) + 1
+    plot_w, plot_h = w - pad_l - pad_r, h - pad_b - pad_t
+
+    def xf(v):
+        return pad_l + plot_w * ((v - x0) / (x1 - x0))
+
+    def yf(v):
+        return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
+
+    s = _svg_open(w, h, "6. Offence-defence path, every nation-game")
+    s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
+             f"stroke='#bbb' stroke-width='0.8'/>")
+    s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
+             f"y2='{pad_t+plot_h}' stroke='#bbb' stroke-width='0.8'/>")
     xt = int(x0) - (int(x0) % 2)
     while xt <= x1:
         if x0 <= xt <= x1:
@@ -676,38 +754,29 @@ def plot_scatter(od_points: dict) -> str:
             s.append(f"<text x='{pad_l-7}' y='{yf(yt)+3:.1f}' text-anchor='end' "
                      f"font-size='9' fill='#999'>{yt}</text>")
         yt += 2
-    # crosshair at the field (grand) mean
-    gx, gy = statistics.mean(xs), statistics.mean(ys)
-    s.append(f"<line x1='{xf(gx):.1f}' y1='{pad_t}' x2='{xf(gx):.1f}' "
-             f"y2='{pad_t+plot_h}' stroke='#ddd' stroke-width='1' stroke-dasharray='4 3'/>")
-    s.append(f"<line x1='{pad_l}' y1='{yf(gy):.1f}' x2='{pad_l+plot_w}' "
-             f"y2='{yf(gy):.1f}' stroke='#ddd' stroke-width='1' stroke-dasharray='4 3'/>")
-    s.append(f"<text x='{pad_l+plot_w-2:.0f}' y='{yf(gy)-4:.1f}' text-anchor='end' "
-             f"font-size='8.5' fill='#bbb'>field average</text>")
-    # axis labels
     s.append(f"<text x='{pad_l+plot_w/2:.0f}' y='{h-6}' text-anchor='middle' "
              f"font-size='10' fill='#777'>Defence score per nation</text>")
     s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>Offence score per nation</text>")
-    # faint per-nation points
+    # one translucent curve per nation-game; opacity scaled so each model's
+    # total ink is comparable despite Sonnet having five times as many curves
     for m in ORDER:
-        for o, d in od_points[m]:
-            s.append(f"<circle cx='{xf(d):.1f}' cy='{yf(o):.1f}' r='3' "
-                     f"fill='{COLOR[m]}' fill-opacity='0.28'/>")
-    # bold model-mean markers
-    for m in ORDER:
-        mo = statistics.mean([o for o, _ in od_points[m]])
-        md = statistics.mean([d for _, d in od_points[m]])
-        s.append(f"<circle cx='{xf(md):.1f}' cy='{yf(mo):.1f}' r='7' "
-                 f"fill='{COLOR[m]}' stroke='#222' stroke-width='1.4'/>")
-    # legend at right: MiMo, Sonnet, Opus
+        n = max(len(od_traj[m]), 1)
+        op = max(0.14, min(0.5, 2.6 / n))
+        for tr in od_traj[m]:
+            pts = " ".join(
+                f"{'M' if i == 0 else 'L'} {xf(d):.1f} {yf(o):.1f}"
+                for i, (o, d) in enumerate(tr))
+            s.append(f"<path d='{pts}' fill='none' stroke='{COLOR[m]}' "
+                     f"stroke-width='1.4' stroke-opacity='{op:.2f}'/>")
+    # legend at right
     lx = w - pad_r + 22
     ly0 = pad_t + plot_h / 2 - 22
     for i, m in enumerate(["MiMo", "Sonnet", "Opus"]):
         ly = ly0 + i * 24
-        s.append(f"<circle cx='{lx+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
-                 f"stroke='#222' stroke-width='1.2'/>")
+        s.append(f"<line x1='{lx-2}' y1='{ly-3:.0f}' x2='{lx+12}' y2='{ly-3:.0f}' "
+                 f"stroke='{COLOR[m]}' stroke-width='2.5'/>")
         s.append(f"<text x='{lx+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
                  f"{m} <tspan fill='#999'>{TIER[m]}</tspan></text>")
     s.append("</svg>")
@@ -810,23 +879,23 @@ def build_index(data: dict) -> str:
         "Sonnet's higher rates. Same 1&sigma; Poisson error bars; betrayals are a "
         "keyword heuristic, so read them as order-of-magnitude.</figcaption></figure>",
 
-        "<figure><object type='image/svg+xml' data='offence_defence_bars.svg'></object>",
-        "<figcaption><b>Offence and defence per nation, as bars.</b> Offence rewards "
-        "taking ground, defence rewards surviving attack (scoring in the canonical "
-        "dashboard). Sonnet is the most offensive, MiMo the most defensive, Opus "
-        "lowest on both, the peace-first staff officer. Whiskers are 1&sigma; "
-        "standard error across each model's nation-games; they overlap, so on raw "
-        "score this is the same near-tie the supply-center plots show."
-        "</figcaption></figure>",
+        "<figure><object type='image/svg+xml' data='offence_defence_means.svg'></object>",
+        "<figcaption><b>Mean offence vs defence, with error bars.</b> One point per "
+        "model at its mean final score (offence rewards taking ground, defence rewards "
+        "surviving attack; scoring from the canonical dashboard), with horizontal and "
+        "vertical 1&sigma; standard-error whiskers across its nation-games. Sonnet is "
+        "the most offensive, MiMo the most defensive (widest whisker), Opus lowest on "
+        "both, the peace-first staff officer. The whiskers overlap, so on raw score "
+        "this is the same near-tie the supply-center plots show.</figcaption></figure>",
 
-        "<figure><object type='image/svg+xml' data='offence_defence.svg'></object>",
-        "<figcaption><b>Style, the canonical dashboard's signature view.</b> Each "
-        "faint dot is one nation-game (offence rewards taking ground, defence rewards "
-        "surviving attack); the ringed dot is the model's mean. Opus sits low-left "
-        "(least offence and defence per nation, the peace-first staff officer); MiMo "
-        "sits highest on defence; Sonnet is the most offensive. The clustering near "
-        "the field average is the same near-tie the supply-center plots show, now in "
-        "two dimensions.</figcaption></figure>",
+        "<figure><object type='image/svg+xml' data='offence_defence_paths.svg'></object>",
+        "<figcaption><b>Every nation-game's offence-defence path.</b> Each translucent "
+        "curve traces one nation-game's cumulative offence (up) and defence (right) "
+        "from the opening at (0,0) to its final score, colored by the model driving "
+        "that nation. The curves fan out from the origin; where a model's paths cluster "
+        "shows its characteristic trajectory through the game (opacity is scaled per "
+        "model so Sonnet's 35 curves and the others' 7 carry comparable ink)."
+        "</figcaption></figure>",
 
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
@@ -860,10 +929,13 @@ def main() -> int:
     (out / "sc_trajectory.svg").write_text(plot_trajectory(data["traj"]))
     (out / "competence.svg").write_text(plot_competence(data["raw"]))
     (out / "negotiation.svg").write_text(plot_negotiation(data["raw"]))
-    (out / "offence_defence_bars.svg").write_text(
-        plot_offence_defence_bars(data["od_points"]))
-    (out / "offence_defence.svg").write_text(plot_scatter(data["od_points"]))
+    (out / "offence_defence_means.svg").write_text(plot_od_means(data["od_points"]))
+    (out / "offence_defence_paths.svg").write_text(
+        plot_od_trajectories(data["od_traj"]))
     (out / "index.html").write_text(build_index(data))
+    # remove superseded artifacts (old bar/scatter versions)
+    for stale in ("offence_defence_bars.svg", "offence_defence.svg"):
+        (out / stale).unlink(missing_ok=True)
 
     print(f"wrote dashboard to {out}/ ({data['n_games']} games)")
     for m in ORDER:
