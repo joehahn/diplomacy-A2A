@@ -518,14 +518,31 @@ def plot_competence(raw: dict) -> str:
     def supp_n(m):
         return f"n={raw[m]['supp_move']}"
 
+    # Each bar is 100 * k / n for an event count k over a (large, ~fixed)
+    # denominator n, so k is approximately Poisson and the 1-sigma error on the
+    # bar is 100 * sqrt(k) / n. A zero count has no Poisson error bar (sqrt 0).
+    def _poisson_err(k, n):
+        return 100 * math.sqrt(k) / n if n else 0.0
+
+    def illegal_err(m):
+        return _poisson_err(raw[m]["illegal"], raw[m]["orders"])
+
+    def supp_err(m):
+        return _poisson_err(raw[m]["supp_move_ok"], raw[m]["supp_move"])
+
+    def selfb_err(m):
+        return _poisson_err(raw[m]["self_bounce"], raw[m]["orders"])
+
     # Each panel: title, y-label, value fn, hint, per-bar sub-annotation fn
-    # (None = no sub-label). The move-support panel prints its sample size on
-    # every bar because the counts are small enough to mislead at a glance.
+    # (None = no sub-label), 1-sigma error fn. The move-support panel prints its
+    # sample size on every bar because the counts are small enough to mislead.
     panels = [
-        ("Illegal-order rate", "% of orders", illegal_pct, "lower is better", None),
+        ("Illegal-order rate", "% of orders", illegal_pct, "lower is better",
+         None, illegal_err),
         ("Move-support success", "% of move-supports", supp_pct,
-         "higher is better, but small n", supp_n),
-        ("Self-bounces", "per 100 orders", selfb_rate, "lower is better", None),
+         "higher is better, but small n", supp_n, supp_err),
+        ("Self-bounces", "per 100 orders", selfb_rate, "lower is better",
+         None, selfb_err),
     ]
     pw, ph = 250, 320
     oy = 30  # top band for the plot title
@@ -535,13 +552,15 @@ def plot_competence(raw: dict) -> str:
     s.append(f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
              f"font-weight='600' fill='#333'>3. Competence by model</text>")
 
-    for pi, (title, ylab, fn, hint, subfn) in enumerate(panels):
+    for pi, (title, ylab, fn, hint, subfn, efn) in enumerate(panels):
         ox = pi * pw
         pad_l, pad_b, pad_t = 44, 64, 50
         plot_h = ph - pad_b - pad_t
         bar_order = list(reversed(ORDER))  # MiMo, Sonnet, Opus
         vals = [fn(m) for m in bar_order]
-        vmax = max(vals + [1]) * 1.25
+        errs = [efn(m) for m in bar_order]
+        # leave room for the upper error cap and the value label above it
+        vmax = max([v + e for v, e in zip(vals, errs)] + [1]) * 1.15
         bw = 46
         gap = (pw - 2 * pad_l) / len(ORDER)
         s.append(f"<text x='{ox+pw/2:.0f}' y='{22+oy}' text-anchor='middle' "
@@ -553,13 +572,23 @@ def plot_competence(raw: dict) -> str:
                  f"y2='{baseline}' stroke='#ddd' stroke-width='1'/>")
         for i, m in enumerate(bar_order):
             cx = ox + pad_l + gap * (i + 0.5)
-            bh = plot_h * (vals[i] / vmax)
-            by = baseline - bh
+            val, err = vals[i], errs[i]
+            by = baseline - plot_h * (val / vmax)
             s.append(f"<rect x='{cx-bw/2:.1f}' y='{by:.1f}' width='{bw}' "
-                     f"height='{bh:.1f}' rx='2' fill='{COLOR[m]}' fill-opacity='0.85'/>")
-            s.append(f"<text x='{cx:.1f}' y='{by-6:.1f}' text-anchor='middle' "
+                     f"height='{baseline-by:.1f}' rx='2' fill='{COLOR[m]}' "
+                     f"fill-opacity='0.85'/>")
+            # 1-sigma Poisson error bar with caps
+            y_hi = baseline - plot_h * ((val + err) / vmax)
+            if err > 0:
+                y_lo = baseline - plot_h * (max(val - err, 0.0) / vmax)
+                s.append(f"<line x1='{cx:.1f}' y1='{y_hi:.1f}' x2='{cx:.1f}' "
+                         f"y2='{y_lo:.1f}' stroke='#333' stroke-width='1.3'/>")
+                for yy in (y_hi, y_lo):
+                    s.append(f"<line x1='{cx-7:.1f}' y1='{yy:.1f}' x2='{cx+7:.1f}' "
+                             f"y2='{yy:.1f}' stroke='#333' stroke-width='1.3'/>")
+            s.append(f"<text x='{cx:.1f}' y='{y_hi-6:.1f}' text-anchor='middle' "
                      f"font-size='11.5' font-weight='700' fill='{COLOR[m]}'>"
-                     f"{vals[i]:.1f}</text>")
+                     f"{val:.1f}</text>")
             s.append(f"<text x='{cx:.1f}' y='{baseline+16:.1f}' text-anchor='middle' "
                      f"font-size='10.5' fill='#666'>{m}</text>")
             if subfn is not None:
@@ -723,7 +752,11 @@ def build_index(data: dict) -> str:
         f"show. Move-support success is noisier (only {supp_n['Opus']}/{supp_n['MiMo']} "
         f"move-supports for Opus/MiMo in 3 years, so read it as indicative). "
         f"Self-bounces echo the paradox from self-play: the budget model trips over "
-        f"its own units least because it attempts the least coordination.</figcaption></figure>",
+        f"its own units least because it attempts the least coordination. Error bars "
+        f"are 1&sigma; Poisson (&radic;N on the event count, scaled by the order "
+        f"total): the illegal-order ladder survives them, but they swallow the "
+        f"move-support panel whole, confirming those differences are not significant "
+        f"at this sample size.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='offence_defence.svg'></object>",
         "<figcaption><b>Style, the canonical dashboard's signature view.</b> Each "
