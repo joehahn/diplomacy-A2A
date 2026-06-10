@@ -105,8 +105,8 @@ that broke when one party defected for its own gain.
 
 3. **Quantify what helps an AI agent succeed when it is competing against other agents in an A2A universe.** *(Under active development.)*
    Controlled A/B experiments hold the table fixed and vary a single agent along
-   one axis at a time (model capability, memory depth, personality, pre-game
-   collusion, information asymmetry), isolating that axis's effect on success.
+   one axis at a time (model capability, pre-game collusion, personality,
+   information asymmetry, memory depth), isolating that axis's effect on success.
    The planned deliverable is a chart of agent success versus LLM spend, making
    the cost-benefit shape of each axis explicit. The axes, with their writeups as
    they complete, are listed under [Experiments](#experiments) below.
@@ -389,14 +389,14 @@ varying a single axis. Each gets its own writeup as it completes:
   the models are ranked fairly rather than by a single seat. Self-play style
   profiles and the head-to-head ranking live in
   [`results/model-capability/`](results/model-capability/README.md).
-- **Personality trait** *(planned)*: one aggressive, untruthful, or backstabbing
-  agent at an otherwise neutral table.
-- **Memory depth** *(planned)*: one agent given more or less past-turn context.
 - **Pre-game collusion** *(planned)*: two agents share a private agreement before
   the game starts.
+- **Personality trait** *(planned)*: one aggressive, untruthful, or backstabbing
+  agent at an otherwise neutral table.
 - **Information asymmetry** *(planned)*: one agent has part of its prompt hidden
   (for example the supply-center tracker), forcing it to infer standings from
   unit positions and dialogue.
+- **Memory depth** *(planned)*: one agent given more or less past-turn context.
 
 ## Summary of Main Findings
 
