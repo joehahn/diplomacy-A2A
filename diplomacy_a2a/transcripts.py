@@ -1666,6 +1666,50 @@ def _orders_block(orders: dict[str, dict[str, Any]]) -> list[str]:
     return out
 
 
+_PAGES_BASE = "https://joehahn.github.io/diplomacy-A2A/results"
+_REPO_BLOB = "https://github.com/joehahn/diplomacy-A2A/blob/main"
+# Curated 10-year self-play dashboards, keyed by their results/<category>/ folder.
+# A dashboard in this set gets a top nav cross-linking the others plus the study
+# writeup and the project README; any other run renders no nav.
+_SELF_PLAY_DASHBOARDS = [
+    ("mimo-reference", "MiMo", "mimo-reference/2026-06-09.03.23.24"),
+    ("canonical", "Sonnet", "canonical/2026-06-04.14.48.20"),
+    ("opus-reference", "Opus", "opus-reference/2026-06-09.17.03.53"),
+]
+
+
+def _dashboard_nav(out_dir: Path) -> str:
+    """Top-of-page nav for the curated self-play dashboards: sibling dashboards
+    (the current one bold and unlinked) plus findings.md and the README. Empty
+    string for any run outside the set."""
+    category = out_dir.parent.parent.name if len(out_dir.parents) >= 2 else ""
+    if category not in {c for c, _, _ in _SELF_PLAY_DASHBOARDS}:
+        return ""
+    sibs = []
+    for cat, label, path in _SELF_PLAY_DASHBOARDS:
+        if cat == category:
+            sibs.append(f"<b>{label}</b>")
+        else:
+            sibs.append(
+                f"<a href='{_PAGES_BASE}/{path}/dashboard/index.html'>{label}</a>")
+    # Styling is scoped here (not in the shared CSS) so only index.html carries
+    # it; the per-phase slides are left byte-for-byte unchanged.
+    style = (
+        "<style>.dash-nav{font-size:.9em;color:#777;display:flex;gap:28px;"
+        "flex-wrap:wrap;padding-bottom:12px;margin-bottom:4px;"
+        "border-bottom:1px solid #eee;}.dash-nav a{color:#1b5e9b;"
+        "text-decoration:none;}.dash-nav a:hover{text-decoration:underline;}"
+        ".dash-nav b{color:#222;}</style>"
+    )
+    return (
+        f"{style}<nav class='dash-nav'>"
+        f"<span>Self-play dashboards: {' &middot; '.join(sibs)}</span>"
+        f"<span><a href='{_REPO_BLOB}/results/model-capability/findings.md'>findings.md"
+        f"</a> &middot; <a href='{_REPO_BLOB}/README.md'>README</a></span>"
+        "</nav>"
+    )
+
+
 def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     """Generate index.html + one slide per board state under out_dir.
 
@@ -2102,6 +2146,7 @@ def render_html_viewer(jsonl_path: Path, out_dir: Path) -> None:
     )
 
     index_body = [
+        _dashboard_nav(out_dir),
         f"<h1>Diplomacy A2A — Run <code>{run_id}</code></h1>",
         so_html,
         "<h2>Slides</h2>",
