@@ -5,12 +5,15 @@ This study compares 3 LLMs across the price/capability spectrum using mimo-v2.5
 (small budget LLM), Claude Sonnet 4.6 (medium mid-tier model), and Claude Opus 4.8
 (large frontier LLM), and this investigation has two parts:
 
-1. **Assessing self-play**: the same LLM plays against itself by driving all 7
-   players in a game. Three LLMs in 3 games. These games don't rank models, they
-   instead characterize each LLM's playing styles, which are quite different.
-2. **LLM head-to-head**: the three models meet on one
-   board across seven counterbalanced games, where each LLM rotates through every
-   power, which allows us to build an LLM leaderboard for Diplomacy gameplay.
+1. **Assessing self-play**: the same LLM plays against itself while driving all 7
+   players in a game, three games for 3 LLMs. These games don't rank models, they
+   instead characterize each LLM's playing styles which are quite different.
+2. **LLM head-to-head**: the three models meet on one board across seven
+   counterbalanced games. Each game pits one Opus player and one MiMo player
+   against a field of 5 Sonnets, with Opus and MiMo seated on opposite sides of
+   the board for maximum separation. Across the seven games Opus and MiMo each
+   rotate through every nation once, which averages out board position and lets us
+   build an LLM leaderboard for Diplomacy gameplay.
 
 ## The three models in self-play (style)
 
