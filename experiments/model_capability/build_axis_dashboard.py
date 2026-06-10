@@ -38,7 +38,7 @@ MODEL_LABEL = {
 # Display order: frontier, field, budget.
 ORDER = ["Opus", "Sonnet", "MiMo"]
 TIER = {"Opus": "L (frontier)", "Sonnet": "M (field)", "MiMo": "S (budget)"}
-COLOR = {"Opus": "#1b5e9b", "Sonnet": "#6b6b6b", "MiMo": "#c85a23"}
+COLOR = {"Opus": "#1b5e9b", "Sonnet": "#3f8f5e", "MiMo": "#c85a23"}
 
 # Standard Diplomacy home-center counts, for the year-0 trajectory baseline.
 START_CENTERS = {
@@ -64,6 +64,7 @@ def extract(games_dir: str) -> dict:
     final = {m: [] for m in ORDER}                       # final SC per power-game
     traj = collections.defaultdict(lambda: collections.defaultdict(list))  # yr->model->[sc]
     raw = collections.defaultdict(collections.Counter)   # model->counters
+    od_points = {m: [] for m in ORDER}                   # model->[(offence, defence)]
 
     for path in paths:
         events = _load(path)
@@ -87,8 +88,17 @@ def extract(games_dir: str) -> dict:
                     traj[year][lbl].append(len(cen.get(power, [])))
 
         _competence(events, label, raw)
+        _negotiation(events, label, raw)
 
-    return {"final": final, "traj": traj, "raw": raw, "n_games": len(paths)}
+        od = compute_offence_defence(events)
+        for power, lbl in label.items():
+            o, d = od.get(power, (0, 0))
+            raw[lbl]["off_sum"] += o
+            raw[lbl]["def_sum"] += d
+            od_points[lbl].append((o, d))
+
+    return {"final": final, "traj": traj, "raw": raw,
+            "od_points": od_points, "n_games": len(paths)}
 
 
 def _competence(events: list[dict], label: dict, raw: dict) -> None:
@@ -134,6 +144,8 @@ def _competence(events: list[dict], label: dict, raw: dict) -> None:
         locs = locs_by_phase.get(ph, set())
         occ = occ_post.get(ph, {})
         for o in valid:
+            if o.rstrip().endswith(" H"):
+                c["holds"] += 1
             if " S " in o:
                 parts = o.split(" S ")
                 if len(parts) == 2 and " - " in parts[1]:
@@ -150,6 +162,178 @@ def _competence(events: list[dict], label: dict, raw: dict) -> None:
                 dest = o.split(" - ", 1)[1].split()[0].split("/")[0]
                 if any("bounce" in t for t in res.get(unit, [])) and occ.get(dest) == e["power"]:
                     c["self_bounce"] += 1
+
+
+_COND_RE = re.compile(r"\b(if you|if I|in exchange|in return|provided that)\b", re.I)
+_ALLIANCE_RE = re.compile(
+    r"\b(alliance|alliances|ally|allies|allied|coalition|coalitions|partner|"
+    r"partners|partnership|pact|pacts|non-aggression|coordinate|coordinated|"
+    r"coordination|cooperate|cooperation)\b|work together|together against", re.I)
+_PROMISE_RE = re.compile(r"(won't|will not|stay out|no interest in|respect)", re.I)
+_STOP_WORDS = {"IF", "AND", "BUT", "THE", "OUR", "ALL", "HAS", "NOT", "NEW", "HOLD",
+               "SC", "YOU", "FOR", "ARE", "WAS", "WHO", "WHY", "HOW", "OUT", "OWN"}
+
+
+def _negotiation(events: list[dict], label: dict, raw: dict) -> None:
+    """Per-power negotiation character, mirroring transcripts._compute_outcomes:
+    message volume and the shares that are conditional bargaining, alliance
+    vocabulary, questions, and (heuristic) betrayals, attributed to the speaker's
+    model."""
+    orders_by_pp_phase: dict[str, dict[str, list[str]]] = {}
+    for e in events:
+        if e.get("type") == "orders_submitted":
+            orders_by_pp_phase.setdefault(e["phase"], {})[e["power"]] = e.get("valid", [])
+    seen_betray: set[tuple[str, str, str]] = set()
+    for e in events:
+        if e.get("type") != "agent_messages":
+            continue
+        phase, speaker = e.get("phase", ""), e.get("power", "")
+        lbl = label.get(speaker)
+        if lbl is None:
+            continue
+        c = raw[lbl]
+        speaker_orders = orders_by_pp_phase.get(phase, {}).get(speaker, [])
+        for _, text in (e.get("messages", {}) or {}).items():
+            c["msgs"] += 1
+            if _COND_RE.search(text):
+                c["cond"] += 1
+            if _ALLIANCE_RE.search(text):
+                c["alliance"] += 1
+            if "?" in text:
+                c["question"] += 1
+            if _PROMISE_RE.search(text):
+                provs = {p for p in re.findall(r"\b([A-Z]{3})\b", text)
+                         if p not in _STOP_WORDS}
+                for prov in provs:
+                    key = (phase, speaker, prov)
+                    if key in seen_betray:
+                        continue
+                    for o in speaker_orders:
+                        mt = re.match(r"[AF] \S+\s*-\s*(\S+)", o)
+                        if mt and mt.group(1).split("/")[0] == prov:
+                            c["betray"] += 1
+                            seen_betray.add(key)
+                            break
+
+
+def compute_offence_defence(events: list[dict]) -> dict[str, tuple[int, int]]:
+    """Final cumulative (offence, defence) score per power, faithfully porting
+    the per-phase scoring in transcripts.render_html_viewer. Offence rewards
+    taking ground (+3 dislodge a hold-supported enemy, +2 a lone enemy, +1 a
+    vacant province; -1/-2 for losing a garrisoned/undefended SC). Defence scores
+    units under attack (+2/+1 holding vs a supported/unsupported attack; -2/-1
+    dislodged on a SC / elsewhere)."""
+    results_by_phase: dict[str, dict] = {}
+    owner_snaps: list[tuple[str, dict[str, str]]] = []
+    occ_by_phase: dict[str, dict[str, str]] = {}
+    entering_units: dict[str, dict[str, tuple[str, str]]] = {}
+    sc_set: set[str] = set()
+    for e in events:
+        if e.get("type") != "phase_resolved":
+            continue
+        rp = e.get("resolved_phase", "")
+        results_by_phase[rp] = e.get("results", {}) or {}
+        owners: dict[str, str] = {}
+        for power, provs in (e.get("centers", {}) or {}).items():
+            for p in provs:
+                base = p.split("/")[0]
+                owners[base] = power
+                sc_set.add(base)
+        owner_snaps.append((rp, owners))
+        occ: dict[str, str] = {}
+        ent: dict[str, tuple[str, str]] = {}
+        for power, units in (e.get("units", {}) or {}).items():
+            for u in units:
+                t = u.split()
+                if len(t) >= 2:
+                    base = t[1].split("/")[0]
+                    occ[base] = power
+                    ent[base] = (power, u)
+        occ_by_phase[rp] = occ
+        entering_units[e.get("next_phase", "")] = ent
+
+    off: collections.Counter = collections.Counter()
+    deff: collections.Counter = collections.Counter()
+
+    # loss side: a supply center that changed owner costs the old owner
+    for i in range(1, len(owner_snaps)):
+        prev_ph, prev_ow = owner_snaps[i - 1]
+        _, cur_ow = owner_snaps[i]
+        prev_occ = occ_by_phase.get(prev_ph, {})
+        for sc in set(prev_ow) | set(cur_ow):
+            a, b = prev_ow.get(sc), cur_ow.get(sc)
+            if a is None or a == b:
+                continue
+            off[a] += -1 if prev_occ.get(sc) == a else -2
+
+    hold_supported: dict[str, set[str]] = {}
+    for e in events:
+        if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
+            continue
+        for o in e.get("valid", []):
+            if " S " not in o:
+                continue
+            sup = o.split(" S ", 1)[1].strip()
+            if " - " not in sup:
+                hold_supported.setdefault(e["phase"], set()).add(sup)
+
+    # gain side: every successful move at a movement phase
+    for e in events:
+        if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
+            continue
+        ph, power = e["phase"], e["power"]
+        pre = entering_units.get(ph, {})
+        res = results_by_phase.get(ph, {})
+        for o in e.get("valid", []):
+            if " - " not in o or " S " in o or " C " in o:
+                continue
+            unit = o.split(" - ", 1)[0].strip()
+            dest = o.split(" - ", 1)[1].split()[0].split("/")[0]
+            if any(t in ("bounce", "void", "dislodged") for t in res.get(unit, [])):
+                continue
+            tgt = pre.get(dest)
+            if tgt is None:
+                gain = 1
+            elif tgt[0] != power:
+                if any("dislodged" in t for t in res.get(tgt[1], [])):
+                    gain = 3 if tgt[1] in hold_supported.get(ph, set()) else 2
+                else:
+                    gain = 1
+            else:
+                continue
+            off[power] += gain
+
+    # defence side
+    moves_by_phase: dict[str, dict[str, list[str]]] = {}
+    supp_by_phase: dict[str, dict[str, int]] = {}
+    for e in events:
+        if e.get("type") != "orders_submitted" or not e.get("phase", "").endswith("M"):
+            continue
+        ph, mover = e["phase"], e["power"]
+        mv = moves_by_phase.setdefault(ph, {})
+        sp = supp_by_phase.setdefault(ph, {})
+        for o in e.get("valid", []):
+            if " S " in o:
+                sup = o.split(" S ", 1)[1].strip()
+                if " - " in sup:
+                    dest = sup.split(" - ", 1)[1].split()[0].split("/")[0]
+                    sp[dest] = sp.get(dest, 0) + 1
+            elif " - " in o and " C " not in o:
+                dest = o.split(" - ", 1)[1].split()[0].split("/")[0]
+                mv.setdefault(dest, []).append(mover)
+    for ph, mv in moves_by_phase.items():
+        pre = entering_units.get(ph, {})
+        res = results_by_phase.get(ph, {})
+        sp = supp_by_phase.get(ph, {})
+        for base, (owner, unit) in pre.items():
+            if not any(pw != owner for pw in mv.get(base, [])):
+                continue
+            if any("dislodged" in t for t in res.get(unit, [])):
+                deff[owner] += -2 if base in sc_set else -1
+            else:
+                deff[owner] += 2 if sp.get(base, 0) > 0 else 1
+
+    return {p: (off.get(p, 0), deff.get(p, 0)) for p in set(off) | set(deff)}
 
 
 # --- SVG primitives ---------------------------------------------------------
@@ -369,6 +553,119 @@ def plot_competence(raw: dict) -> str:
     return "\n".join(s)
 
 
+# --- plot 4: offence vs defence scatter -------------------------------------
+
+def plot_scatter(od_points: dict) -> str:
+    w, h = 620, 460
+    pad_l, pad_r, pad_b, pad_t = 58, 150, 52, 44
+    allpts = [p for m in ORDER for p in od_points[m]]
+    xs = [d for _, d in allpts]
+    ys = [o for o, _ in allpts]
+    x0, x1 = min(xs) - 2, max(xs) + 2
+    y0, y1 = min(ys) - 2, max(ys) + 2
+    plot_w, plot_h = w - pad_l - pad_r, h - pad_b - pad_t
+
+    def xf(v):
+        return pad_l + plot_w * ((v - x0) / (x1 - x0))
+
+    def yf(v):
+        return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
+
+    s = _svg_open(w, h, "4. Offence vs Defence (per nation)")
+    # axis frame
+    s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
+             f"stroke='#bbb' stroke-width='0.8'/>")
+    s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
+             f"y2='{pad_t+plot_h}' stroke='#bbb' stroke-width='0.8'/>")
+    # integer-ish ticks (step 2)
+    xt = int(x0) - (int(x0) % 2)
+    while xt <= x1:
+        if x0 <= xt <= x1:
+            s.append(f"<text x='{xf(xt):.1f}' y='{pad_t+plot_h+16:.0f}' "
+                     f"text-anchor='middle' font-size='9' fill='#999'>{xt}</text>")
+        xt += 2
+    yt = int(y0) - (int(y0) % 2)
+    while yt <= y1:
+        if y0 <= yt <= y1:
+            s.append(f"<text x='{pad_l-7}' y='{yf(yt)+3:.1f}' text-anchor='end' "
+                     f"font-size='9' fill='#999'>{yt}</text>")
+        yt += 2
+    # crosshair at the field (grand) mean
+    gx, gy = statistics.mean(xs), statistics.mean(ys)
+    s.append(f"<line x1='{xf(gx):.1f}' y1='{pad_t}' x2='{xf(gx):.1f}' "
+             f"y2='{pad_t+plot_h}' stroke='#ddd' stroke-width='1' stroke-dasharray='4 3'/>")
+    s.append(f"<line x1='{pad_l}' y1='{yf(gy):.1f}' x2='{pad_l+plot_w}' "
+             f"y2='{yf(gy):.1f}' stroke='#ddd' stroke-width='1' stroke-dasharray='4 3'/>")
+    s.append(f"<text x='{pad_l+plot_w-2:.0f}' y='{yf(gy)-4:.1f}' text-anchor='end' "
+             f"font-size='8.5' fill='#bbb'>field average</text>")
+    # axis labels
+    s.append(f"<text x='{pad_l+plot_w/2:.0f}' y='{h-6}' text-anchor='middle' "
+             f"font-size='10' fill='#777'>Defence score per nation</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+             f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
+             f"text-anchor='middle'>Offence score per nation</text>")
+    # faint per-nation points
+    for m in ORDER:
+        for o, d in od_points[m]:
+            s.append(f"<circle cx='{xf(d):.1f}' cy='{yf(o):.1f}' r='3' "
+                     f"fill='{COLOR[m]}' fill-opacity='0.28'/>")
+    # bold model-mean markers
+    for m in ORDER:
+        mo = statistics.mean([o for o, _ in od_points[m]])
+        md = statistics.mean([d for _, d in od_points[m]])
+        s.append(f"<circle cx='{xf(md):.1f}' cy='{yf(mo):.1f}' r='7' "
+                 f"fill='{COLOR[m]}' stroke='#222' stroke-width='1.4'/>")
+    # legend at right: MiMo, Sonnet, Opus
+    lx = w - pad_r + 22
+    ly0 = pad_t + plot_h / 2 - 22
+    for i, m in enumerate(["MiMo", "Sonnet", "Opus"]):
+        ly = ly0 + i * 24
+        s.append(f"<circle cx='{lx+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
+                 f"stroke='#222' stroke-width='1.2'/>")
+        s.append(f"<text x='{lx+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
+                 f"{m} <tspan fill='#999'>{TIER[m]}</tspan></text>")
+    s.append("</svg>")
+    return "\n".join(s)
+
+
+# --- per-model KPI table ----------------------------------------------------
+
+def kpi_table(data: dict) -> str:
+    raw, final = data["raw"], data["final"]
+    cols = ["MiMo", "Sonnet", "Opus"]  # cheap -> frontier, matching plot 1
+
+    def n(m):
+        return len(final[m])
+
+    def pct(num, den):
+        return f"{100 * num / den:.1f}%" if den else "n/a"
+
+    # (label, per-model value fn). Each is normalised so the three are
+    # comparable despite Sonnet playing five nations per game.
+    rows = [
+        ("Final centers / nation", lambda m: f"{statistics.mean(final[m]):.2f}"),
+        ("Offence / nation", lambda m: f"{raw[m]['off_sum']/n(m):+.1f}"),
+        ("Defence / nation", lambda m: f"{raw[m]['def_sum']/n(m):+.1f}"),
+        ("Messages / nation", lambda m: f"{raw[m]['msgs']/n(m):.0f}"),
+        ("Conditional bargaining", lambda m: pct(raw[m]['cond'], raw[m]['msgs'])),
+        ("Alliance language", lambda m: pct(raw[m]['alliance'], raw[m]['msgs'])),
+        ("Betrayals", lambda m: pct(raw[m]['betray'], raw[m]['msgs'])),
+        ("Hold rate", lambda m: pct(raw[m]['holds'], raw[m]['orders'])),
+        ("Move-support success", lambda m: pct(raw[m]['supp_move_ok'], raw[m]['supp_move'])),
+        ("Illegal orders", lambda m: pct(raw[m]['illegal'], raw[m]['orders'])),
+        ("Self-bounces / 100 orders",
+         lambda m: f"{100*raw[m]['self_bounce']/raw[m]['orders']:.1f}" if raw[m]['orders'] else "n/a"),
+    ]
+    head = "".join(
+        f"<th style='color:{COLOR[m]}'>{m}<br><span style='font-weight:400;"
+        f"color:#999;font-size:0.82em'>{TIER[m]}</span></th>" for m in cols)
+    body = ""
+    for label, fn in rows:
+        cells = "".join(f"<td>{fn(m)}</td>" for m in cols)
+        body += f"<tr><th class='rk'>{label}</th>{cells}</tr>"
+    return (f"<table class='kpi'><tr><th class='rk'></th>{head}</tr>{body}</table>")
+
+
 # --- index page -------------------------------------------------------------
 
 def build_index(data: dict) -> str:
@@ -382,12 +679,19 @@ def build_index(data: dict) -> str:
         "figure img,figure svg{max-width:100%;height:auto;display:block;}"
         "figcaption{color:#555;font-size:13.5px;margin-top:8px;}"
         "a{color:#1b5e9b;}.back{font-size:13px;}"
+        "table.kpi{border-collapse:collapse;width:100%;font-size:13.5px;margin:8px 0;}"
+        "table.kpi th,table.kpi td{padding:6px 10px;text-align:right;"
+        "border-bottom:1px solid #eee;}"
+        "table.kpi th.rk{text-align:left;font-weight:500;color:#444;}"
+        "table.kpi tr th:not(.rk){text-align:right;}"
     )
     body = [
-        "<a class='back' href='../findings.md'>&larr; findings.md</a>",
+        "<a class='back' href='https://github.com/joehahn/diplomacy-A2A/blob/main/"
+        "results/model-capability/findings.md'>&larr; findings.md</a>",
         "<h1>Model-capability axis: the 7-game rotation</h1>",
         f"<p class='sub'>Opus (frontier) and MiMo (budget) each rotate through all "
-        f"seven powers once, on opposite sides of the board, against a Sonnet field, "
+        f"seven powers once, on opposite sides of the board, against Sonnet playing "
+        f"the other 5 players, "
         f"counterbalancing board position across {n} games to isolate model-dependant "
         f"outcomes from the nations they play.</p>",
 
@@ -403,6 +707,21 @@ def build_index(data: dict) -> str:
         f"move-supports for Opus/MiMo in 3 years, so read it as indicative). "
         f"Self-bounces echo the paradox from self-play: the budget model trips over "
         f"its own units least because it attempts the least coordination.</figcaption></figure>",
+
+        "<figure><object type='image/svg+xml' data='offence_defence.svg'></object>",
+        "<figcaption><b>Style, the canonical dashboard's signature view.</b> Each "
+        "faint dot is one nation-game (offence rewards taking ground, defence rewards "
+        "surviving attack); the ringed dot is the model's mean. Opus sits low-left "
+        "(least offence and defence per nation, the peace-first staff officer); MiMo "
+        "sits highest on defence; Sonnet is the most offensive. The clustering near "
+        "the field average is the same near-tie the supply-center plots show, now in "
+        "two dimensions.</figcaption></figure>",
+
+        "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
+        "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
+        "(or as a share) so the three models compare despite Sonnet playing five "
+        "nations per game to Opus's and MiMo's one.</p>",
+        kpi_table(data),
 
         "<p class='sub' style='margin-top:32px'>Plots derived from the seven game "
         "transcripts by <code>experiments/model_capability/build_axis_dashboard.py</code>. "
@@ -429,6 +748,7 @@ def main() -> int:
     (out / "final_centers.svg").write_text(plot_final(data["final"]))
     (out / "sc_trajectory.svg").write_text(plot_trajectory(data["traj"]))
     (out / "competence.svg").write_text(plot_competence(data["raw"]))
+    (out / "offence_defence.svg").write_text(plot_scatter(data["od_points"]))
     (out / "index.html").write_text(build_index(data))
 
     print(f"wrote dashboard to {out}/ ({data['n_games']} games)")
