@@ -1,5 +1,5 @@
 # Model-capability axis:
-### Three T-shirt sized LLMs play Diplomacy
+### Four LLMs, from budget to frontier, play Diplomacy
 
 This study compares 3 LLMs across the price/capability spectrum: mimo-v2.5
 (budget), Claude Sonnet 4.6 (mid-tier), and Claude Opus 4.8 (frontier). The
@@ -19,7 +19,7 @@ investigation has two parts:
    rotate through every nation once, which averages out board position and lets us
    build an LLM leaderboard for Diplomacy gameplay.
 
-## The three models in self-play (style analysis)
+## The four models in self-play (style analysis)
 
 **MiMo (S, budget): the talkative brawler.** The most talkative and most
 aggressive negotiator of the three (~1500 messages, the most real betrayals),
@@ -80,21 +80,57 @@ Three patterns recur across all three games, regardless of model family or price
 A longer Opus-vs-Sonnet read lives in [`REFERENCE.md`](../../REFERENCE.md) under
 "Opus vs Sonnet: play style."
 
-### The budget runner-up: Haiku
+### Haiku, the budget runner-up: a deep dive
 
-**Haiku (~20B, est.): the agreeable diplomat.** Claude Haiku was the budget
-candidate MiMo beat out, and its self-play game shows why. It is the most
-*social* of the four and the least *forceful*: the highest alliance language of
-any model (43% of messages, double the next) and the most questions (39%),
-forever proposing partnerships ("Turkey and Italy are natural partners... shall
-we coordinate?"), yet near-zero betrayal (1.4%) and among the lowest conditional
-bargaining, so it offers friendship freely but rarely turns it into a hard deal.
-On the board it is the most passive game run, the highest hold rate (56%), the
-lowest support rate (8%), the fewest dislodgements, and a single cut support all
-game. The bill is 21 disbands, the most contraction of any game: it talks
-coalitions but does not take ground. That is the gap MiMo exploits, where MiMo
-coerces ("let me have TRI peacefully... if you refuse I'll take it by force"),
-Haiku asks permission. The genial diplomat loses to the brawler.
+Claude Haiku 4.5 (~20B by third-party estimate) was the other budget candidate,
+and it lost the budget-tier playoff to MiMo. Its 10-year self-play game is the
+clearest read on why, and it makes the two cheap models near-perfect opposites.
+
+**The agreeable diplomat.** Haiku is the most *social* of the four models and the
+least *forceful*. It runs the table on coalition-talk, the highest alliance
+language of any model (43% of messages, double the next) and the most questions
+(39%), forever proposing partnerships ("Turkey and Italy are natural partners...
+shall we coordinate?"). But the warmth is soft: near-zero betrayal (1.4%) and
+among the lowest conditional bargaining, so it offers friendship freely and
+almost never converts it into a hard, conditional deal or breaks its word. On the
+board it is the most passive game run, the highest hold rate (56%), the lowest
+support rate (8%), the fewest dislodgements, and a single cut support all game.
+
+**MiMo and Haiku are mirror images.** Run the two budget candidates side by side
+and they invert on nearly every axis that matters:
+
+| metric | MiMo (the brawler) | Haiku (the diplomat) |
+|--------|--------------------|----------------------|
+| Betrayals | 6.5% | 1.4% |
+| Alliance language | 19% | 43% |
+| Support rate | 14% | 8% |
+| Hold rate | 48% | 56% |
+| Supports cut | 6 | 1 |
+| Dislodgements | 12 | 6 |
+
+MiMo betrays, coordinates, cuts supports, and grinds for ground; Haiku allies,
+asks, holds, and keeps the peace. Both are cheap, and they could not play more
+differently.
+
+**The talk never reaches the board.** Haiku's coalition language is the loudest of
+any game and the least load-bearing. In spring 1902, with Russia surging to seven
+centers, France warns the table again and again ("Russia is pulling away fast...
+if it consolidates the east unchecked it becomes unbeatable, let's watch for
+opportunities to check its growth"), while its only supported order that turn is
+`A MAR S A PAR - BUR`, its own grab for Burgundy in the opposite direction. The
+anti-leader coalition lives entirely in chat. Russia is never actually checked on
+the board; it only slides back later through ordinary friction, and England
+quietly climbs to seven centers and sits there unchallenged for five straight
+years.
+
+**Nothing happens decisively.** The board churns, 21 disbands, the most
+contraction of any of the four games, yet no power is eliminated and none comes
+near a solo. Units change hands; no one consolidates. That is the whole problem.
+Diplomacy is won by seizing and holding centers, and Haiku negotiates warmly,
+asks permission, and sits still. Where MiMo coerces ("let me have TRI
+peacefully... if you refuse I'll take it by force") and seizes the home center,
+Haiku proposes a partnership and waits. The genial diplomat loses to the brawler,
+and that is why the budget slot went to MiMo.
 Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
 
 ## Three LLMs head-to-head (the leaderboard)
