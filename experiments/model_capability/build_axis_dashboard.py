@@ -934,6 +934,28 @@ def plot_param_frontier(data: dict) -> str:
     s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>supply centers / nation</text>")
+
+    # best-fit power law SC = a * params^b (least squares in log10-log10 space),
+    # drawn as a dashed curve across the data range
+    fx = [lx[m] for m in ORDER]
+    fy = [math.log10(yv[m]) for m in ORDER]
+    nfit = len(ORDER)
+    mfx, mfy = sum(fx) / nfit, sum(fy) / nfit
+    b_exp = (sum((x - mfx) * (y - mfy) for x, y in zip(fx, fy))
+             / sum((x - mfx) ** 2 for x in fx))
+    a_int = mfy - b_exp * mfx
+    ss_tot = sum((y - mfy) ** 2 for y in fy)
+    ss_res = sum((y - (a_int + b_exp * x)) ** 2 for x, y in zip(fx, fy))
+    r2 = 1 - ss_res / ss_tot if ss_tot else 0.0
+    fit_pts = " ".join(
+        f"{xf(u):.1f},{yf(10 ** (a_int + b_exp * u)):.1f}"
+        for u in (min(fx) + (max(fx) - min(fx)) * i / 24 for i in range(25)))
+    s.append(f"<polyline points='{fit_pts}' fill='none' stroke='#888' "
+             f"stroke-width='1.6' stroke-dasharray='6 4'/>")
+    s.append(f"<text x='{pad_l+6}' y='{pad_t+13}' font-size='9.5' fill='#777'>"
+             f"best fit: SC &#8733; params<tspan baseline-shift='super' "
+             f"font-size='7'>{b_exp:.2f}</tspan> (R&#178;={r2:.2f})</text>")
+
     for m in ORDER:
         cx, cy, col = xf(lx[m]), yf(yv[m]), COLOR[m]
         # horizontal parameter-uncertainty bar
@@ -1183,7 +1205,10 @@ def build_index(data: dict) -> str:
         "3-year result, the four points now trend upward, from Haiku (~20B, 3.7 "
         "centers) to Opus (~2.7T, 6.6), bigger models win more ground. The Haiku anchor "
         "at ~20B is what makes the slope visible; without it the lineup spanned only "
-        "~10&times;. Read the x-axis as order-of-magnitude (and total, not active, "
+        "~10&times;. The dashed line is the best-fit power law (SC &#8733; "
+        "params<sup>0.10</sup>, R&#178;&asymp;0.77 in log-log): a shallow exponent, so "
+        "centers grow with scale but slowly, and Opus sits above the line, beating the "
+        "trend. Read the x-axis as order-of-magnitude (and total, not active, "
         "params).</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='polarization.svg'></object>",
