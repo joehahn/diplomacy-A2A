@@ -425,6 +425,18 @@ def _svg_open(w: int, h: int, title: str) -> list[str]:
     ]
 
 
+def _fit_legend(s: list, lx: float, y: float, xlabel: str, b: float, r2: float):
+    """Append a power-law fit entry to a right-side legend: a dashed swatch, then
+    the formula SC proportional to xlabel^b, with R^2 on the next line."""
+    s.append(f"<line x1='{lx}' y1='{y}' x2='{lx+20}' y2='{y}' stroke='#888' "
+             f"stroke-width='1.6' stroke-dasharray='5 3'/>")
+    s.append(f"<text x='{lx+26}' y='{y+4}' font-size='10' fill='#555'>"
+             f"SC &#8733; {xlabel}<tspan baseline-shift='super' font-size='7'>"
+             f"{b:.2f}</tspan></text>")
+    s.append(f"<text x='{lx+26}' y='{y+19}' font-size='10' fill='#777'>"
+             f"R&#178; = {r2:.2f}</text>")
+
+
 def _legend(x: float, y: float) -> str:
     out = []
     for i, m in enumerate(ORDER):
@@ -943,7 +955,7 @@ def plot_param_frontier(data: dict) -> str:
              f"text-anchor='middle'>supply centers / nation</text>")
 
     # best-fit power law SC = a * params^b (least squares in log10-log10 space),
-    # drawn as a dashed curve across the data range
+    # drawn as a dashed curve extended across 10B -> 10T
     fx = [lx[m] for m in ORDER]
     fy = [math.log10(yv[m]) for m in ORDER]
     nfit = len(ORDER)
@@ -954,14 +966,12 @@ def plot_param_frontier(data: dict) -> str:
     ss_tot = sum((y - mfy) ** 2 for y in fy)
     ss_res = sum((y - (a_int + b_exp * x)) ** 2 for x, y in zip(fx, fy))
     r2 = 1 - ss_res / ss_tot if ss_tot else 0.0
+    cx0, cx1 = math.log10(10), math.log10(10_000)  # 10B -> 10T
     fit_pts = " ".join(
         f"{xf(u):.1f},{yf(10 ** (a_int + b_exp * u)):.1f}"
-        for u in (min(fx) + (max(fx) - min(fx)) * i / 24 for i in range(25)))
+        for u in (cx0 + (cx1 - cx0) * i / 24 for i in range(25)))
     s.append(f"<polyline points='{fit_pts}' fill='none' stroke='#888' "
              f"stroke-width='1.6' stroke-dasharray='6 4'/>")
-    s.append(f"<text x='{pad_l+6}' y='{pad_t+13}' font-size='9.5' fill='#777'>"
-             f"best fit: SC &#8733; params<tspan baseline-shift='super' "
-             f"font-size='7'>{b_exp:.2f}</tspan> (R&#178;={r2:.2f})</text>")
 
     for m in ORDER:
         cx, cy, col = xf(lx[m]), yf(yv[m]), COLOR[m]
@@ -981,16 +991,17 @@ def plot_param_frontier(data: dict) -> str:
                          f"y2='{yy:.1f}' stroke='{col}' stroke-width='1.6'/>")
         s.append(f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='6' fill='{col}' "
                  f"stroke='#222' stroke-width='1.4'/>")
-    # legend at right with the size estimates
+    # legend at right with the size estimates and the fit
     lxleg = w - pad_r + 18
     legend_models = list(reversed(ORDER))
-    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 13
+    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 13 - 22
     for i, m in enumerate(legend_models):
         ly = ly0 + i * 26
         s.append(f"<circle cx='{lxleg+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
                  f"stroke='#222' stroke-width='1.2'/>")
         s.append(f"<text x='{lxleg+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
                  f"{m} <tspan fill='#999'>{PARAMS_B[m][3]}</tspan></text>")
+    _fit_legend(s, lxleg, ly0 + len(legend_models) * 26 + 6, "params", b_exp, r2)
     s.append("</svg>")
     return "\n".join(s)
 
@@ -1052,14 +1063,12 @@ def plot_spend_frontier(final: dict) -> str:
     ss_tot = sum((y - mfy) ** 2 for y in fy)
     ss_res = sum((y - (a_int + b_exp * x)) ** 2 for x, y in zip(fx, fy))
     r2 = 1 - ss_res / ss_tot if ss_tot else 0.0
+    # dashed fit extended across the full visible x-axis
     fit_pts = " ".join(
         f"{xf(u):.1f},{yf(10 ** (a_int + b_exp * u)):.1f}"
-        for u in (min(fx) + (max(fx) - min(fx)) * i / 24 for i in range(25)))
+        for u in (x0 + (x1 - x0) * i / 24 for i in range(25)))
     s.append(f"<polyline points='{fit_pts}' fill='none' stroke='#888' "
              f"stroke-width='1.6' stroke-dasharray='6 4'/>")
-    s.append(f"<text x='{pad_l+6}' y='{pad_t+13}' font-size='9.5' fill='#777'>"
-             f"best fit: SC &#8733; ($/min)<tspan baseline-shift='super' "
-             f"font-size='7'>{b_exp:.2f}</tspan> (R&#178;={r2:.2f})</text>")
 
     for m in ORDER:
         cx, cy, col = xf(lx[m]), yf(yv[m]), COLOR[m]
@@ -1073,13 +1082,14 @@ def plot_spend_frontier(final: dict) -> str:
                  f"stroke='#222' stroke-width='1.4'/>")
     lxleg = w - pad_r + 18
     legend_models = list(reversed(ORDER))
-    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 13
+    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 13 - 22
     for i, m in enumerate(legend_models):
         ly = ly0 + i * 26
         s.append(f"<circle cx='{lxleg+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
                  f"stroke='#222' stroke-width='1.2'/>")
         s.append(f"<text x='{lxleg+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
                  f"{m} <tspan fill='#999'>${SPEND_PER_MIN[m]:.2f}/min</tspan></text>")
+    _fit_legend(s, lxleg, ly0 + len(legend_models) * 26 + 6, "$/min", b_exp, r2)
     s.append("</svg>")
     return "\n".join(s)
 
