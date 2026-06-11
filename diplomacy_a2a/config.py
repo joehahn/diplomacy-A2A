@@ -24,11 +24,12 @@ GATEWAY_MODELS = {
     "gemini": "google/gemini-3.5-flash",  # fallback
 }
 
-# LLM-capability axis (Axis A) roster: a top-shelf and a low-cost model each
-# rotate through all seven powers against a DEFAULT_MODEL (Sonnet) field. Pinned
-# so the sweep is reproducible. Driven by experiments/llm_axis.py.
-LLM_AXIS_TOPSHELF = "claude-opus-4-8"   # frontier reference (direct Anthropic)
-LLM_AXIS_LOWCOST = "xiaomi/mimo-v2.5"   # best-value cheap model (gateway)
+# LLM-capability axis (Axis A) roster: three test models each rotate through all
+# seven powers against a DEFAULT_MODEL (Sonnet) field. Pinned so the sweep is
+# reproducible. Driven by experiments/llm_axis.py.
+LLM_AXIS_TOPSHELF = "claude-opus-4-8"            # frontier reference (Anthropic)
+LLM_AXIS_HAIKU = "claude-haiku-4-5-20251001"     # small Claude (~20B, est.)
+LLM_AXIS_LOWCOST = "xiaomi/mimo-v2.5"            # best-value cheap model (gateway)
 
 DEFAULT_MAX_TOKENS = 1024
 # Order generation gets a larger cap than other calls. Verbose models (notably
