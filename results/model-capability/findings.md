@@ -184,3 +184,39 @@ Two things stand out. There is no separate "prompt" line because the prompt
 state, rules, persona, and running history re-sent on each call) and only ~3%
 are model output. And negotiation is the single largest consumer at ~48%, which
 fits the project's premise that the dialogue, not the move, is the deliverable.
+
+## Reproducing this study from the command line
+
+Everything here regenerates from the repo. You need an Anthropic API key (and an
+OpenRouter key for MiMo, which routes through the gateway) in `.env`, and an
+active venv: `source .venv/bin/activate`. Costs per game are in the table above;
+model IDs are pinned in [`config.py`](../../diplomacy_a2a/config.py).
+
+**Self-play (one 10-year game per model, the style profiles).** Each writes to
+`results/<category>/<timestamp>/` and auto-renders its own dashboard:
+
+    python -m diplomacy_a2a run --model xiaomi/mimo-v2.5           --years 10 --rounds 3 --category mimo-reference
+    python -m diplomacy_a2a run --model claude-haiku-4-5-20251001  --years 10 --rounds 3 --category haiku-reference
+    python -m diplomacy_a2a run --model claude-sonnet-4-6          --years 10 --rounds 3 --category canonical
+    python -m diplomacy_a2a run --model claude-opus-4-8            --years 10 --rounds 3 --category opus-reference
+
+**Head-to-head rotation (seven 10-year games, ~$240, ~4 hours).** Opus, Haiku, and
+MiMo rotate through all powers against a Sonnet field; the roster and balanced
+rotation live in [`experiments/llm_axis.py`](../../experiments/llm_axis.py). It
+runs sequentially and is resumable (a re-run skips games already finished), and
+`caffeinate -i` keeps the Mac awake for the duration:
+
+    caffeinate -i python experiments/llm_axis.py          # full sweep
+    python experiments/llm_axis.py --dry-run              # print the 7 commands, run nothing
+    python experiments/llm_axis.py --smoke                # one 1-year game to scratch/, to sanity-check
+
+**Rebuild the rotation dashboard (the cross-game plots above).** No LLM calls,
+sub-second; it globs `results/model-capability/*/transcript.jsonl`:
+
+    python experiments/model_capability/build_axis_dashboard.py
+
+**Re-render a single game's own dashboard** (maps, report, negotiation slideshow)
+without replaying it (these per-game dashboards are gitignored, so regenerate
+locally as needed):
+
+    python -m diplomacy_a2a render results/<category>/<timestamp>
