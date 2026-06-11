@@ -39,12 +39,15 @@ from diplomacy_a2a.runner import _estimate_cost  # noqa: E402  (reuse the rate t
 MODEL_LABEL = {
     "claude-opus-4-8": "Opus",
     "claude-sonnet-4-6": "Sonnet",
+    "claude-haiku-4-5-20251001": "Haiku",
     "xiaomi/mimo-v2.5": "MiMo",
 }
-# Display order: frontier, field, budget.
-ORDER = ["Opus", "Sonnet", "MiMo"]
-TIER = {"Opus": "L (frontier)", "Sonnet": "M (field)", "MiMo": "S (budget)"}
-COLOR = {"Opus": "#1b5e9b", "Sonnet": "#3f8f5e", "MiMo": "#c85a23"}
+# Display order: frontier first; reversed() gives cheap -> frontier left to right.
+ORDER = ["Opus", "Sonnet", "Haiku", "MiMo"]
+TIER = {"Opus": "frontier", "Sonnet": "field", "Haiku": "small Claude",
+        "MiMo": "budget"}
+COLOR = {"Opus": "#1b5e9b", "Sonnet": "#3f8f5e", "Haiku": "#8a5fb0",
+         "MiMo": "#c85a23"}
 
 # Standard Diplomacy home-center counts, for the year-0 trajectory baseline.
 START_CENTERS = {
@@ -53,14 +56,15 @@ START_CENTERS = {
 }
 BOARD_AVG = 34 / 7  # all 34 supply centers / 7 powers, the no-edge baseline
 
-# TOTAL-parameter estimates in billions: (low, central, high, label). All three
-# are mixture-of-experts, so active params are only ~5-15% of these totals; on a
-# log axis that is a near-uniform leftward shift that does not change the picture,
-# so we plot total. MiMo V2.5 is published (311B total / 15B active); Anthropic
-# discloses nothing for Sonnet and Opus, so those are third-party speculation and
-# the low-high spread becomes a horizontal error bar (central = geometric midpoint
-# on the log axis). Treat the Claude figures as order-of-magnitude only.
+# TOTAL-parameter estimates in billions: (low, central, high, label). MiMo V2.5
+# is published (311B total / 15B active MoE); Anthropic discloses nothing for the
+# Claude models, so Haiku/Sonnet/Opus are third-party speculation and the low-high
+# spread becomes a horizontal error bar (central = geometric midpoint on the log
+# axis). Active params are ~5-15% of total for the MoE models, a near-uniform log
+# shift that does not change the picture, so we plot total. Treat the Claude
+# figures as order-of-magnitude only.
 PARAMS_B = {
+    "Haiku": (15, 20, 30, "~20B (est.)"),
     "MiMo": (311, 311, 311, "311B (published)"),
     "Sonnet": (1000, 1400, 2000, "~1-2T (est.)"),
     "Opus": (1500, 2700, 5000, "~1.5-5T (est.)"),
@@ -438,9 +442,11 @@ def plot_final(final: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    cols = [pad_l + 90 + i * 200 for i in range(len(ORDER))]
-    bw = 84
-    # plot 1 runs cheap -> expensive left to right: MiMo, Sonnet, Opus
+    # evenly space one bar per model across the plot width
+    slot = (w - pad_l - 20) / len(ORDER)
+    cols = [pad_l + slot * (i + 0.5) for i in range(len(ORDER))]
+    bw = min(84, slot * 0.5)
+    # plot 1 runs cheap -> expensive left to right: MiMo, Haiku, Sonnet, Opus
     plot_order = list(reversed(ORDER))
     s = _svg_open(w, h, "1. Final supply centers by model")
 
@@ -549,8 +555,9 @@ def plot_trajectory(traj: dict) -> str:
 
     # legend at right, cheap -> frontier top to bottom: MiMo, Sonnet, Opus
     lx = w - pad_r + 20
-    ly0 = pad_t + plot_h / 2 - 22
-    for i, m in enumerate(["MiMo", "Sonnet", "Opus"]):
+    legend_models = list(reversed(ORDER))
+    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 12
+    for i, m in enumerate(legend_models):
         ly = ly0 + i * 24
         s.append(f"<rect x='{lx}' y='{ly-9:.0f}' width='12' height='12' rx='2' "
                  f"fill='{COLOR[m]}'/>")
@@ -593,8 +600,9 @@ def _bar_panels(number: int, title: str, panels: list,
     w, h = pw * per_row, oy + nrows * ph
     pad_l, pad_b, pad_t = 44, 64, 50
     plot_h = ph - pad_b - pad_t
-    bw, gap = 46, (pw - 2 * pad_l) / len(ORDER)
-    bar_order = list(reversed(ORDER))  # MiMo, Sonnet, Opus
+    gap = (pw - 2 * pad_l) / len(ORDER)
+    bw = min(46, gap * 0.78)  # scales down so 4 bars per panel still fit
+    bar_order = list(reversed(ORDER))  # MiMo, Haiku, Sonnet, Opus
     s = [f"<svg viewBox='0 0 {w} {h}' xmlns='http://www.w3.org/2000/svg' "
          f"font-family='{FONT}' width='{w}' height='{h}'>",
          f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
@@ -744,8 +752,9 @@ def plot_od_means(od_points: dict) -> str:
                  f"stroke='#222' stroke-width='1.4'/>")
     # legend at right
     lx = w - pad_r + 22
-    ly0 = pad_t + plot_h / 2 - 22
-    for i, m in enumerate(["MiMo", "Sonnet", "Opus"]):
+    legend_models = list(reversed(ORDER))
+    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 12
+    for i, m in enumerate(legend_models):
         ly = ly0 + i * 24
         s.append(f"<circle cx='{lx+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
                  f"stroke='#222' stroke-width='1.2'/>")
@@ -858,7 +867,7 @@ def plot_cost_frontier(data: dict) -> str:
                      f"text-anchor='middle' font-size='10.5' font-weight='700' "
                      f"fill='{COLOR[m]}'>{fmt.format(dat[m][0])}</text>")
     # shared legend, centered at the bottom
-    items = [(m, f"{m} (${cost[m]:.2f} / nation-game)") for m in cost_order]
+    items = [(m, f"{m} (${cost[m]:.2f})") for m in cost_order]
     total_w = sum(9 + 7 + len(lbl) * 6.0 + 22 for _, lbl in items)
     cur = w / 2 - total_w / 2
     for m, lbl in items:
@@ -941,8 +950,9 @@ def plot_param_frontier(data: dict) -> str:
                  f"stroke='#222' stroke-width='1.4'/>")
     # legend at right with the size estimates
     lxleg = w - pad_r + 18
-    ly0 = pad_t + plot_h / 2 - 22
-    for i, m in enumerate(["MiMo", "Sonnet", "Opus"]):
+    legend_models = list(reversed(ORDER))
+    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 13
+    for i, m in enumerate(legend_models):
         ly = ly0 + i * 26
         s.append(f"<circle cx='{lxleg+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
                  f"stroke='#222' stroke-width='1.2'/>")
@@ -956,7 +966,7 @@ def plot_param_frontier(data: dict) -> str:
 
 def kpi_table(data: dict) -> str:
     raw, final = data["raw"], data["final"]
-    cols = ["MiMo", "Sonnet", "Opus"]  # cheap -> frontier, matching plot 1
+    cols = list(reversed(ORDER))  # cheap -> frontier, matching plot 1
 
     def n(m):
         return len(final[m])
@@ -1019,80 +1029,86 @@ def build_index(data: dict) -> str:
         "<a class='back' href='https://github.com/joehahn/diplomacy-A2A/blob/main/"
         "results/model-capability/findings.md'>&larr; findings.md</a>",
         "<h1>Model-capability axis: the 7-game rotation</h1>",
-        f"<p class='sub'>Opus (frontier) and MiMo (budget) each rotate through all "
-        f"seven powers once, on opposite sides of the board, against Sonnet playing "
-        f"the other 5 players, "
-        f"counterbalancing board position across {n} games to isolate model-dependant "
-        f"outcomes from the nations they play.</p>",
+        f"<p class='sub'>Opus (frontier), Haiku (small Claude), and MiMo (budget) each "
+        f"rotate through all seven powers once, against a field of Sonnet on the other "
+        f"four seats, counterbalancing board position across {n} ten-year games to "
+        f"isolate the model from the nations it plays.</p>",
 
-        "<figure><object type='image/svg+xml' data='final_centers.svg'></object></figure>",
+        "<figure><object type='image/svg+xml' data='final_centers.svg'></object>",
+        "<figcaption><b>The ranking, at last.</b> Over a full 10-year game the models "
+        "separate on territory: Opus averages 6.6 centers per nation, Sonnet 4.9, MiMo "
+        "4.1, Haiku 3.7. Opus clears the field; the two budget models trail. Each test "
+        "model plays every nation once (Sonnet, the field, plays four per game); bars "
+        "are means with 1&sigma; standard-error whiskers.</figcaption></figure>",
 
-        "<figure><object type='image/svg+xml' data='sc_trajectory.svg'></object></figure>",
+        "<figure><object type='image/svg+xml' data='sc_trajectory.svg'></object>",
+        "<figcaption><b>Opus pulls away.</b> The four climb out of the opening together "
+        "and stay tangled until about 1905, when Opus diverges upward toward 6.6 centers "
+        "while Sonnet plateaus near 4.9 and the two budget models stay locked at the "
+        "bottom. The long game is what converts the frontier model's cleaner execution "
+        "into a territorial lead, which the 3-year rotation was too short to "
+        "show.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='competence.svg'></object>",
-        "<figcaption><b>Competence is where the tiers separate.</b> Illegal-order "
-        "rate ladders cleanly by price: MiMo roughly triples Opus's rate, with Sonnet "
-        "between, the same coordination-failure ladder the self-play games show. "
-        "Move-support success and uncoordinated supports (backing a move your own side "
-        "never ordered) probe coordination coherence; self-bounces echo the self-play "
-        "paradox, the budget model jamming its own units least because it attempts the "
-        "least coordination. Support rate exposes that coordination ambition directly "
-        "(Opus orders supports far more often than the budget model), and hold rate is "
-        "its inverse, passivity. Error bars are 1&sigma; Poisson (&radic;N on the event "
-        "count): the illegal-order ladder clears them, but they swallow the "
-        "move-support panel, so those differences are not significant at this sample "
-        "size. A zero count is drawn as a one-sided upper limit (observing none "
-        "implies under one event, so &sigma; &lt; 1). Exact values are in the KPI "
-        "table below.</figcaption></figure>",
+        "<figcaption><b>Competence splits by tier, but not by price alone.</b> The two "
+        "budget models post the highest illegal-order rates (MiMo 8.5%, Haiku 8.8%) "
+        "against Sonnet's 3.7% and Opus's 4.8%, the geometry ceiling the self-play "
+        "games predicted. Support rate exposes the real separation: Opus coordinates on "
+        "35% of its orders, three to five times the others, and that ambition also "
+        "gives it the most self-bounces and the lowest hold rate (least passive). The "
+        "self-bounce paradox survives at scale, MiMo jams its own units zero times "
+        "because it barely coordinates. Error bars are 1&sigma; Poisson (&radic;N on the "
+        "event count); a zero count is drawn as a one-sided upper limit (&sigma; &lt; "
+        "1). The convoy panels stay near-empty even over 10 years. Exact values are in "
+        "the KPI table below.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='negotiation.svg'></object>",
-        "<figcaption><b>Negotiation separates the personas.</b> MiMo and Opus talk "
-        "the most per nation; Sonnet drives the hardest bargains (most conditional "
-        "and alliance language); and betrayal cleaves the field, Opus breaking its "
-        "word least (it betrays only when it announces why) against MiMo's and "
-        "Sonnet's higher rates. Same 1&sigma; Poisson error bars; betrayals are a "
-        "keyword heuristic, so read them as order-of-magnitude.</figcaption></figure>",
+        "<figcaption><b>Negotiation separates the personas.</b> Opus and MiMo talk the "
+        "most per nation; Sonnet drives the hardest bargains (most conditional "
+        "language); and Haiku is the alliance-talker (30% alliance language against "
+        "Opus's 5%, the frontier model barely courts coalitions, it just coordinates "
+        "units instead). Betrayal is fairly even across the field (3.6&ndash;5.2%). "
+        "Same 1&sigma; Poisson error bars; betrayals are a keyword heuristic, so read "
+        "them as order-of-magnitude.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='offence_defence_means.svg'></object>",
         "<figcaption><b>Mean offence vs defence, with error bars.</b> One point per "
-        "model at its mean final score (offence rewards taking ground, defence rewards "
-        "surviving attack; scoring from the canonical dashboard), with horizontal and "
-        "vertical 1&sigma; standard-error whiskers across its nation-games. Sonnet is "
-        "the most offensive, MiMo the most defensive (widest whisker), Opus lowest on "
-        "both, the peace-first staff officer. The whiskers overlap, so on raw score "
-        "this is the same near-tie the supply-center plots show.</figcaption></figure>",
+        "model with horizontal and vertical 1&sigma; standard-error whiskers (offence "
+        "rewards taking ground, defence rewards surviving attack; scoring from the "
+        "canonical dashboard). Opus sits top-right, the most solid on defence; MiMo is "
+        "the most exposed (lowest defence, dislodged most); Sonnet is cautious (lowest "
+        "offence). Haiku swings the widest (the tall whisker), posting the highest "
+        "offence on average yet finishing last on centers, it takes ground it cannot "
+        "hold.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='cost_frontier.svg'></object>",
-        "<figcaption><b>What does the money buy? (prototype)</b> Each KPI plotted "
-        "against cost per nation-game on a log axis (MiMo $0.06, Sonnet $0.84, Opus "
-        "$5.25, an ~88&times; span). A flat frontier means paying more buys nothing "
-        "on that KPI; a sloped one means it does. At 3 years final centers are flat "
-        "(territory is a near-tie, so the 88&times; premium buys none), and total "
-        "mistakes are flat too, but for a subtle reason: the frontier model's lower "
-        "illegal-order rate is offset by the ambition errors (self-bounces, "
-        "uncoordinated supports) that come with its higher support rate, so spending "
-        "shifts the <i>type</i> of error rather than the total. This view earns its "
-        "keep on the 10-year games, where, if territory finally separates, the "
-        "question becomes whether the gain is worth the cost.</figcaption></figure>",
+        "<figcaption><b>What does the money buy? Now, territory.</b> Each KPI against "
+        "cost per nation-game on a log axis (MiMo $0.21, Haiku $1.04, Sonnet $3.22, "
+        "Opus $20.18, a ~95&times; span). Unlike the 3-year near-tie, at 10 years final "
+        "centers climb with spend, the frontier dollar buys real ground. But the "
+        "frontier is not monotonic: Haiku is a value-trap, costing 5&times; MiMo yet "
+        "winning fewer centers, so MiMo dominates it on both axes. Total mistakes and "
+        "illegal-order rate are lowest for Sonnet, not the priciest model, Opus trades "
+        "some cleanliness back for the ambition errors that come with coordinating "
+        "far more.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='param_frontier.svg'></object>",
-        "<figcaption><b>Does size predict territory? (speculative)</b> Final supply "
+        "<figcaption><b>Does size predict territory? At 10 years, yes.</b> Final supply "
         "centers against total parameter count on a log axis. MiMo is a published "
         "311B-parameter MoE (so the budget model is cheap, not small); Anthropic "
-        "discloses nothing for Sonnet and Opus, so their horizontal bars span the wide "
-        "third-party guesses (~1&ndash;2T for Sonnet, ~1.5&ndash;5T for Opus, total). "
-        "Vertical bars are 1&sigma; standard error on centers. All three are "
-        "mixture-of-experts, so active parameters are only ~5&ndash;15% of these "
-        "totals, a near-uniform leftward shift on a log axis that would not change the "
-        "picture. The takeaway mirrors the cost frontier: across the ~10&times; of "
-        "total parameters these models span, final centers stay flat at 3 years, raw "
-        "scale does not buy territory in a short game. Read the x-axis as "
-        "order-of-magnitude only.</figcaption></figure>",
+        "discloses nothing for the Claude models, so their horizontal bars span the "
+        "third-party guesses (Haiku ~20B, Sonnet ~1&ndash;2T, Opus ~1.5&ndash;5T, "
+        "total). Vertical bars are 1&sigma; standard error on centers. Unlike the flat "
+        "3-year result, the four points now trend upward, from Haiku (~20B, 3.7 "
+        "centers) to Opus (~2.7T, 6.6), bigger models win more ground. The Haiku anchor "
+        "at ~20B is what makes the slope visible; without it the lineup spanned only "
+        "~10&times;. Read the x-axis as order-of-magnitude (and total, not active, "
+        "params).</figcaption></figure>",
 
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
-        "(or as a share) so the three models compare despite Sonnet playing five "
-        "nations per game to Opus's and MiMo's one.</p>",
+        "(or as a share) so the four models compare despite Sonnet, the field, playing "
+        "four nations per game to each test model's one.</p>",
         kpi_table(data),
 
         "<p class='sub' style='margin-top:32px'>Plots derived from the seven game "

@@ -1,23 +1,22 @@
 # Model-capability axis:
 ### Four LLMs, from budget to frontier, play Diplomacy
 
-This study compares 3 LLMs across the price/capability spectrum: mimo-v2.5
-(budget), Claude Sonnet 4.6 (mid-tier), and Claude Opus 4.8 (frontier). The
-"T-shirt sizes" are price tiers, not parameter counts, and the two decouple:
-MiMo is cheap but not small, a 311B-parameter open MoE, larger than the
-genuinely small (~20B) Claude Haiku it edged out for the budget slot. This
+This study compares 4 LLMs across the price/capability spectrum: mimo-v2.5
+(budget), Claude Haiku 4.5 (small Claude), Claude Sonnet 4.6 (mid-tier), and
+Claude Opus 4.8 (frontier). The price tiers are not parameter counts, and the two
+decouple: MiMo is cheap but not small, a 311B-parameter open MoE, larger than the
+genuinely small (~20B) Haiku yet a fraction of the Claude models' cost. This
 investigation has two parts:
 
 1. **Assessing self-play**: the same LLM plays against itself while driving all 7
-   players in a game, three games for the 3 tier models (plus a fourth for Claude
-   Haiku, the budget runner-up MiMo beat out). These games don't rank models, they
+   players in a game, one game per model. These games don't rank models, they
    instead characterize each LLM's playing styles which are quite different.
-2. **LLM head-to-head**: the three models meet on one board across seven
-   counterbalanced games. Each game pits one Opus player and one MiMo player
-   against a field of 5 Sonnets, with Opus and MiMo seated on opposite sides of
-   the board for maximum separation. Across the seven games Opus and MiMo each
-   rotate through every nation once, which averages out board position and lets us
-   build an LLM leaderboard for Diplomacy gameplay.
+2. **LLM head-to-head**: the models meet on one board across seven counterbalanced
+   ten-year games. Each game seats three test players, one Opus, one Haiku, and one
+   MiMo, against a field of four Sonnets, with the test models spread apart for
+   separation. Across the seven games Opus, Haiku, and MiMo each rotate through
+   every nation once, which averages out board position and builds an LLM
+   leaderboard for Diplomacy gameplay.
 
 ## The four models in self-play (style analysis)
 
@@ -100,55 +99,55 @@ Three patterns recur across all four games, regardless of model family or price:
 A longer Opus-vs-Sonnet read lives in [`REFERENCE.md`](../../REFERENCE.md) under
 "Opus vs Sonnet: play style."
 
-## Three LLMs head-to-head (the leaderboard)
+## Four LLMs head-to-head (the leaderboard)
 
-Seven counterbalanced games run by
-[`experiments/llm_axis.py`](../../experiments/llm_axis.py): Opus (frontier) and
-MiMo (budget) each rotate through all seven powers once, on opposite sides of the
-board, against a field of the mid-tier Sonnet. Because every power plays each test
-role exactly once, board position is averaged out and each test model is measured
-against the same Sonnet field rather than dueling the other test model. Games run
-3 years; the rotation is seven games, so it is run short to keep the bill down.
-The three cross-game plots below are collected in the
+Seven counterbalanced ten-year games run by
+[`experiments/llm_axis.py`](../../experiments/llm_axis.py): three test models, Opus
+(frontier), Haiku (small Claude), and MiMo (budget), each rotate through all seven
+powers once, against a field of the mid-tier Sonnet on the other four seats.
+Because every test model plays each power exactly once, board position is averaged
+out and each is measured against the same Sonnet field. The cross-game plots below
+are collected in the
 **[rotation dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)**
 (derived from the seven transcripts by
 [`experiments/model_capability/build_axis_dashboard.py`](../../experiments/model_capability/build_axis_dashboard.py)).
 
-**On territory, a near-tie.** Every model finishes within a tenth of a center of
-the 4.86 board average (all 34 centers over 7 powers): Opus 4.86, Sonnet 4.86,
-MiMo 4.71. Three years is long enough to carve up all 34 centers but too short for
-any tier to convert capability into a territorial lead; the within-model spread
-(3 to 7 centers) is the seat, not the model. The supply-center trajectories say
-the same thing over time; all three climb out of the 3.14-center opening in
-lockstep and tangle around 4.7 to 4.9. If there is a leaderboard at this game
-length, it is not written in centers.
+**On territory, a clear ranking.** Ten years is long enough for capability to
+separate the field, and it does. Final supply centers per nation: Opus 6.6, Sonnet
+4.9, MiMo 4.1, Haiku 3.7. Opus clears the 4.86 board average by nearly two centers
+and leaves everyone behind, the mid-tier Sonnet sits right at average, and the two
+budget models trail below it. This is the leaderboard the 3-year rotation could not
+write, where every model had finished within a tenth of a center of average. The
+trajectories show how it happens: the four climb out of the opening together and
+stay tangled until about 1905, when Opus diverges upward while the rest plateau.
+The long game is what converts cleaner execution into ground.
 
-**On execution, the ladder returns.** Where the models separate is order quality,
-and they separate in exactly the order the self-play games predicted. Illegal-order
-rate ranks cleanly by price: Opus 1.7%, Sonnet 2.5%, MiMo 5.5%, the budget model
-roughly tripling the frontier's rate. This is the same geometry ceiling MiMo hits
-in self-play, where non-adjacent supports are its signature error. Self-bounces
-echo the self-play paradox too: MiMo never jams its own units (zero) because it
-attempts the least coordination, while Opus self-bounces most per order, tripped up
-by the ambition of juggling many units in rotation. (Move-support success is
-noisier; only 13 to 16 legal move-supports each for Opus and MiMo across 3 years,
-so read that panel as indicative, not decisive.)
+**On execution, the ladder mostly holds.** Order quality separates roughly as the
+self-play games predicted, though not by price alone. Illegal-order rate splits the
+Claude models from the budget pair: Sonnet 3.7% and Opus 4.8% against MiMo 8.5% and
+Haiku 8.8%, the same geometry ceiling the cheap models hit in self-play. The
+self-bounce paradox survives at scale, MiMo jams its own units zero times because
+it barely coordinates, while the models that attempt more coordination jam more.
+And coordination is where Opus pulls away: it orders supports on 35% of its moves,
+against Sonnet's 14% (next-highest) and Haiku's 7%. That combined-arms ambition,
+not cleaner basic orders, is what wins it the extra centers.
 
-**On price and size, scale buys cleaner play, not more ground.** The rotation
-dashboard also plots every KPI against cost per nation-game and against (mostly
-speculative) parameter count, and both frontiers are flat where it counts. Across
-an 88x spread in cost and a ~10x range in total parameters, final centers barely
-move, so neither dollars nor scale buys territory at this length. What spending
-does buy is execution: the illegal-order rate falls cleanly with price, though
-total mistakes stay flat, because the frontier model trades the budget model's
-geometry errors for its own ambition errors (self-bounces, uncoordinated
-supports). Cost and size are also distinct axes: MiMo is a cheap 311B-parameter
-MoE, far larger than the genuinely small Haiku yet a small fraction of the Claude
-models' price, so "budget" here means cheap, not small.
+**On price and size, the frontiers come alive.** With territory now separated, the
+cost and parameter frontiers (both flat at 3 years) acquire a slope. Final centers
+climb with spend across the ~95x cost range, and rise with scale across more than
+two orders of magnitude in parameters (Haiku ~20B to Opus ~2.7T), so at ten years
+dollars and size both buy ground. Two wrinkles complicate the simple "more is
+better" read. Haiku is a value-trap: it costs five times MiMo yet wins fewer
+centers, so the genuinely small Claude is dominated by the larger-but-cheaper open
+MoE on both axes. And cleanliness does not track price, Sonnet, not Opus, posts the
+fewest mistakes; Opus trades some order-cleanliness back for the ambition errors
+that come with coordinating far more.
 
-The headline: at this game length the three models are nearly indistinguishable on
-the scoreboard but clearly tiered on how cleanly they execute. Turning the
-execution gap into a center gap would take a longer rotation.
+The headline: ten years is the game length where the model-capability axis finally
+writes itself in centers. Opus wins the board, the mid-tier holds the average, and
+the two budget models trail, the smallest model (Haiku) last and the cheapest
+(MiMo) the best value. Scale and spend both predict territory once the game is long
+enough to turn execution into ground.
 
 ## Cost: the price spread these tiers represent
 
