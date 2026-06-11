@@ -70,6 +70,13 @@ PARAMS_B = {
     "Opus": (1500, 2700, 5000, "~1.5-5T (est.)"),
 }
 
+# Spend rate in US dollars per minute of wall-clock, from each model's 10-year
+# self-play game (game cost / elapsed time): an intrinsic burn rate independent of
+# how many seats the model drives. Pinned from the committed reference games.
+SPEND_PER_MIN = {
+    "MiMo": 0.052, "Haiku": 0.227, "Sonnet": 0.753, "Opus": 7.509,
+}
+
 
 # --- extraction -------------------------------------------------------------
 
@@ -988,7 +995,96 @@ def plot_param_frontier(data: dict) -> str:
     return "\n".join(s)
 
 
-# --- plot 9: outcome polarization (squeezed vs dominant) ---------------------
+# --- plot 8: SC vs spend rate ------------------------------------------------
+
+def plot_spend_frontier(final: dict) -> str:
+    """Final supply centers against each model's spend rate (US dollars per minute
+    of wall-clock in its self-play game), on a log x-axis, with a best-fit power
+    law. Burn rate is an intrinsic model property, like size in plot 7."""
+    def sem(vals):
+        return statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
+
+    w, h = 620, 440
+    pad_l, pad_r, pad_b, pad_t = 56, 160, 56, 44
+    lx = {m: math.log10(SPEND_PER_MIN[m]) for m in ORDER}
+    yv = {m: statistics.mean(final[m]) for m in ORDER}
+    ye = {m: sem(final[m]) for m in ORDER}
+    x0 = min(lx.values()) - 0.4
+    x1 = max(lx.values()) + 0.4
+    y0 = min(yv[m] - ye[m] for m in ORDER) - 0.5
+    y1 = max(yv[m] + ye[m] for m in ORDER) + 0.5
+    plot_w, plot_h = w - pad_l - pad_r, h - pad_b - pad_t
+
+    def xf(v):
+        return pad_l + plot_w * ((v - x0) / (x1 - x0))
+
+    def yf(v):
+        return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
+
+    s = _svg_open(w, h, "8. Final supply centers vs spend rate")
+    s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
+             f"stroke='#bbb' stroke-width='0.8'/>")
+    s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
+             f"y2='{pad_t+plot_h}' stroke='#bbb' stroke-width='0.8'/>")
+    for lv, lbl in ((-2, "$0.01"), (-1, "$0.10"), (0, "$1"), (1, "$10"), (2, "$100")):
+        if x0 <= lv <= x1:
+            s.append(f"<line x1='{xf(lv):.1f}' y1='{pad_t+plot_h}' x2='{xf(lv):.1f}' "
+                     f"y2='{pad_t+plot_h+3}' stroke='#bbb'/>")
+            s.append(f"<text x='{xf(lv):.1f}' y='{pad_t+plot_h+16:.0f}' "
+                     f"text-anchor='middle' font-size='9' fill='#999'>{lbl}</text>")
+    for v in range(math.ceil(y0), int(y1) + 1):
+        s.append(f"<text x='{pad_l-7}' y='{yf(v)+3:.1f}' text-anchor='end' "
+                 f"font-size='9' fill='#999'>{v}</text>")
+    s.append(f"<text x='{pad_l+plot_w/2:.0f}' y='{h-6}' text-anchor='middle' "
+             f"font-size='10' fill='#777'>spend rate (dollars / minute, log)</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+             f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
+             f"text-anchor='middle'>supply centers / nation</text>")
+
+    # best-fit power law SC = a * ($/min)^b (least squares in log10-log10 space)
+    fx = [lx[m] for m in ORDER]
+    fy = [math.log10(yv[m]) for m in ORDER]
+    nfit = len(ORDER)
+    mfx, mfy = sum(fx) / nfit, sum(fy) / nfit
+    b_exp = (sum((x - mfx) * (y - mfy) for x, y in zip(fx, fy))
+             / sum((x - mfx) ** 2 for x in fx))
+    a_int = mfy - b_exp * mfx
+    ss_tot = sum((y - mfy) ** 2 for y in fy)
+    ss_res = sum((y - (a_int + b_exp * x)) ** 2 for x, y in zip(fx, fy))
+    r2 = 1 - ss_res / ss_tot if ss_tot else 0.0
+    fit_pts = " ".join(
+        f"{xf(u):.1f},{yf(10 ** (a_int + b_exp * u)):.1f}"
+        for u in (min(fx) + (max(fx) - min(fx)) * i / 24 for i in range(25)))
+    s.append(f"<polyline points='{fit_pts}' fill='none' stroke='#888' "
+             f"stroke-width='1.6' stroke-dasharray='6 4'/>")
+    s.append(f"<text x='{pad_l+6}' y='{pad_t+13}' font-size='9.5' fill='#777'>"
+             f"best fit: SC &#8733; ($/min)<tspan baseline-shift='super' "
+             f"font-size='7'>{b_exp:.2f}</tspan> (R&#178;={r2:.2f})</text>")
+
+    for m in ORDER:
+        cx, cy, col = xf(lx[m]), yf(yv[m]), COLOR[m]
+        if ye[m] > 0:
+            s.append(f"<line x1='{cx:.1f}' y1='{yf(yv[m]-ye[m]):.1f}' x2='{cx:.1f}' "
+                     f"y2='{yf(yv[m]+ye[m]):.1f}' stroke='{col}' stroke-width='1.6'/>")
+            for yy in (yf(yv[m] - ye[m]), yf(yv[m] + ye[m])):
+                s.append(f"<line x1='{cx-5:.1f}' y1='{yy:.1f}' x2='{cx+5:.1f}' "
+                         f"y2='{yy:.1f}' stroke='{col}' stroke-width='1.6'/>")
+        s.append(f"<circle cx='{cx:.1f}' cy='{cy:.1f}' r='6' fill='{col}' "
+                 f"stroke='#222' stroke-width='1.4'/>")
+    lxleg = w - pad_r + 18
+    legend_models = list(reversed(ORDER))
+    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 13
+    for i, m in enumerate(legend_models):
+        ly = ly0 + i * 26
+        s.append(f"<circle cx='{lxleg+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
+                 f"stroke='#222' stroke-width='1.2'/>")
+        s.append(f"<text x='{lxleg+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
+                 f"{m} <tspan fill='#999'>${SPEND_PER_MIN[m]:.2f}/min</tspan></text>")
+    s.append("</svg>")
+    return "\n".join(s)
+
+
+# --- plots 9-10: outcome polarization (squeezed vs dominant) -----------------
 
 def plot_polarization(final_units: dict, plot_order: list, num: int,
                       order_label: str) -> str:
@@ -1211,6 +1307,17 @@ def build_index(data: dict) -> str:
         "trend. Read the x-axis as order-of-magnitude (and total, not active, "
         "params).</figcaption></figure>",
 
+        "<figure><object type='image/svg+xml' data='spend_frontier.svg'></object>",
+        "<figcaption><b>And against spend rate.</b> The same supply-center outcome "
+        "against each model's burn rate, dollars per minute of wall-clock in its "
+        "10-year self-play game (MiMo $0.05, Haiku $0.23, Sonnet $0.75, Opus $7.51, a "
+        "~145&times; span). Like size, spend rate is a property of the model rather "
+        "than the matchup, and unlike the speculative parameter counts it is measured "
+        "exactly. The points trend up the same way, best-fit power law SC &#8733; "
+        "($/min)<sup>0.11</sup> (R&#178;&asymp;0.79): faster-and-pricier buys centers, "
+        "but the shallow exponent says it buys them slowly, and Opus again sits above "
+        "the line.</figcaption></figure>",
+
         "<figure><object type='image/svg+xml' data='polarization.svg'></object>",
         "<figcaption><b>How each model's own nations end: squeezed vs dominant.</b> "
         "The fraction of a model's nations that finish squeezed (&le;3 units, circles) "
@@ -1268,12 +1375,13 @@ def main() -> int:
     (out / "offence_defence_means.svg").write_text(plot_od_means(data["od_points"]))
     (out / "cost_frontier.svg").write_text(plot_cost_frontier(data))
     (out / "param_frontier.svg").write_text(plot_param_frontier(data))
+    (out / "spend_frontier.svg").write_text(plot_spend_frontier(data["final"]))
     cost_order = list(reversed(ORDER))                       # MiMo, Haiku, Sonnet, Opus
     size_order = sorted(ORDER, key=lambda m: PARAMS_B[m][1])  # Haiku, MiMo, Sonnet, Opus
     (out / "polarization.svg").write_text(
-        plot_polarization(data["final_units"], cost_order, 8, "cost"))
+        plot_polarization(data["final_units"], cost_order, 9, "cost"))
     (out / "polarization_by_size.svg").write_text(
-        plot_polarization(data["final_units"], size_order, 9, "model size"))
+        plot_polarization(data["final_units"], size_order, 10, "model size"))
     (out / "index.html").write_text(build_index(data))
     # remove superseded artifacts
     for stale in ("offence_defence_bars.svg", "offence_defence.svg",
