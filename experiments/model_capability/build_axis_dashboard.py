@@ -105,13 +105,17 @@ def extract(games_dir: str) -> dict:
         units = ended["final_state"]["units"]
         total_sc = sum(len(centers.get(p, [])) for p in label)
         share = collections.Counter()
+        nseats = collections.Counter()
         for power, lbl in label.items():
             final[lbl].append(len(centers.get(power, [])))
             final_units[lbl].append(len(units.get(power, [])))
             share[lbl] += len(centers.get(power, []))
+            nseats[lbl] += 1
         if total_sc:
+            # per-nation share: divide each model's board share by its seat count
+            # (the Sonnet field holds four seats) so the bars are comparable
             for lbl in set(label.values()):
-                board_share[lbl].append(share[lbl] / total_sc)
+                board_share[lbl].append((share[lbl] / total_sc) / nseats[lbl])
 
         # trajectory: year-0 baseline + each winter-adjustment snapshot
         for power, lbl in label.items():
@@ -983,7 +987,7 @@ def plot_board_share(board_share: dict) -> str:
     pad_l, pad_b, pad_t = 56, 56, 44
     plot_order = list(reversed(ORDER))  # MiMo, Haiku, Sonnet, Opus
     means = {m: statistics.mean(board_share[m]) * 100 for m in ORDER}
-    y1 = max(20.0, math.ceil((max(means.values()) + 5) / 10) * 10)
+    y1 = max(15.0, math.ceil((max(means.values()) + 2) / 5) * 5)
     plot_h = h - pad_b - pad_t
 
     def yf(v):
@@ -992,9 +996,9 @@ def plot_board_share(board_share: dict) -> str:
     slot = (w - pad_l - 20) / len(ORDER)
     cols = [pad_l + slot * (i + 0.5) for i in range(len(ORDER))]
     bw = min(84, slot * 0.5)
-    s = _svg_open(w, h, "8. Share of the board each model controls")
+    s = _svg_open(w, h, "8. Mean share of the board controlled, per nation")
 
-    for v in range(0, int(y1) + 1, 10):
+    for v in range(0, int(y1) + 1, 5):
         yy = yf(v)
         s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-20}' y2='{yy:.1f}' "
                  f"stroke='#eee' stroke-width='1'/>")
@@ -1002,7 +1006,7 @@ def plot_board_share(board_share: dict) -> str:
                  f"font-size='10' fill='#999'>{v}%</text>")
     s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
-             f"text-anchor='middle'>mean % of controlled centers</text>")
+             f"text-anchor='middle'>mean % of board per nation</text>")
 
     for col, m in zip(cols, plot_order):
         vals = [v * 100 for v in board_share[m]]
@@ -1043,9 +1047,10 @@ def plot_polarization(final_units: dict) -> str:
         v = final_units[m]
         return sum(1 for u in v if ok(u)) / len(v) if v else 0.0
 
-    weak = {m: rate(m, lambda u: u <= 2) for m in ORDER}
-    dom = {m: rate(m, lambda u: u >= 8) for m in ORDER}
-    y1 = max(0.4, (math.ceil(max(max(weak.values()), max(dom.values())) * 10) + 1) / 10)
+    weak = {m: rate(m, lambda u: u <= 3) for m in ORDER}
+    dom = {m: rate(m, lambda u: u >= 7) for m in ORDER}
+    maxv = max(max(weak.values()), max(dom.values()))
+    y1 = max(0.5, math.ceil((maxv + 0.05) * 10) / 10)
     plot_h = h - pad_b - pad_t
 
     def yf(v):
@@ -1066,28 +1071,27 @@ def plot_polarization(final_units: dict) -> str:
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>fraction of this model's nations</text>")
 
-    series = [("squeezed (≤2 units)", weak, "#c0392b"),
-              ("dominant (≥8 units)", dom, "#2c3e50")]
+    # two series, told apart by the line they sit on; dots are colored by model
+    series = [("squeezed (≤3 units)", weak, "#c0392b"),
+              ("dominant (≥7 units)", dom, "#2c3e50")]
     for _, dat, col in series:
         pts = " ".join(f"{x:.1f},{yf(dat[m]):.1f}" for x, m in zip(xs, plot_order))
         s.append(f"<polyline points='{pts}' fill='none' stroke='{col}' "
-                 f"stroke-width='1.8' stroke-opacity='0.45'/>")
+                 f"stroke-width='2' stroke-opacity='0.55'/>")
     for _, dat, col in series:
         for x, m in zip(xs, plot_order):
-            s.append(f"<circle cx='{x:.1f}' cy='{yf(dat[m]):.1f}' r='6' fill='{col}' "
-                     f"stroke='#222' stroke-width='1.2'/>")
-            s.append(f"<text x='{x:.1f}' y='{yf(dat[m])-10:.1f}' text-anchor='middle' "
-                     f"font-size='11' font-weight='600' fill='{col}'>{dat[m]:.2f}</text>")
+            s.append(f"<circle cx='{x:.1f}' cy='{yf(dat[m]):.1f}' r='6.5' "
+                     f"fill='{COLOR[m]}' stroke='#222' stroke-width='1.3'/>")
     for x, m in zip(xs, plot_order):
         s.append(f"<text x='{x:.0f}' y='{h-44}' text-anchor='middle' font-size='12' "
                  f"font-weight='600' fill='{COLOR[m]}'>{m}</text>")
 
-    lx = w / 2 - 130
+    lx = w / 2 - 135
     for i, (name, _, col) in enumerate(series):
-        cx = lx + i * 200
-        s.append(f"<circle cx='{cx+6}' cy='{h-18}' r='6' fill='{col}' "
-                 f"stroke='#222' stroke-width='1.2'/>")
-        s.append(f"<text x='{cx+18}' y='{h-14}' font-size='11.5' fill='#444'>{name}</text>")
+        cx = lx + i * 210
+        s.append(f"<line x1='{cx}' y1='{h-18}' x2='{cx+22}' y2='{h-18}' "
+                 f"stroke='{col}' stroke-width='3.5'/>")
+        s.append(f"<text x='{cx+30}' y='{h-14}' font-size='11.5' fill='#444'>{name}</text>")
     s.append("</svg>")
     return "\n".join(s)
 
@@ -1236,23 +1240,23 @@ def build_index(data: dict) -> str:
         "params).</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='board_share.svg'></object>",
-        "<figcaption><b>Share of the board each model controls.</b> Of all the "
-        "supply centers held at game end, the mean fraction controlled by each "
-        "model's seats. Sonnet plays four of the seven seats, so it naturally holds "
-        "the majority (~58%); among the single-seat challengers the ranking matches "
-        "the leaderboard, Opus commands the largest slice (~19%), then MiMo (~12%) "
-        "and Haiku (~11%). Bars are means with 1&sigma; standard-error "
-        "whiskers.</figcaption></figure>",
+        "<figcaption><b>Share of the board controlled, per nation.</b> Of all the "
+        "supply centers held at game end, the mean fraction one nation of each model "
+        "controls, dividing the Sonnet field's share across its four seats so the "
+        "bars are comparable. It tracks the leaderboard: an Opus nation typically "
+        "holds ~19% of the contested board, Sonnet ~14%, MiMo ~12%, Haiku ~11%. Bars "
+        "are means with 1&sigma; standard-error whiskers.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='polarization.svg'></object>",
         "<figcaption><b>How each model's own nations end: squeezed vs dominant.</b> "
-        "The fraction of a model's nations that finish crushed (&le;2 units) versus "
-        "the fraction that finish dominant (&ge;8 units). The two series fan apart by "
-        "capability: Opus never ends squeezed and is dominant in 29% of its games, "
-        "the budget models are the mirror, often squeezed and never dominant, and "
-        "Sonnet sits between. No nation was eliminated outright in any of the seven "
-        "ten-year games (the no-solo, no-death pattern holds), so &le;2 units is the "
-        "closest the rotation comes to a death count.</figcaption></figure>",
+        "The fraction of a model's nations that finish squeezed (&le;3 units) versus "
+        "the fraction that finish dominant (&ge;7 units); dots are colored by model, "
+        "and each series rides its own line. The two fan apart by capability: Opus "
+        "never ends squeezed and is dominant in 43% of its games, the budget models "
+        "are the mirror, often squeezed and never dominant, and Sonnet sits balanced "
+        "between. No nation was eliminated outright in any of the seven ten-year "
+        "games (the no-solo, no-death pattern holds), so &le;3 units is the closest "
+        "the rotation comes to a death count.</figcaption></figure>",
 
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
