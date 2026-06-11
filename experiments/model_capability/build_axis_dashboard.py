@@ -86,7 +86,6 @@ def extract(games_dir: str) -> dict:
 
     final = {m: [] for m in ORDER}                       # final SC per power-game
     final_units = {m: [] for m in ORDER}                 # final unit count per power-game
-    board_share = {m: [] for m in ORDER}                 # per game: share of controlled SCs
     traj = collections.defaultdict(lambda: collections.defaultdict(list))  # yr->model->[sc]
     raw = collections.defaultdict(collections.Counter)   # model->counters
     od_points = {m: [] for m in ORDER}                   # model->[(offence, defence)] finals
@@ -103,19 +102,9 @@ def extract(games_dir: str) -> dict:
             tokens[raw_m].update(tk)
         centers = ended["final_state"]["centers"]
         units = ended["final_state"]["units"]
-        total_sc = sum(len(centers.get(p, [])) for p in label)
-        share = collections.Counter()
-        nseats = collections.Counter()
         for power, lbl in label.items():
             final[lbl].append(len(centers.get(power, [])))
             final_units[lbl].append(len(units.get(power, [])))
-            share[lbl] += len(centers.get(power, []))
-            nseats[lbl] += 1
-        if total_sc:
-            # per-nation share: divide each model's board share by its seat count
-            # (the Sonnet field holds four seats) so the bars are comparable
-            for lbl in set(label.values()):
-                board_share[lbl].append((share[lbl] / total_sc) / nseats[lbl])
 
         # trajectory: year-0 baseline + each winter-adjustment snapshot
         for power, lbl in label.items():
@@ -146,7 +135,7 @@ def extract(games_dir: str) -> dict:
         if lbl and raw[lbl]["nations"]:
             cost_per_nation[lbl] = _estimate_cost({raw_m: dict(bucket)}) / raw[lbl]["nations"]
 
-    return {"final": final, "final_units": final_units, "board_share": board_share,
+    return {"final": final, "final_units": final_units,
             "traj": traj, "raw": raw, "od_points": od_points,
             "cost_per_nation": cost_per_nation, "n_games": len(paths)}
 
@@ -977,71 +966,16 @@ def plot_param_frontier(data: dict) -> str:
     return "\n".join(s)
 
 
-# --- plot 8: share of board controlled ---------------------------------------
-
-def plot_board_share(board_share: dict) -> str:
-    """Mean share of the board's controlled supply centers held by each model,
-    aggregated over its seats (the Sonnet field holds four seats, so it naturally
-    controls the majority)."""
-    w, h = 760, 360
-    pad_l, pad_b, pad_t = 56, 56, 44
-    plot_order = list(reversed(ORDER))  # MiMo, Haiku, Sonnet, Opus
-    means = {m: statistics.mean(board_share[m]) * 100 for m in ORDER}
-    y1 = max(15.0, math.ceil((max(means.values()) + 2) / 5) * 5)
-    plot_h = h - pad_b - pad_t
-
-    def yf(v):
-        return pad_t + plot_h * (1 - v / y1)
-
-    slot = (w - pad_l - 20) / len(ORDER)
-    cols = [pad_l + slot * (i + 0.5) for i in range(len(ORDER))]
-    bw = min(84, slot * 0.5)
-    s = _svg_open(w, h, "8. Mean share of the board controlled, per nation")
-
-    for v in range(0, int(y1) + 1, 5):
-        yy = yf(v)
-        s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-20}' y2='{yy:.1f}' "
-                 f"stroke='#eee' stroke-width='1'/>")
-        s.append(f"<text x='{pad_l-8}' y='{yy+3:.1f}' text-anchor='end' "
-                 f"font-size='10' fill='#999'>{v}%</text>")
-    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
-             f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
-             f"text-anchor='middle'>mean % of board per nation</text>")
-
-    for col, m in zip(cols, plot_order):
-        vals = [v * 100 for v in board_share[m]]
-        mean = statistics.mean(vals)
-        sem = statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
-        ym = yf(mean)
-        s.append(f"<rect x='{col-bw/2:.1f}' y='{ym:.1f}' width='{bw}' "
-                 f"height='{yf(0)-ym:.1f}' rx='2' fill='{COLOR[m]}' "
-                 f"fill-opacity='0.85'/>")
-        y_hi, y_lo = yf(mean + sem), yf(mean - sem)
-        s.append(f"<line x1='{col:.1f}' y1='{y_hi:.1f}' x2='{col:.1f}' "
-                 f"y2='{y_lo:.1f}' stroke='#222' stroke-width='1.4'/>")
-        for yy in (y_hi, y_lo):
-            s.append(f"<line x1='{col-9:.1f}' y1='{yy:.1f}' x2='{col+9:.1f}' "
-                     f"y2='{yy:.1f}' stroke='#222' stroke-width='1.4'/>")
-        s.append(f"<text x='{col:.0f}' y='{y_hi-7:.1f}' text-anchor='middle' "
-                 f"font-size='12' font-weight='600' fill='{COLOR[m]}'>{mean:.0f}%</text>")
-        s.append(f"<text x='{col:.0f}' y='{h-28}' text-anchor='middle' "
-                 f"font-size='12' font-weight='600' fill='{COLOR[m]}'>{m}</text>")
-        seats = "4 seats" if m == "Sonnet" else "1 seat"
-        s.append(f"<text x='{col:.0f}' y='{h-14}' text-anchor='middle' "
-                 f"font-size='9.5' fill='#999'>({seats}/game)</text>")
-    s.append("</svg>")
-    return "\n".join(s)
-
-
 # --- plot 9: outcome polarization (squeezed vs dominant) ---------------------
 
-def plot_polarization(final_units: dict) -> str:
+def plot_polarization(final_units: dict, plot_order: list, num: int,
+                      order_label: str) -> str:
     """How each model's own nations end: a connected scatter of the fraction
     squeezed to <=3 units (circles) versus the fraction grown to >=6 units
-    (squares), one point per model, two overplotted series colored by model."""
+    (squares), one point per model, two overplotted series colored by model.
+    plot_order sets the left-to-right model order (e.g. by cost or by size)."""
     w, h = 760, 360
     pad_l, pad_b, pad_t, pad_r = 56, 50, 44, 170
-    plot_order = list(reversed(ORDER))  # MiMo, Haiku, Sonnet, Opus
 
     def rate(m, ok):
         v = final_units[m]
@@ -1058,7 +992,7 @@ def plot_polarization(final_units: dict) -> str:
 
     slot = (w - pad_l - pad_r) / len(ORDER)
     xs = [pad_l + slot * (i + 0.5) for i in range(len(ORDER))]
-    s = _svg_open(w, h, "9. How each model's own nations end: squeezed vs dominant")
+    s = _svg_open(w, h, f"{num}. Squeezed vs dominant nations, ordered by {order_label}")
 
     for i in range(0, int(round(y1 * 10)) + 1):
         v = i / 10
@@ -1252,24 +1186,27 @@ def build_index(data: dict) -> str:
         "~10&times;. Read the x-axis as order-of-magnitude (and total, not active, "
         "params).</figcaption></figure>",
 
-        "<figure><object type='image/svg+xml' data='board_share.svg'></object>",
-        "<figcaption><b>Share of the board controlled, per nation.</b> Of all the "
-        "supply centers held at game end, the mean fraction one nation of each model "
-        "controls, dividing the Sonnet field's share across its four seats so the "
-        "bars are comparable. It tracks the leaderboard: an Opus nation typically "
-        "holds ~19% of the contested board, Sonnet ~14%, MiMo ~12%, Haiku ~11%. Bars "
-        "are means with 1&sigma; standard-error whiskers.</figcaption></figure>",
-
         "<figure><object type='image/svg+xml' data='polarization.svg'></object>",
         "<figcaption><b>How each model's own nations end: squeezed vs dominant.</b> "
         "The fraction of a model's nations that finish squeezed (&le;3 units, circles) "
-        "versus dominant (&ge;6 units, squares); dots are colored by model, and each "
-        "series rides its own line. The two fan apart by capability: Opus never ends "
-        "squeezed and is dominant in 71% of its games; Haiku is the opposite, often "
-        "squeezed and never dominant; MiMo swings to both extremes; Sonnet sits "
-        "balanced between. No nation was eliminated outright in any of the seven "
-        "ten-year games (the no-solo, no-death pattern holds), so &le;3 units is the "
-        "closest the rotation comes to a death count.</figcaption></figure>",
+        "versus dominant (&ge;6 units, squares); dots are colored by model, each series "
+        "rides its own line, and the models run left to right by cost. The two fan "
+        "apart by capability: Opus never ends squeezed and is dominant in 71% of its "
+        "games; Haiku is the opposite, often squeezed and never dominant; MiMo swings "
+        "to both extremes; Sonnet sits balanced between. No nation was eliminated "
+        "outright in any of the seven ten-year games (the no-solo, no-death pattern "
+        "holds), so &le;3 units is the closest the rotation comes to a death "
+        "count.</figcaption></figure>",
+
+        "<figure><object type='image/svg+xml' data='polarization_by_size.svg'></object>",
+        "<figcaption><b>The same, ordered by model size.</b> Identical data, but the "
+        "models now run left to right by estimated parameter count (Haiku ~20B, MiMo "
+        "311B, Sonnet ~1&ndash;2T, Opus ~1.5&ndash;5T) rather than by price. Reordered "
+        "this way the dominant series climbs monotonically with scale, 0% (Haiku) "
+        "&rarr; 29% (MiMo) &rarr; 39% (Sonnet) &rarr; 71% (Opus), the clearest "
+        "statement in the study that board dominance tracks raw capacity, not cost "
+        "(MiMo is far cheaper than Haiku yet larger, and it dominates more "
+        "often).</figcaption></figure>",
 
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
@@ -1306,12 +1243,17 @@ def main() -> int:
     (out / "offence_defence_means.svg").write_text(plot_od_means(data["od_points"]))
     (out / "cost_frontier.svg").write_text(plot_cost_frontier(data))
     (out / "param_frontier.svg").write_text(plot_param_frontier(data))
-    (out / "board_share.svg").write_text(plot_board_share(data["board_share"]))
-    (out / "polarization.svg").write_text(plot_polarization(data["final_units"]))
+    cost_order = list(reversed(ORDER))                       # MiMo, Haiku, Sonnet, Opus
+    size_order = sorted(ORDER, key=lambda m: PARAMS_B[m][1])  # Haiku, MiMo, Sonnet, Opus
+    (out / "polarization.svg").write_text(
+        plot_polarization(data["final_units"], cost_order, 8, "cost"))
+    (out / "polarization_by_size.svg").write_text(
+        plot_polarization(data["final_units"], size_order, 9, "model size"))
     (out / "index.html").write_text(build_index(data))
     # remove superseded artifacts
     for stale in ("offence_defence_bars.svg", "offence_defence.svg",
-                  "offence_defence_paths.svg"):
+                  "offence_defence_paths.svg", "board_share.svg",
+                  "province_share.svg"):
         (out / stale).unlink(missing_ok=True)
 
     print(f"wrote dashboard to {out}/ ({data['n_games']} games)")
