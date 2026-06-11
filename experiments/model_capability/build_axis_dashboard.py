@@ -1037,10 +1037,10 @@ def plot_board_share(board_share: dict) -> str:
 
 def plot_polarization(final_units: dict) -> str:
     """How each model's own nations end: a connected scatter of the fraction
-    squeezed to <=2 units versus the fraction grown to >=8 units, one point per
-    model, two overplotted series."""
-    w, h = 760, 380
-    pad_l, pad_b, pad_t = 56, 74, 44
+    squeezed to <=3 units (circles) versus the fraction grown to >=6 units
+    (squares), one point per model, two overplotted series colored by model."""
+    w, h = 760, 360
+    pad_l, pad_b, pad_t, pad_r = 56, 50, 44, 170
     plot_order = list(reversed(ORDER))  # MiMo, Haiku, Sonnet, Opus
 
     def rate(m, ok):
@@ -1048,7 +1048,7 @@ def plot_polarization(final_units: dict) -> str:
         return sum(1 for u in v if ok(u)) / len(v) if v else 0.0
 
     weak = {m: rate(m, lambda u: u <= 3) for m in ORDER}
-    dom = {m: rate(m, lambda u: u >= 7) for m in ORDER}
+    dom = {m: rate(m, lambda u: u >= 6) for m in ORDER}
     maxv = max(max(weak.values()), max(dom.values()))
     y1 = max(0.5, math.ceil((maxv + 0.05) * 10) / 10)
     plot_h = h - pad_b - pad_t
@@ -1056,14 +1056,14 @@ def plot_polarization(final_units: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - v / y1)
 
-    slot = (w - pad_l - 20) / len(ORDER)
+    slot = (w - pad_l - pad_r) / len(ORDER)
     xs = [pad_l + slot * (i + 0.5) for i in range(len(ORDER))]
     s = _svg_open(w, h, "9. How each model's own nations end: squeezed vs dominant")
 
     for i in range(0, int(round(y1 * 10)) + 1):
         v = i / 10
         yy = yf(v)
-        s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-20}' y2='{yy:.1f}' "
+        s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-pad_r}' y2='{yy:.1f}' "
                  f"stroke='#eee' stroke-width='1'/>")
         s.append(f"<text x='{pad_l-8}' y='{yy+3:.1f}' text-anchor='end' "
                  f"font-size='10' fill='#999'>{v:.1f}</text>")
@@ -1071,27 +1071,40 @@ def plot_polarization(final_units: dict) -> str:
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>fraction of this model's nations</text>")
 
-    # two series, told apart by the line they sit on; dots are colored by model
-    series = [("squeezed (≤3 units)", weak, "#c0392b"),
-              ("dominant (≥7 units)", dom, "#2c3e50")]
-    for _, dat, col in series:
+    # dots colored by model; squeezed = circle on the red line, dominant = square
+    # on the slate line
+    SQ, DOM = "#c0392b", "#2c3e50"
+    for dat, col in ((weak, SQ), (dom, DOM)):
         pts = " ".join(f"{x:.1f},{yf(dat[m]):.1f}" for x, m in zip(xs, plot_order))
         s.append(f"<polyline points='{pts}' fill='none' stroke='{col}' "
                  f"stroke-width='2' stroke-opacity='0.55'/>")
-    for _, dat, col in series:
-        for x, m in zip(xs, plot_order):
-            s.append(f"<circle cx='{x:.1f}' cy='{yf(dat[m]):.1f}' r='6.5' "
-                     f"fill='{COLOR[m]}' stroke='#222' stroke-width='1.3'/>")
+    for x, m in zip(xs, plot_order):  # squeezed: circle
+        s.append(f"<circle cx='{x:.1f}' cy='{yf(weak[m]):.1f}' r='6.5' "
+                 f"fill='{COLOR[m]}' stroke='#222' stroke-width='1.3'/>")
+    for x, m in zip(xs, plot_order):  # dominant: square
+        cy, r = yf(dom[m]), 6
+        s.append(f"<rect x='{x-r:.1f}' y='{cy-r:.1f}' width='{2*r}' height='{2*r}' "
+                 f"fill='{COLOR[m]}' stroke='#222' stroke-width='1.3'/>")
     for x, m in zip(xs, plot_order):
-        s.append(f"<text x='{x:.0f}' y='{h-44}' text-anchor='middle' font-size='12' "
+        s.append(f"<text x='{x:.0f}' y='{h-26}' text-anchor='middle' font-size='12' "
                  f"font-weight='600' fill='{COLOR[m]}'>{m}</text>")
 
-    lx = w / 2 - 135
-    for i, (name, _, col) in enumerate(series):
-        cx = lx + i * 210
-        s.append(f"<line x1='{cx}' y1='{h-18}' x2='{cx+22}' y2='{h-18}' "
-                 f"stroke='{col}' stroke-width='3.5'/>")
-        s.append(f"<text x='{cx+30}' y='{h-14}' font-size='11.5' fill='#444'>{name}</text>")
+    # legend at right: line color marks the series, marker shape echoes the plot
+    lx = w - pad_r + 18
+    ly0 = pad_t + plot_h / 2 - 15
+    s.append(f"<line x1='{lx}' y1='{ly0}' x2='{lx+24}' y2='{ly0}' stroke='{SQ}' "
+             f"stroke-width='2.5'/>")
+    s.append(f"<circle cx='{lx+12}' cy='{ly0}' r='6' fill='#888' stroke='#222' "
+             f"stroke-width='1.2'/>")
+    s.append(f"<text x='{lx+34}' y='{ly0+4}' font-size='11' fill='#444'>"
+             f"squeezed (≤3 units)</text>")
+    ly1 = ly0 + 30
+    s.append(f"<line x1='{lx}' y1='{ly1}' x2='{lx+24}' y2='{ly1}' stroke='{DOM}' "
+             f"stroke-width='2.5'/>")
+    s.append(f"<rect x='{lx+6}' y='{ly1-6}' width='12' height='12' fill='#888' "
+             f"stroke='#222' stroke-width='1.2'/>")
+    s.append(f"<text x='{lx+34}' y='{ly1+4}' font-size='11' fill='#444'>"
+             f"dominant (≥6 units)</text>")
     s.append("</svg>")
     return "\n".join(s)
 
@@ -1249,14 +1262,14 @@ def build_index(data: dict) -> str:
 
         "<figure><object type='image/svg+xml' data='polarization.svg'></object>",
         "<figcaption><b>How each model's own nations end: squeezed vs dominant.</b> "
-        "The fraction of a model's nations that finish squeezed (&le;3 units) versus "
-        "the fraction that finish dominant (&ge;7 units); dots are colored by model, "
-        "and each series rides its own line. The two fan apart by capability: Opus "
-        "never ends squeezed and is dominant in 43% of its games, the budget models "
-        "are the mirror, often squeezed and never dominant, and Sonnet sits balanced "
-        "between. No nation was eliminated outright in any of the seven ten-year "
-        "games (the no-solo, no-death pattern holds), so &le;3 units is the closest "
-        "the rotation comes to a death count.</figcaption></figure>",
+        "The fraction of a model's nations that finish squeezed (&le;3 units, circles) "
+        "versus dominant (&ge;6 units, squares); dots are colored by model, and each "
+        "series rides its own line. The two fan apart by capability: Opus never ends "
+        "squeezed and is dominant in 71% of its games; Haiku is the opposite, often "
+        "squeezed and never dominant; MiMo swings to both extremes; Sonnet sits "
+        "balanced between. No nation was eliminated outright in any of the seven "
+        "ten-year games (the no-solo, no-death pattern holds), so &le;3 units is the "
+        "closest the rotation comes to a death count.</figcaption></figure>",
 
         "<h2 style='font-size:17px;margin:36px 0 4px'>Per-model KPIs</h2>",
         "<p class='sub' style='margin:0 0 8px'>Every metric is normalised per nation "
