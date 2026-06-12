@@ -98,7 +98,7 @@ Three patterns recur across all four games, regardless of model family or price:
   than misfire.
 - **The self-bounce paradox.** Counterintuitively the cheapest model is the
   spatially cleanest (MiMo, 0 self-bounces) and the frontier model the messiest
-  (Opus, 16); Haiku, also low-ambition, jams itself just 4 times. Self-bounces
+  (Opus, 16) while the low-ambition Haiku jams itself just 4 times. Self-bounces
   track ambition and plan complexity (how many units you actively rotate), not raw
   capability; MiMo stays clean partly because it attempts less.
 
