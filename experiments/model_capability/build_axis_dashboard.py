@@ -433,7 +433,7 @@ def _fit_legend(s: list, lx: float, y: float, xlabel: str, b: float, r2: float):
     s.append(f"<text x='{lx+26}' y='{y+4}' font-size='10' fill='#555'>"
              f"SC &#8733; {xlabel}<tspan baseline-shift='super' font-size='7'>"
              f"{b:.2f}</tspan></text>")
-    s.append(f"<text x='{lx+26}' y='{y+19}' font-size='10' fill='#777'>"
+    s.append(f"<text x='{lx+26}' y='{y+19}' font-size='12' fill='#444'>"
              f"R&#178; = {r2:.2f}</text>")
 
 
@@ -479,8 +479,8 @@ def plot_final(final: dict) -> str:
         s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-20}' y2='{yy:.1f}' "
                  f"stroke='#eee' stroke-width='1'/>")
         s.append(f"<text x='{pad_l-8}' y='{yy+3:.1f}' text-anchor='end' "
-                 f"font-size='10' fill='#999'>{v}</text>")
-    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+                 f"font-size='11.5' fill='#555'>{v}</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='12' fill='#444' "
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>supply centers at game end</text>")
 
@@ -530,7 +530,7 @@ def plot_trajectory(traj: dict) -> str:
              for yr in years for m in ORDER)
     y0 = math.floor((lo - 0.15) * 2) / 2
     y1 = math.ceil((hi + 0.15) * 2) / 2
-    ystep = 0.5 if (y1 - y0) <= 3 else 1.0
+    ystep = 0.5
 
     def xf(yr):
         return pad_l + plot_w * (years.index(yr) / (len(years) - 1))
@@ -546,14 +546,14 @@ def plot_trajectory(traj: dict) -> str:
         s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-pad_r}' y2='{yy:.1f}' "
                  f"stroke='#eee' stroke-width='1'/>")
         s.append(f"<text x='{pad_l-8}' y='{yy+3:.1f}' text-anchor='end' "
-                 f"font-size='10' fill='#999'>{v:.1f}</text>")
+                 f"font-size='11.5' fill='#555'>{v:.1f}</text>")
         v += ystep
     # x ticks
     for yr in years:
         lbl = "start" if yr == 1900 else str(yr)
         s.append(f"<text x='{xf(yr):.1f}' y='{h-pad_b+18:.0f}' text-anchor='middle' "
-                 f"font-size='10' fill='#999'>{lbl}</text>")
-    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+                 f"font-size='11.5' fill='#555'>{lbl}</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='12' fill='#444' "
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>mean supply centers</text>")
 
@@ -611,7 +611,7 @@ def plot_threshold_trajectories(traj: dict) -> str:
         return pad_t + plot_h * (1 - v)            # v is a fraction in [0, 1]
 
     s = _svg_open(w, h, "3. Dominant and squeezed games over time")
-    s.append(f"<text x='14' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+    s.append(f"<text x='14' y='{pad_t+plot_h/2:.0f}' font-size='12' fill='#444' "
              f"transform='rotate(-90 14 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>fraction of this model's games</text>")
 
@@ -621,17 +621,19 @@ def plot_threshold_trajectories(traj: dict) -> str:
         s.append(f"<text x='{ox+pad_l+plot_w/2:.0f}' y='{pad_t-16}' "
                  f"text-anchor='middle' font-size='12' font-weight='600' "
                  f"fill='#333'>{ptitle}</text>")
-        for gy in (0.0, 0.25, 0.5, 0.75, 1.0):
+        for i in range(11):                            # gridlines every 0.1
+            gy = i / 10
             yy = yf(gy)
             s.append(f"<line x1='{ox+pad_l}' y1='{yy:.1f}' x2='{ox+pad_l+plot_w}' "
                      f"y2='{yy:.1f}' stroke='#eee' stroke-width='1'/>")
-            s.append(f"<text x='{ox+pad_l-7}' y='{yy+3:.1f}' text-anchor='end' "
-                     f"font-size='9' fill='#999'>{gy:.2f}</text>")
+            if i % 2 == 0:                             # labels every 0.2
+                s.append(f"<text x='{ox+pad_l-7}' y='{yy+3:.1f}' text-anchor='end' "
+                         f"font-size='11.5' fill='#555'>{gy:.1f}</text>")
         for yr in years:
             if yr % 2 == 0:
                 lbl = "start" if yr == 1900 else str(yr)
                 s.append(f"<text x='{xf(ox, yr):.1f}' y='{pad_t+plot_h+16:.0f}' "
-                         f"text-anchor='middle' font-size='9' fill='#999'>{lbl}</text>")
+                         f"text-anchor='middle' font-size='11.5' fill='#555'>{lbl}</text>")
         for m in ORDER:
             pts = []
             for yr in years:
@@ -820,13 +822,13 @@ def plot_od_means(od_points: dict) -> str:
              f"y2='{pad_t+plot_h}' stroke='#bbb' stroke-width='0.8'/>")
     for v in range(math.ceil(x0), int(x1) + 1):
         s.append(f"<text x='{xf(v):.1f}' y='{pad_t+plot_h+16:.0f}' text-anchor='middle' "
-                 f"font-size='9' fill='#999'>{v}</text>")
+                 f"font-size='11.5' fill='#555'>{v}</text>")
     for v in range(math.ceil(y0), int(y1) + 1):
         s.append(f"<text x='{pad_l-7}' y='{yf(v)+3:.1f}' text-anchor='end' "
-                 f"font-size='9' fill='#999'>{v}</text>")
+                 f"font-size='11.5' fill='#555'>{v}</text>")
     s.append(f"<text x='{pad_l+plot_w/2:.0f}' y='{h-6}' text-anchor='middle' "
-             f"font-size='10' fill='#777'>Defence score per nation</text>")
-    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+             f"font-size='12' fill='#444'>Defence score per nation</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='12' fill='#444' "
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>Offence score per nation</text>")
     for m in ORDER:
@@ -940,7 +942,7 @@ def plot_cost_frontier(data: dict) -> str:
                 s.append(f"<line x1='{xf(ox,lv):.1f}' y1='{base}' "
                          f"x2='{xf(ox,lv):.1f}' y2='{base+3}' stroke='#bbb'/>")
                 s.append(f"<text x='{xf(ox,lv):.1f}' y='{base+15:.0f}' "
-                         f"text-anchor='middle' font-size='9' fill='#999'>{lbl}</text>")
+                         f"text-anchor='middle' font-size='11.5' fill='#555'>{lbl}</text>")
         s.append(f"<text x='{ox+pad_l+plot_w/2:.0f}' y='{base+32:.0f}' "
                  f"text-anchor='middle' font-size='9.5' fill='#888'>"
                  f"cost / nation-game</text>")
@@ -1018,13 +1020,13 @@ def plot_param_frontier(data: dict) -> str:
             s.append(f"<line x1='{xf(lv):.1f}' y1='{pad_t+plot_h}' x2='{xf(lv):.1f}' "
                      f"y2='{pad_t+plot_h+3}' stroke='#bbb'/>")
             s.append(f"<text x='{xf(lv):.1f}' y='{pad_t+plot_h+16:.0f}' "
-                     f"text-anchor='middle' font-size='9' fill='#999'>{lbl}</text>")
+                     f"text-anchor='middle' font-size='11.5' fill='#555'>{lbl}</text>")
     for v in range(math.ceil(y0), int(y1) + 1):
         s.append(f"<text x='{pad_l-7}' y='{yf(v)+3:.1f}' text-anchor='end' "
-                 f"font-size='9' fill='#999'>{v}</text>")
+                 f"font-size='11.5' fill='#555'>{v}</text>")
     s.append(f"<text x='{pad_l+plot_w/2:.0f}' y='{h-6}' text-anchor='middle' "
-             f"font-size='10' fill='#777'>total parameters (log, speculative)</text>")
-    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+             f"font-size='12' fill='#444'>total parameters (log, speculative)</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='12' fill='#444' "
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>supply centers / nation</text>")
 
@@ -1116,13 +1118,13 @@ def plot_spend_frontier(final: dict) -> str:
             s.append(f"<line x1='{xf(lv):.1f}' y1='{pad_t+plot_h}' x2='{xf(lv):.1f}' "
                      f"y2='{pad_t+plot_h+3}' stroke='#bbb'/>")
             s.append(f"<text x='{xf(lv):.1f}' y='{pad_t+plot_h+16:.0f}' "
-                     f"text-anchor='middle' font-size='9' fill='#999'>{lbl}</text>")
+                     f"text-anchor='middle' font-size='11.5' fill='#555'>{lbl}</text>")
     for v in range(math.ceil(y0), int(y1) + 1):
         s.append(f"<text x='{pad_l-7}' y='{yf(v)+3:.1f}' text-anchor='end' "
-                 f"font-size='9' fill='#999'>{v}</text>")
+                 f"font-size='11.5' fill='#555'>{v}</text>")
     s.append(f"<text x='{pad_l+plot_w/2:.0f}' y='{h-6}' text-anchor='middle' "
-             f"font-size='10' fill='#777'>spend rate (dollars / minute, log)</text>")
-    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+             f"font-size='12' fill='#444'>spend rate (dollars / minute, log)</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='12' fill='#444' "
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>supply centers / nation</text>")
 
@@ -1202,8 +1204,8 @@ def plot_polarization(final_units: dict, plot_order: list, num: int,
         s.append(f"<line x1='{pad_l}' y1='{yy:.1f}' x2='{w-pad_r}' y2='{yy:.1f}' "
                  f"stroke='#eee' stroke-width='1'/>")
         s.append(f"<text x='{pad_l-8}' y='{yy+3:.1f}' text-anchor='end' "
-                 f"font-size='10' fill='#999'>{v:.1f}</text>")
-    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+                 f"font-size='11.5' fill='#555'>{v:.1f}</text>")
+    s.append(f"<text x='16' y='{pad_t+plot_h/2:.0f}' font-size='12' fill='#444' "
              f"transform='rotate(-90 16 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>fraction of this model's nations</text>")
 
