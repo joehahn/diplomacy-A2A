@@ -536,7 +536,7 @@ def plot_trajectory(traj: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "LLM mean supply centers over time")
+    s = _svg_open(w, h, "Each LLM's Supply Center (SC) count versus time")
     # y grid: lines every 0.25, labels every ystep (0.5)
     v = y0
     while v <= y1 + 1e-9:

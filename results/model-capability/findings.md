@@ -223,22 +223,22 @@ sub-second; it globs `results/model-capability/*/transcript.jsonl`:
 ## Quantifying LLM gameplay abilities
 
 We analyze seven ten-year games played by four LLMs, from budget to frontier
-(MiMo, Haiku, Sonnet, and Opus), to quantify each model's aggregate successes and
-failures. The figures here are a few highlights from the [full
-dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html),
-which contains many more plots.
+(MiMo, Haiku, Sonnet, and Opus), to quantify each model's aggregated successes and
+failures. The figures here are a few highlights; the [full
+dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)
+contains many more diagnostic plots.
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
-*The four models climb out of the opening together and stay tangled until about
-1905, when Opus diverges upward while the budget models stay locked at the
-bottom.*
+Mean number of supply centers (SC) held by each LLM. Opus pulls ahead and stays
+ahead from 1905, while the remaining LLMs trail in order of their mental capacity
+(published or estimated parameter size).
 
 ![Dominant and squeezed games over time](dashboard/threshold_trajectories.svg)
 
-*The fraction of each model's games in which its nation is dominant (≥5 supply
+The fraction of each model's games in which its nation is dominant (≥5 supply
 centers, left) or squeezed (≤4, right), by year. By 1910 Opus is dominant in every
-game and never squeezed; Haiku is the mirror image, with Sonnet and MiMo between.*
+game and never squeezed; Haiku is the mirror image, with Sonnet and MiMo between.
 
 - **Capability shows up as territory, but only over a long game.** Across ten
   years the models separate cleanly on supply centers, Opus 6.6, Sonnet 4.9, MiMo
