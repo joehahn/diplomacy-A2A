@@ -231,8 +231,8 @@ contains many more diagnostic plots.
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
 Mean number of supply centers (SC) held by each LLM. Opus pulls ahead and stays
-ahead from 1905, while the remaining LLMs trail in order of their mental capacity
-(published or estimated parameter size).
+ahead from 1905, while the remaining LLMs trail in rough order of their model
+scale (published or estimated parameter size).
 
 ![Dominant and squeezed games over time](dashboard/threshold_trajectories.svg)
 
