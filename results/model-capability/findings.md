@@ -20,15 +20,16 @@ resides between Haiku and Sonnet. This investigation has two parts:
 
 ## The four models in self-play (style analysis)
 
-**MiMo (S, budget): the talkative brawler.** The most talkative and most
-aggressive negotiator of the four (~1500 messages, the most real betrayals),
-and its betrayals are genuine and coercive, usually telegraphed: it reaffirms the
-Trieste DMZ in spring 1901, then in F1902M tells Austria "let me have TRI
-peacefully... if you refuse I'll take it by force" and seizes the home center.
-Spatially it is the cleanest of the four (zero self-bounces). But its ceiling is
-geometry: ~6% of its orders are illegal, and almost all of those are non-adjacent
-support orders (a fleet "supporting" an attack it cannot reach), often the same
-impossible order re-issued for many turns. It reflexively dogpiles the leader, so
+**MiMo (low-cost, not-so-small): the talkative brawler.** The most talkative and
+most aggressive negotiator of the four (~1500 messages and the most real
+betrayals), and its betrayals are genuine and coercive, usually telegraphed: it
+reaffirms the Trieste DMZ in spring 1901, then in F1902M tells Austria "let me have
+TRI peacefully... if you refuse I'll take it by force" and seizes the home center.
+It never jams its own units, the only model with zero self-bounces, but that
+tidiness is narrow: its ceiling is a geometry of another kind, ~6% of its orders
+are illegal, almost all of them non-adjacent support orders (a fleet "supporting"
+an attack it cannot reach), often the same impossible order re-issued for many
+turns. It reflexively dogpiles the leader, so
 its game is maximally contested and no one solos.
 Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html)
 
