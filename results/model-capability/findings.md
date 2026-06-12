@@ -234,7 +234,7 @@ contains many more diagnostic plots.
 stays ahead from 1905, while the remaining LLMs trail in rough order of their
 model scale.
 
-![Dominant and squeezed games over time](dashboard/threshold_trajectories.svg)
+![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
 
 **The frequency in which each LLM is dominant (≥5 supply centers, left) or is
 squeezed (≤4, right) versus time.** By 1910 Opus is dominant in every game and never

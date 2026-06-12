@@ -615,7 +615,7 @@ def plot_threshold_trajectories(traj: dict) -> str:
         p = sum(1 for v in vals if ok(v)) / n if n else 0.0
         return p, (math.sqrt(p * (1 - p) / n) if n else 0.0)
 
-    s = _svg_open(w, h, "Dominant and squeezed games over time")
+    s = _svg_open(w, h, "Dominant and Squeezed LLMs over time")
     s.append(f"<text x='14' y='{pad_t+plot_h/2:.0f}' font-size='13' fill='#444' "
              f"transform='rotate(-90 14 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>fraction of this model's games</text>")
@@ -654,7 +654,7 @@ def plot_threshold_trajectories(traj: dict) -> str:
                                  f"y2='{yy:.1f}' stroke='{COLOR[m]}' stroke-width='1.1'/>")
                 s.append(f"<circle cx='{x:.1f}' cy='{yf(p):.1f}' r='3' fill='{COLOR[m]}'/>")
 
-    items = list(reversed(ORDER))                  # MiMo, Haiku, Sonnet, Opus
+    items = list(ORDER)                            # Opus, Sonnet, Haiku, MiMo
     cur = w / 2 - len(items) * 60
     for m in items:
         s.append(f"<rect x='{cur:.0f}' y='{h-20}' width='13' height='13' rx='2' "
