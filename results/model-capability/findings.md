@@ -102,10 +102,7 @@ Three patterns recur across all four games, regardless of model family or price:
   track ambition and plan complexity (how many units you actively rotate), not raw
   capability; MiMo stays clean partly because it attempts less.
 
-A longer Opus-vs-Sonnet read lives in [`REFERENCE.md`](../../REFERENCE.md) under
-"Opus vs Sonnet: play style."
-
-### Post-mortem: asking the model about its biggest mistake
+### A post-mortem aside: asking the model about its biggest mistake
 
 The `ask` subcommand reconstructs a finished power's view of a game and puts a
 question to it, answered by the model that played it. We aimed it at the single
