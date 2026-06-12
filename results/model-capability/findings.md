@@ -239,13 +239,15 @@ model scale.
 **The frequency in which each LLM is dominant (≥5 supply centers, left) or is
 squeezed (≤4, right)** versus time. By 1907 Opus is dominant in every game and is
 never squeezed while the lower tier model (Haiku) is the mirror image, with the
-mid-scale models (Sonnet and MiMo) in between.
+mid-scale models (Sonnet and MiMo) in between. The figure below uses slightly
+tighter definitions of dominant (SC ≥ 6) and squeezed (SC ≤ 3) to show which LLMs
+tend to lead or trail by game's end.
 
-![Squeezed vs dominant nations, ordered by model size](dashboard/polarization_by_size.svg)
+![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
 
 **Dominance tracks model scale.** Ordered by model scale (left to right), the share
-of each LLM's nations that finish dominant (≥6 units) climbs monotonically, 0%
-(Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the squeezed share (≤3 units)
+of each LLM's nations that finish dominant (SC ≥ 6) climbs monotonically, 0%
+(Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the squeezed share (SC ≤ 3)
 falls.
 
 - **Capability shows up as territory, but only over a long game.** Across ten

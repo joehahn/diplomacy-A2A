@@ -1166,7 +1166,8 @@ def plot_spend_frontier(final: dict) -> str:
 # --- plots 10-11: outcome polarization (squeezed vs dominant) ----------------
 
 def plot_polarization(final_units: dict, plot_order: list, num: int,
-                      order_label: str) -> str:
+                      order_label: str, title: str | None = None,
+                      metric: str = "units") -> str:
     """How each model's own nations end: a connected scatter of the fraction
     squeezed to <=3 units (circles) versus the fraction grown to >=6 units
     (squares), one point per model, two overplotted series colored by model.
@@ -1189,7 +1190,7 @@ def plot_polarization(final_units: dict, plot_order: list, num: int,
 
     slot = (w - pad_l - pad_r) / len(ORDER)
     xs = [pad_l + slot * (i + 0.5) for i in range(len(ORDER))]
-    s = _svg_open(w, h, f"{num}. Squeezed vs dominant nations, ordered by {order_label}")
+    s = _svg_open(w, h, title or f"{num}. Squeezed vs dominant nations, ordered by {order_label}")
 
     for i in range(0, int(round(y1 * 10)) + 1):
         v = i / 10
@@ -1228,14 +1229,14 @@ def plot_polarization(final_units: dict, plot_order: list, num: int,
     s.append(f"<circle cx='{lx+12}' cy='{ly0}' r='6' fill='#888' stroke='#222' "
              f"stroke-width='1.2'/>")
     s.append(f"<text x='{lx+34}' y='{ly0+4}' font-size='11' fill='#444'>"
-             f"squeezed (≤3 units)</text>")
+             f"squeezed (≤3 {metric})</text>")
     ly1 = ly0 + 30
     s.append(f"<line x1='{lx}' y1='{ly1}' x2='{lx+24}' y2='{ly1}' stroke='{DOM}' "
              f"stroke-width='2.5'/>")
     s.append(f"<rect x='{lx+6}' y='{ly1-6}' width='12' height='12' fill='#888' "
              f"stroke='#222' stroke-width='1.2'/>")
     s.append(f"<text x='{lx+34}' y='{ly1+4}' font-size='11' fill='#444'>"
-             f"dominant (≥6 units)</text>")
+             f"dominant (≥6 {metric})</text>")
     s.append("</svg>")
     return "\n".join(s)
 
@@ -1467,7 +1468,9 @@ def main() -> int:
     (out / "polarization.svg").write_text(
         plot_polarization(data["final_units"], cost_order, 10, "cost"))
     (out / "polarization_by_size.svg").write_text(
-        plot_polarization(data["final_units"], size_order, 11, "model size"))
+        plot_polarization(data["final_units"], size_order, 11, "model size",
+                          title="Dominant (SC ≥ 6) and Squeezed (SC ≤ 3) Nations versus LLM",
+                          metric="SC"))
     (out / "index.html").write_text(build_index(data))
     # remove superseded artifacts
     for stale in ("offence_defence_bars.svg", "offence_defence.svg",
