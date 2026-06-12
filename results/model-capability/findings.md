@@ -20,7 +20,7 @@ resides between Haiku and Sonnet. This investigation has two parts:
 
 ## The four models in self-play (style analysis)
 
-**MiMo (low-cost, not-so-small): the talkative brawler.** The most talkative and
+**MiMo *(low-cost, not-so-small)*: the talkative brawler.** The most talkative and
 most aggressive negotiator of the four (~1500 messages and the most real
 betrayals), and its betrayals are genuine and coercive, usually telegraphed: it
 reaffirms the Trieste DMZ in spring 1901, then in F1902M tells Austria "let me have
@@ -31,9 +31,9 @@ are illegal, almost all of them non-adjacent support orders (a fleet "supporting
 an attack it cannot reach), often the same impossible order re-issued for many
 turns. It reflexively dogpiles the leader, so
 its game is maximally contested and no one solos.
-Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html)
+See [that game's dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html) for the play-by-play and summary stats.
 
-**Haiku (budget runner-up): the agreeable diplomat.** The other budget candidate,
+**Haiku *(budget runner-up)*: the agreeable diplomat.** The other budget candidate,
 and the mirror image of MiMo's brawler. Haiku is the most *social* of the four
 and the least *forceful*: the highest alliance language of any model (43% of
 messages, double the next) and the most questions (39%), forever proposing
@@ -50,9 +50,9 @@ and sits unchallenged for five straight years, and the board churns through 21
 disbands without a single death or near-solo. That is the gap MiMo exploits: where
 MiMo coerces ("if you refuse I'll take it by force") and seizes the center, Haiku
 proposes a partnership and waits. The genial diplomat loses to the brawler.
-Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
+See [that game's dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html) for the play-by-play and summary stats.
 
-**Sonnet (M, mid): the polite accountant.** Articulate, rule-literate, and
+**Sonnet *(M, mid)*: the polite accountant.** Articulate, rule-literate, and
 risk-averse; it reasons in explicit strength-math but rarely converts it. Its
 coordination is conceptually correct yet mechanically fragile: plans bounce, the
 board stalemates, and it re-issues the same failed move for five or six seasons
@@ -60,9 +60,9 @@ board stalemates, and it re-issues the same failed move for five or six seasons
 form in chat but never on the board, so the leader (England, 8-9 centers) is
 never finished or checked. Tidy on defense, low on betrayal, and lighter on
 ruthlessness than its own persona prescribes.
-Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)
+See [that game's dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html) for the play-by-play and summary stats.
 
-**Opus (L, frontier): the staff officer.** Plays like seven disciplined staff
+**Opus *(L, frontier)*: the staff officer.** Plays like seven disciplined staff
 officers: peace-first openings, meticulously specified combined-arms that mostly
 land (71% of its supported attacks succeed), genuine adaptation after a failed
 attack, and a decisive game (England 4 to 9 centers, Germany eliminated, the only
@@ -71,7 +71,7 @@ precise and transactional, betraying only when it announces why. Its signature
 flaw is the shadow of its ambition: juggling many units in active rotation
 chains, it self-bounces 16 times, ordering a unit into a square its own side
 already holds.
-Flagship game: [live dashboard](https://joehahn.github.io/diplomacy-A2A/results/opus-reference/2026-06-09.17.03.53/dashboard/index.html)
+See [that game's dashboard](https://joehahn.github.io/diplomacy-A2A/results/opus-reference/2026-06-09.17.03.53/dashboard/index.html) for the play-by-play and summary stats.
 
 ### What they share, and where they ladder
 
