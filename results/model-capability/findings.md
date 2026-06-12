@@ -117,13 +117,12 @@ This query restricts France to what it knew that spring (`--phase S1910M`):
 
     python -m diplomacy_a2a ask \
       results/opus-reference/2026-06-09.17.03.53 FRANCE \
-      "This spring England is attacking Germany's last center
-      Berlin (F BAL-BER supported by F KIE), and England leads the
-      board at 8 centers. You ordered A MUN to hold with A RUH
-      supporting it, but Munich is not under attack. A RUH-KIE would
-      have cut England's support, or A MUN could have supported
-      Berlin to hold, either of which denies the leader Berlin. What
-      drove your choice to keep both units on Munich instead?" \
+      "This spring England is attacking Germany's last center Berlin (F BAL-BER
+      supported by F KIE), and England leads the board at 8 centers. You ordered
+      A MUN to hold with A RUH supporting it, but Munich is not under attack.
+      A RUH-KIE would have cut England's support, or A MUN could have supported
+      Berlin to hold, either of which denies the leader Berlin. What drove your
+      choice to keep both units on Munich instead?" \
       --phase S1910M
 
 Asked why, France's agent did not rationalize, it diagnosed itself: "I was too
