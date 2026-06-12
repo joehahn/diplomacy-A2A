@@ -262,9 +262,3 @@ runs sequentially and is resumable (a re-run skips games already finished), and
 sub-second; it globs `results/model-capability/*/transcript.jsonl`:
 
     python experiments/model_capability/build_axis_dashboard.py
-
-**Re-render a single game's own dashboard** (maps, report, negotiation slideshow)
-without replaying it (these per-game dashboards are gitignored, so regenerate
-locally as needed):
-
-    python -m diplomacy_a2a render results/<category>/<timestamp>
