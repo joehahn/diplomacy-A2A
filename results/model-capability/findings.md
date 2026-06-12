@@ -20,10 +20,9 @@ resides between Haiku and Sonnet. This investigation has two parts:
 
 ## The four models in self-play (style analysis)
 
-Everything here regenerates from the repo. To run any of the commands in this
-writeup you need an Anthropic API key (and an OpenRouter key for MiMo, which routes
-through the gateway) in `.env`, plus an active venv (`source .venv/bin/activate`).
-Model IDs are pinned in [`config.py`](../../diplomacy_a2a/config.py).
+Everything here regenerates from the repo. To play Diplomacy with any of the
+Anthropic LLMs you need an Anthropic key in `.env`, while our use of MiMo relies on
+an [OpenRouter key](../../REFERENCE.md#openrouter-how-the-gateway-is-used-here).
 
 **MiMo *(low-cost, not-so-small)*: the talkative brawler.** The most talkative and
 most aggressive negotiator of the four (~1500 messages and the most real

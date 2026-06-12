@@ -738,6 +738,19 @@ write and is critical to the per-run budget. The Sonnet 5-year canonical
 saves ≈22% from caching alone. A future provider that lacks comparable
 caching would cost roughly that much more per game on equivalent rates.
 
+### OpenRouter: how the gateway is used here
+
+OpenRouter is the LLM gateway this project uses to reach non-Anthropic models
+through a single OpenAI-compatible key, account, and bill. In these studies the
+only model routed through it is the budget runner MiMo (`xiaomi/mimo-v2.5`); every
+Claude model uses the direct `AnthropicClient` instead. Setup is one
+`OPENROUTER_API_KEY` in `.env`, after which `make_client` sends any non-`claude-*`
+model id through `GatewayClient`, which speaks OpenRouter's OpenAI-compatible API
+via the `openai` SDK. The gateway is strictly opt-in, so a run that names only
+Claude models needs no OpenRouter key. OpenRouter bills list price plus a small
+credit-purchase fee (~5.5%); the candidate cheap models and the prompt-caching
+trade-off on this path are detailed further below.
+
 ### Candidate cheaper models (June 2026 snapshot)
 
 If the goal is roughly-Sonnet play at a lower bill, the leading
