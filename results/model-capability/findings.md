@@ -222,21 +222,21 @@ sub-second; it globs `results/model-capability/*/transcript.jsonl`:
 
 ## Quantifying LLM gameplay abilities
 
-The following analyzes the seven Diplomacy games played by four LLMs (described
-above) to quantify each model's aggregated successes and failures. The figures here are a few highlights; the [full
+The following analyzes the seven Diplomacy games that were played by four LLMs as
+described above, to quantify each model's aggregated successes and failures. The figures here are a few highlights; the [full
 dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)
 contains many more diagnostic plots.
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
-**Mean number of supply centers (SC) held by each LLM.** Opus pulls ahead and
+**Mean number of supply centers (SC) held by each LLM.** Note that Opus pulls ahead and
 stays ahead from 1905, while the remaining LLMs trail in rough order of their
 model scale.
 
 ![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
 
 **The frequency in which each LLM is dominant (≥5 supply centers, left) or is
-squeezed (≤4, right) versus time.** By 1910 Opus is dominant in every game and never
+squeezed (≤4, right)** versus time. By 1910 Opus is dominant in every game and never
 squeezed; Haiku is the mirror image, with Sonnet and MiMo between.
 
 - **Capability shows up as territory, but only over a long game.** Across ten
