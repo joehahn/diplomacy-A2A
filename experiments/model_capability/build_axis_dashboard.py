@@ -425,16 +425,14 @@ def _svg_open(w: int, h: int, title: str) -> list[str]:
     ]
 
 
-def _fit_legend(s: list, lx: float, y: float, xlabel: str, b: float, r2: float):
+def _fit_legend(s: list, lx: float, y: float, xlabel: str, b: float):
     """Append a power-law fit entry to a right-side legend: a dashed swatch, then
-    the formula SC proportional to xlabel^b, with R^2 on the next line."""
+    the formula SC proportional to xlabel^b."""
     s.append(f"<line x1='{lx}' y1='{y}' x2='{lx+20}' y2='{y}' stroke='#888' "
              f"stroke-width='1.6' stroke-dasharray='5 3'/>")
-    s.append(f"<text x='{lx+26}' y='{y+4}' font-size='10' fill='#555'>"
-             f"SC &#8733; {xlabel}<tspan baseline-shift='super' font-size='7'>"
+    s.append(f"<text x='{lx+26}' y='{y+4}' font-size='11' fill='#555'>"
+             f"SC &#8733; {xlabel}<tspan baseline-shift='super' font-size='7.5'>"
              f"{b:.2f}</tspan></text>")
-    s.append(f"<text x='{lx+26}' y='{y+19}' font-size='13' fill='#444'>"
-             f"R&#178; = {r2:.2f}</text>")
 
 
 def _legend(x: float, y: float) -> str:
@@ -743,8 +741,8 @@ def _bar_panels(number: int, title: str, panels: list,
                 s.append(f"<text x='{cx:.1f}' y='{y_hi-6:.1f}' text-anchor='middle' "
                          f"font-size='11.5' font-weight='700' fill='{COLOR[m]}'>"
                          f"{fmt.format(val)}</text>")
-            s.append(f"<text x='{cx:.1f}' y='{baseline+16:.1f}' text-anchor='middle' "
-                     f"font-size='10.5' fill='#666'>{m}</text>")
+            s.append(f"<text x='{cx:.1f}' y='{baseline+17:.1f}' text-anchor='middle' "
+                     f"font-size='12' fill='#555'>{m}</text>")
     s.append("</svg>")
     return "\n".join(s)
 
@@ -1040,9 +1038,6 @@ def plot_param_frontier(data: dict) -> str:
     b_exp = (sum((x - mfx) * (y - mfy) for x, y in zip(fx, fy))
              / sum((x - mfx) ** 2 for x in fx))
     a_int = mfy - b_exp * mfx
-    ss_tot = sum((y - mfy) ** 2 for y in fy)
-    ss_res = sum((y - (a_int + b_exp * x)) ** 2 for x, y in zip(fx, fy))
-    r2 = 1 - ss_res / ss_tot if ss_tot else 0.0
     cx0, cx1 = math.log10(10), math.log10(10_000)  # 10B -> 10T
     fit_pts = " ".join(
         f"{xf(u):.1f},{yf(10 ** (a_int + b_exp * u)):.1f}"
@@ -1078,7 +1073,7 @@ def plot_param_frontier(data: dict) -> str:
                  f"stroke='#222' stroke-width='1.2'/>")
         s.append(f"<text x='{lxleg+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
                  f"{m} <tspan fill='#999'>{PARAMS_B[m][3]}</tspan></text>")
-    _fit_legend(s, lxleg, ly0 + len(legend_models) * 26 + 6, "params", b_exp, r2)
+    _fit_legend(s, lxleg, ly0 + len(legend_models) * 26 + 6, "params", b_exp)
     s.append("</svg>")
     return "\n".join(s)
 
@@ -1137,9 +1132,6 @@ def plot_spend_frontier(final: dict) -> str:
     b_exp = (sum((x - mfx) * (y - mfy) for x, y in zip(fx, fy))
              / sum((x - mfx) ** 2 for x in fx))
     a_int = mfy - b_exp * mfx
-    ss_tot = sum((y - mfy) ** 2 for y in fy)
-    ss_res = sum((y - (a_int + b_exp * x)) ** 2 for x, y in zip(fx, fy))
-    r2 = 1 - ss_res / ss_tot if ss_tot else 0.0
     # dashed fit extended across the full visible x-axis
     fit_pts = " ".join(
         f"{xf(u):.1f},{yf(10 ** (a_int + b_exp * u)):.1f}"
@@ -1166,7 +1158,7 @@ def plot_spend_frontier(final: dict) -> str:
                  f"stroke='#222' stroke-width='1.2'/>")
         s.append(f"<text x='{lxleg+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
                  f"{m} <tspan fill='#999'>${SPEND_PER_MIN[m]:.2f}/min</tspan></text>")
-    _fit_legend(s, lxleg, ly0 + len(legend_models) * 26 + 6, "$/min", b_exp, r2)
+    _fit_legend(s, lxleg, ly0 + len(legend_models) * 26 + 6, "$/min", b_exp)
     s.append("</svg>")
     return "\n".join(s)
 
@@ -1400,7 +1392,7 @@ def build_index(data: dict) -> str:
         "centers) to Opus (~2.7T, 6.6), bigger models win more ground. The Haiku anchor "
         "at ~20B is what makes the slope visible; without it the lineup spanned only "
         "~10&times;. The dashed line is the best-fit power law (SC &#8733; "
-        "params<sup>0.10</sup>, R&#178;&asymp;0.77 in log-log): a shallow exponent, so "
+        "params<sup>0.10</sup>): a shallow exponent, so "
         "centers grow with scale but slowly, and Opus sits above the line, beating the "
         "trend. Read the x-axis as order-of-magnitude (and total, not active, "
         "params).</figcaption></figure>",
@@ -1412,7 +1404,7 @@ def build_index(data: dict) -> str:
         "~145&times; span). Like size, spend rate is a property of the model rather "
         "than the matchup, and unlike the speculative parameter counts it is measured "
         "exactly. The points trend up the same way, best-fit power law SC &#8733; "
-        "($/min)<sup>0.11</sup> (R&#178;&asymp;0.79): faster-and-pricier buys centers, "
+        "($/min)<sup>0.11</sup>: faster-and-pricier buys centers, "
         "but the shallow exponent says it buys them slowly, and Opus again sits above "
         "the line.</figcaption></figure>",
 
