@@ -20,6 +20,11 @@ resides between Haiku and Sonnet. This investigation has two parts:
 
 ## The four models in self-play (style analysis)
 
+Everything here regenerates from the repo. To run any of the commands in this
+writeup you need an Anthropic API key (and an OpenRouter key for MiMo, which routes
+through the gateway) in `.env`, plus an active venv (`source .venv/bin/activate`).
+Model IDs are pinned in [`config.py`](../../diplomacy_a2a/config.py).
+
 **MiMo *(low-cost, not-so-small)*: the talkative brawler.** The most talkative and
 most aggressive negotiator of the four (~1500 messages and the most real
 betrayals), and its betrayals are genuine and coercive, usually telegraphed: it
@@ -201,6 +206,21 @@ the two budget models trail, the smallest model (Haiku) last and the cheapest
 (MiMo) the best value. Scale and spend both predict territory once the game is long
 enough to turn execution into ground.
 
+**Head-to-head rotation (seven 10-year games, ~$240, ~4 hours).** Opus, Haiku, and
+MiMo rotate through all powers against a Sonnet field; the roster and balanced
+rotation live in [`experiments/llm_axis.py`](../../experiments/llm_axis.py). It
+runs sequentially and is resumable (a re-run skips games already finished), and
+`caffeinate -i` keeps the Mac awake for the duration:
+
+    caffeinate -i python experiments/llm_axis.py          # full sweep
+    python experiments/llm_axis.py --dry-run              # print the 7 commands, run nothing
+    python experiments/llm_axis.py --smoke                # one 1-year game to scratch/, to sanity-check
+
+**Rebuild the rotation dashboard (the cross-game plots above).** No LLM calls,
+sub-second; it globs `results/model-capability/*/transcript.jsonl`:
+
+    python experiments/model_capability/build_axis_dashboard.py
+
 ## Cost: the price spread these tiers represent
 
 The cost of one 10-year game of self-play per model:
@@ -236,29 +256,3 @@ Two things stand out. There is no separate "prompt" line because the prompt
 state, rules, persona, and running history re-sent on each call) and only ~3%
 are model output. And negotiation is the single largest consumer at ~48%, which
 fits the project's premise that the dialogue, not the move, is the deliverable.
-
-## Reproducing this study from the command line
-
-Everything here regenerates from the repo. You need an Anthropic API key (and an
-OpenRouter key for MiMo, which routes through the gateway) in `.env`, and an
-active venv: `source .venv/bin/activate`. Costs per game are in the table above;
-model IDs are pinned in [`config.py`](../../diplomacy_a2a/config.py).
-
-**Self-play (one 10-year game per model, the style profiles).** Each model's run
-command is shown with its profile in the self-play section above; every run writes
-to `results/<category>/<timestamp>/` and auto-renders its own dashboard.
-
-**Head-to-head rotation (seven 10-year games, ~$240, ~4 hours).** Opus, Haiku, and
-MiMo rotate through all powers against a Sonnet field; the roster and balanced
-rotation live in [`experiments/llm_axis.py`](../../experiments/llm_axis.py). It
-runs sequentially and is resumable (a re-run skips games already finished), and
-`caffeinate -i` keeps the Mac awake for the duration:
-
-    caffeinate -i python experiments/llm_axis.py          # full sweep
-    python experiments/llm_axis.py --dry-run              # print the 7 commands, run nothing
-    python experiments/llm_axis.py --smoke                # one 1-year game to scratch/, to sanity-check
-
-**Rebuild the rotation dashboard (the cross-game plots above).** No LLM calls,
-sub-second; it globs `results/model-capability/*/transcript.jsonl`:
-
-    python experiments/model_capability/build_axis_dashboard.py
