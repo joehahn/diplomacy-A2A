@@ -31,6 +31,10 @@ are illegal, almost all of them non-adjacent support orders (a fleet "supporting
 an attack it cannot reach), often the same impossible order re-issued for many
 turns. It reflexively dogpiles the leader, so
 its game is maximally contested.
+
+    python -m diplomacy_a2a run --model xiaomi/mimo-v2.5 \
+      --years 10 --rounds 3 --category mimo-reference
+
 See [that game's dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html) for the play-by-play and summary stats.
 
 **Haiku *(budget runner-up)*: the agreeable diplomat.** The other budget candidate,
@@ -50,6 +54,10 @@ and sits unchallenged for five straight years, and the board churns through 21
 disbands, the most of any game. That is the gap MiMo exploits: where
 MiMo coerces ("if you refuse I'll take it by force") and seizes the center, Haiku
 proposes a partnership and then waits. The genial diplomat loses to the brawler.
+
+    python -m diplomacy_a2a run --model claude-haiku-4-5-20251001 \
+      --years 10 --rounds 3 --category haiku-reference
+
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
 
 **Sonnet *(M, mid)*: the polite accountant.** Articulate, rule-literate, and
@@ -61,6 +69,10 @@ form in chat but never on the board, so the leader (England, 8-9 centers) is
 never finished or checked. Tidy on defense, low on betrayal, and milder than the
 aggressive, play-to-win persona every agent is prompted with (which tells them to
 grow relentlessly and break a quiet front rather than keep it).
+
+    python -m diplomacy_a2a run --model claude-sonnet-4-6 \
+      --years 10 --rounds 3 --category canonical
+
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)
 
 **Opus *(L, frontier)*: the staff officer.** Plays like seven disciplined staff
@@ -72,6 +84,10 @@ precise and transactional, betraying only when it announces why. Its signature
 flaw is the shadow of its ambition: juggling many units in active rotation
 chains, it self-bounces 16 times, ordering a unit into a square its own side
 already holds.
+
+    python -m diplomacy_a2a run --model claude-opus-4-8 \
+      --years 10 --rounds 3 --category opus-reference
+
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/opus-reference/2026-06-09.17.03.53/dashboard/index.html)
 
 ### What they share, and where they ladder
@@ -228,13 +244,9 @@ OpenRouter key for MiMo, which routes through the gateway) in `.env`, and an
 active venv: `source .venv/bin/activate`. Costs per game are in the table above;
 model IDs are pinned in [`config.py`](../../diplomacy_a2a/config.py).
 
-**Self-play (one 10-year game per model, the style profiles).** Each writes to
-`results/<category>/<timestamp>/` and auto-renders its own dashboard:
-
-    python -m diplomacy_a2a run --model xiaomi/mimo-v2.5           --years 10 --rounds 3 --category mimo-reference
-    python -m diplomacy_a2a run --model claude-haiku-4-5-20251001  --years 10 --rounds 3 --category haiku-reference
-    python -m diplomacy_a2a run --model claude-sonnet-4-6          --years 10 --rounds 3 --category canonical
-    python -m diplomacy_a2a run --model claude-opus-4-8            --years 10 --rounds 3 --category opus-reference
+**Self-play (one 10-year game per model, the style profiles).** Each model's run
+command is shown with its profile in the self-play section above; every run writes
+to `results/<category>/<timestamp>/` and auto-renders its own dashboard.
 
 **Head-to-head rotation (seven 10-year games, ~$240, ~4 hours).** Opus, Haiku, and
 MiMo rotate through all powers against a Sonnet field; the roster and balanced
