@@ -615,7 +615,7 @@ def plot_threshold_trajectories(traj: dict) -> str:
         p = sum(1 for v in vals if ok(v)) / n if n else 0.0
         return p, (math.sqrt(p * (1 - p) / n) if n else 0.0)
 
-    s = _svg_open(w, h, "3. Dominant and squeezed games over time")
+    s = _svg_open(w, h, "Dominant and squeezed games over time")
     s.append(f"<text x='14' y='{pad_t+plot_h/2:.0f}' font-size='13' fill='#444' "
              f"transform='rotate(-90 14 {pad_t+plot_h/2:.0f})' "
              f"text-anchor='middle'>fraction of this model's games</text>")

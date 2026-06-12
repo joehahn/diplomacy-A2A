@@ -231,6 +231,12 @@ above; together they are the outline of the longer story this section will tell.
 1905, when Opus diverges upward while the budget models stay locked at the
 bottom.*
 
+![Dominant and squeezed games over time](dashboard/threshold_trajectories.svg)
+
+*The fraction of each model's games in which its nation is dominant (≥5 supply
+centers, left) or squeezed (≤4, right), by year. By 1910 Opus is dominant in every
+game and never squeezed; Haiku is the mirror image, with Sonnet and MiMo between.*
+
 - **Capability shows up as territory, but only over a long game.** Across ten
   years the models separate cleanly on supply centers, Opus 6.6, Sonnet 4.9, MiMo
   4.1, Haiku 3.7.
