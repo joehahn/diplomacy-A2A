@@ -594,28 +594,22 @@ def plot_trajectory(traj: dict) -> str:
 # --- plot 3: dominant / squeezed fraction over time -------------------------
 
 def plot_threshold_trajectories(traj: dict) -> str:
-    """Two rows of three panels: the fraction of each model's games in which its
-    nation is dominant or squeezed by year, and the dominant-vs-squeezed phase
-    trajectory, at two threshold pairs (>=6 / <=3 on top, >=5 / <=4 below).
-    Binomial standard-error bars."""
+    """Two adjacent time series: the fraction of each model's games in which its
+    nation is dominant (SC >= 5, left) or squeezed (SC <= 4, right), by year, with
+    binomial standard-error bars."""
     years = sorted(traj)
-    w = 1040
-    pad_l, pad_r = 52, 26
-    pw = w / 3
-    plot_w = pw - pad_l - pad_r
-    plot_h = 220
-    row1_top, row_gap = 58, 78
-    row2_top = row1_top + plot_h + row_gap
-    h = row2_top + plot_h + 76
+    w, h = 760, 380
+    pad_t, pad_b = 60, 78
+    plot_h = h - pad_t - pad_b
+    half = w / 2
+    pad_l, pad_r = 50, 24
+    plot_w = half - pad_l - pad_r
 
-    def yf(rt, v):
-        return rt + plot_h * (1 - v)            # v is a fraction in [0, 1]
+    def yf(v):
+        return pad_t + plot_h * (1 - v)            # v is a fraction in [0, 1]
 
-    def xf_year(ox, yr):
+    def xf(ox, yr):
         return ox + pad_l + plot_w * (years.index(yr) / (len(years) - 1))
-
-    def xf_frac(ox, fr):
-        return ox + pad_l + plot_w * fr
 
     def stat(yr, m, ok):
         vals = traj[yr][m]
@@ -624,97 +618,50 @@ def plot_threshold_trajectories(traj: dict) -> str:
         return p, (math.sqrt(p * (1 - p) / n) if n else 0.0)
 
     s = _svg_open(w, h, "3. Dominant and squeezed games over time")
+    s.append(f"<text x='14' y='{pad_t+plot_h/2:.0f}' font-size='13' fill='#444' "
+             f"transform='rotate(-90 14 {pad_t+plot_h/2:.0f})' "
+             f"text-anchor='middle'>fraction of this model's games</text>")
 
-    def draw_row(rt, dthr, sthr):
-        dom, sq = (lambda v: v >= dthr), (lambda v: v <= sthr)
-        s.append(f"<text x='14' y='{rt+plot_h/2:.0f}' font-size='13' fill='#444' "
-                 f"transform='rotate(-90 14 {rt+plot_h/2:.0f})' "
-                 f"text-anchor='middle'>fraction of this model's games</text>")
-
-        def sub(ox, t):
-            s.append(f"<text x='{ox+pad_l+plot_w/2:.0f}' y='{rt-15}' "
-                     f"text-anchor='middle' font-size='12.5' font-weight='600' "
-                     f"fill='#333'>{t}</text>")
-
-        def ygrid(ox):
-            for i in range(11):
-                yy = yf(rt, i / 10)
-                s.append(f"<line x1='{ox+pad_l}' y1='{yy:.1f}' x2='{ox+pad_l+plot_w}' "
-                         f"y2='{yy:.1f}' stroke='#eee' stroke-width='1'/>")
-                if i % 2 == 0:
-                    s.append(f"<text x='{ox+pad_l-7}' y='{yy+3:.1f}' text-anchor='end' "
-                             f"font-size='12.5' fill='#555'>{i/10:.1f}</text>")
-
-        def xlabel(ox, text):
-            s.append(f"<text x='{ox+pad_l+plot_w/2:.0f}' y='{rt+plot_h+38:.0f}' "
-                     f"text-anchor='middle' font-size='13' fill='#444'>{text}</text>")
-
-        # panels 1 & 2: fraction vs year
-        for pi, (ptitle, ok) in enumerate([(f"Dominant (SC ≥ {dthr})", dom),
-                                           (f"Squeezed (SC ≤ {sthr})", sq)]):
-            ox = pi * pw
-            sub(ox, ptitle)
-            ygrid(ox)
-            for yr in years:
-                if yr % 2 == 0:
-                    lbl = "start" if yr == 1900 else str(yr)
-                    s.append(f"<text x='{xf_year(ox, yr):.1f}' y='{rt+plot_h+18:.0f}' "
-                             f"text-anchor='middle' font-size='11' fill='#555'>{lbl}</text>")
-            xlabel(ox, "year")
-            for m in ORDER:
-                pts = [(xf_year(ox, yr), *stat(yr, m, ok)) for yr in years]
-                d = " ".join(f"{'M' if i == 0 else 'L'} {x:.1f} {yf(rt, p):.1f}"
-                             for i, (x, p, _) in enumerate(pts))
-                s.append(f"<path d='{d}' fill='none' stroke='{COLOR[m]}' stroke-width='2.2'/>")
-                for x, p, e in pts:
-                    if e > 0:
-                        yh, yl = yf(rt, min(p + e, 1.0)), yf(rt, max(p - e, 0.0))
-                        s.append(f"<line x1='{x:.1f}' y1='{yh:.1f}' x2='{x:.1f}' "
-                                 f"y2='{yl:.1f}' stroke='{COLOR[m]}' stroke-width='1.1'/>")
-                        for yy in (yh, yl):
-                            s.append(f"<line x1='{x-3:.1f}' y1='{yy:.1f}' x2='{x+3:.1f}' "
-                                     f"y2='{yy:.1f}' stroke='{COLOR[m]}' stroke-width='1.1'/>")
-                    s.append(f"<circle cx='{x:.1f}' cy='{yf(rt, p):.1f}' r='3' fill='{COLOR[m]}'/>")
-
-        # panel 3: dominant (y) vs squeezed (x), connected over time
-        ox = 2 * pw
-        sub(ox, "Dominant vs squeezed")
-        ygrid(ox)
+    for ox, ptitle, ok in [(0.0, "Dominant (SC ≥ 5)", lambda v: v >= 5),
+                           (half, "Squeezed (SC ≤ 4)", lambda v: v <= 4)]:
+        s.append(f"<text x='{ox+pad_l+plot_w/2:.0f}' y='{pad_t-16}' "
+                 f"text-anchor='middle' font-size='12.5' font-weight='600' "
+                 f"fill='#333'>{ptitle}</text>")
         for i in range(11):
-            xx = xf_frac(ox, i / 10)
-            s.append(f"<line x1='{xx:.1f}' y1='{rt}' x2='{xx:.1f}' y2='{rt+plot_h}' "
-                     f"stroke='#eee' stroke-width='1'/>")
+            yy = yf(i / 10)
+            s.append(f"<line x1='{ox+pad_l}' y1='{yy:.1f}' x2='{ox+pad_l+plot_w}' "
+                     f"y2='{yy:.1f}' stroke='#eee' stroke-width='1'/>")
             if i % 2 == 0:
-                s.append(f"<text x='{xx:.1f}' y='{rt+plot_h+18:.0f}' text-anchor='middle' "
-                         f"font-size='11' fill='#555'>{i/10:.1f}</text>")
-        xlabel(ox, f"squeezed (≤{sthr})")
+                s.append(f"<text x='{ox+pad_l-7}' y='{yy+3:.1f}' text-anchor='end' "
+                         f"font-size='12.5' fill='#555'>{i/10:.1f}</text>")
+        for yr in years:
+            if yr % 2 == 0:
+                lbl = "start" if yr == 1900 else str(yr)
+                s.append(f"<text x='{xf(ox, yr):.1f}' y='{pad_t+plot_h+18:.0f}' "
+                         f"text-anchor='middle' font-size='11.5' fill='#555'>{lbl}</text>")
+        s.append(f"<text x='{ox+pad_l+plot_w/2:.0f}' y='{pad_t+plot_h+38:.0f}' "
+                 f"text-anchor='middle' font-size='13' fill='#444'>year</text>")
         for m in ORDER:
-            rows = [(stat(yr, m, sq), stat(yr, m, dom)) for yr in years]
-            d = " ".join(f"{'M' if i == 0 else 'L'} {xf_frac(ox, sp):.1f} {yf(rt, dp):.1f}"
-                         for i, ((sp, _), (dp, _)) in enumerate(rows))
-            s.append(f"<path d='{d}' fill='none' stroke='{COLOR[m]}' stroke-width='2' "
-                     f"stroke-opacity='0.85'/>")
-            for (sp, se), (dp, de) in rows:
-                x, y = xf_frac(ox, sp), yf(rt, dp)
-                if de > 0:
-                    s.append(f"<line x1='{x:.1f}' y1='{yf(rt, min(dp+de,1.0)):.1f}' x2='{x:.1f}' "
-                             f"y2='{yf(rt, max(dp-de,0.0)):.1f}' stroke='{COLOR[m]}' "
-                             f"stroke-width='0.9' stroke-opacity='0.55'/>")
-                if se > 0:
-                    s.append(f"<line x1='{xf_frac(ox,max(sp-se,0.0)):.1f}' y1='{y:.1f}' "
-                             f"x2='{xf_frac(ox,min(sp+se,1.0)):.1f}' y2='{y:.1f}' "
-                             f"stroke='{COLOR[m]}' stroke-width='0.9' stroke-opacity='0.55'/>")
-                s.append(f"<circle cx='{x:.1f}' cy='{y:.1f}' r='2.6' fill='{COLOR[m]}'/>")
-
-    draw_row(row1_top, 6, 3)
-    draw_row(row2_top, 5, 4)
+            pts = [(xf(ox, yr), *stat(yr, m, ok)) for yr in years]
+            d = " ".join(f"{'M' if i == 0 else 'L'} {x:.1f} {yf(p):.1f}"
+                         for i, (x, p, _) in enumerate(pts))
+            s.append(f"<path d='{d}' fill='none' stroke='{COLOR[m]}' stroke-width='2.2'/>")
+            for x, p, e in pts:
+                if e > 0:
+                    yh, yl = yf(min(p + e, 1.0)), yf(max(p - e, 0.0))
+                    s.append(f"<line x1='{x:.1f}' y1='{yh:.1f}' x2='{x:.1f}' "
+                             f"y2='{yl:.1f}' stroke='{COLOR[m]}' stroke-width='1.1'/>")
+                    for yy in (yh, yl):
+                        s.append(f"<line x1='{x-3:.1f}' y1='{yy:.1f}' x2='{x+3:.1f}' "
+                                 f"y2='{yy:.1f}' stroke='{COLOR[m]}' stroke-width='1.1'/>")
+                s.append(f"<circle cx='{x:.1f}' cy='{yf(p):.1f}' r='3' fill='{COLOR[m]}'/>")
 
     items = list(reversed(ORDER))                  # MiMo, Haiku, Sonnet, Opus
     cur = w / 2 - len(items) * 60
     for m in items:
-        s.append(f"<rect x='{cur:.0f}' y='{h-22}' width='13' height='13' rx='2' "
+        s.append(f"<rect x='{cur:.0f}' y='{h-20}' width='13' height='13' rx='2' "
                  f"fill='{COLOR[m]}'/>")
-        s.append(f"<text x='{cur+18:.0f}' y='{h-11}' font-size='12.5' fill='#444'>{m}</text>")
+        s.append(f"<text x='{cur+18:.0f}' y='{h-9}' font-size='12.5' fill='#444'>{m}</text>")
         cur += 120
     s.append("</svg>")
     return "\n".join(s)
@@ -1389,15 +1336,15 @@ def build_index(data: dict) -> str:
         "show.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='threshold_trajectories.svg'></object>",
-        "<figcaption><b>Dominant and squeezed games over time.</b> The same outcome "
-        "split into two thresholds and tracked by year: the fraction of each model's "
-        "games in which its nation is dominant (&ge;6 supply centers, left) or squeezed "
-        "(&le;3, right). Opus's dominant share climbs steadily to ~0.7 while its squeezed "
-        "share falls to zero; the budget models are the mirror, their dominant share "
-        "barely lifts off the floor while their squeezed share stays high. Error bars are "
-        "1&sigma; binomial standard error (&radic;(p(1&minus;p)/n)), wide for the "
-        "single-seat test models (n=7) and tighter for the Sonnet field "
-        "(n=28).</figcaption></figure>",
+        "<figcaption><b>Dominant and squeezed games over time.</b> The fraction of each "
+        "model's games in which its nation is dominant (&ge;5 supply centers, left) or "
+        "squeezed (&le;4, right), tracked by year. By 1910 Opus is dominant in every game "
+        "(1.0) and never squeezed (0.0); Haiku is the opposite (dominant 0.29, squeezed "
+        "0.71), with Sonnet and MiMo near the middle. The two panels are exact mirrors, "
+        "&le;4 and &ge;5 partition all supply-center counts, so squeezed = 1 &minus; "
+        "dominant. Error bars are 1&sigma; binomial standard error "
+        "(&radic;(p(1&minus;p)/n)), wide for the single-seat test models (n=7) and "
+        "tighter for the Sonnet field (n=28).</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='competence.svg'></object>",
         "<figcaption><b>Competence splits by tier, but not by price alone.</b> The two "
