@@ -205,24 +205,26 @@ enough to turn execution into ground.
 
 The headline cost of one 10-year self-play game per model:
 
-| tier | model | 10-year self-play cost | input tokens | output tokens | wall time |
-|------|-------|------------------------|--------------|---------------|-----------|
-| S (budget) | xiaomi/mimo-v2.5 | $1.66 | 11.2M (uncached) | 334K | 32 min |
-| S (alt) | Claude Haiku 4.5 | $7.30 | 10.3M (58% cached) | 453K | 32 min |
-| M (mid) | Claude Sonnet 4.6 | $25.62 | 11.9M (48% cached) | 347K | 34 min |
-| L (frontier) | Claude Opus 4.8 | $184.16 | 17.4M (45% cached) | 369K | 25 min |
+| model | tier | 10-year self-play cost | input tokens | output tokens | wall time |
+|-------|------|------------------------|--------------|---------------|-----------|
+| xiaomi/mimo-v2.5 | S (budget) | $1.66 | 11.2M (uncached) | 334K | 32 min |
+| Claude Haiku 4.5 | S (alt) | $7.30 | 10.3M (58% cached) | 453K | 32 min |
+| Claude Sonnet 4.6 | M (mid) | $25.62 | 11.9M (48% cached) | 347K | 34 min |
+| Claude Opus 4.8 | L (frontier) | $184.16 | 17.4M (45% cached) | 369K | 25 min |
 
-Roughly a 100x cost spread from budget to frontier, driven by per-token rates,
-not volume: all four games run a comparable number of LLM calls (~880) and
-land within 2x on tokens and wall time. Cached input (the bracketed share
-above) is billed at 10% of the full input rate. The budget runner-up, Claude
-Haiku, lands in between, a Claude-family budget model at roughly 4x MiMo's cost
-but a quarter of Sonnet's. Per-token rates and the full six-model
-cost-and-competence comparison are in [`REFERENCE.md`](../../REFERENCE.md).
+Roughly a 100x cost spread from budget to frontier, driven by per-token rates:
+all four games run a comparable number of LLM calls (~880) in comparable wall
+time, and the three non-Opus models consume comparable input as well (~10-12M
+tokens each); Opus alone runs about 1.5x more (~17M), but that is mostly its
+tokenizer, Opus splits identical text into ~1.4x more tokens than Sonnet or Haiku
+(which share one tokenizer), not more content, and the gap is dwarfed anyway by
+its far higher per-token price. Cached input (the bracketed share above) is billed at
+10% of the full input rate. The budget runner-up, Claude Haiku, lands in between,
+a Claude-family budget model at roughly 4x MiMo's cost but a quarter of Sonnet's.
 
-Where those tokens go, using the canonical Sonnet game (885 calls, 11.9M
-input + 347K output) as the budget. Every call is one of three kinds, and the three
-account for the whole budget; there is no other token sink.
+Agents call the LLM for three reasons, negotiation, strategy, and moves. The
+table below tracks the calls and tokens of each kind, using the canonical Sonnet
+game.
 
 | call type | calls | input (prompt + context) | output | share of all tokens |
 |-----------|-------|--------------------------|--------|---------------------|
