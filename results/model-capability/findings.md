@@ -86,15 +86,16 @@ Three patterns recur across all four games, regardless of model family or price:
   stop too early to tell whether the reflex could actually hold a determined leader
   back.
 - **A coordination-failure ladder.** The three tier models, MiMo, Sonnet, and
-  Opus, all try to coordinate (support orders) and fail in tiers that climb the
-  competence stack. MiMo's supports are
-  often **illegal** (it mis-models which provinces a fleet can reach). Sonnet's
-  supports are legal but **bounce** (it cannot engineer the strength to break a
-  wall). Opus's supports **land**, but it jams its own units (**self-bounce**). As
-  capability rises, the failure moves from "doesn't model the geometry" to "models
-  it but can't break a line" to "breaks lines but trips over its own ambition."
-  Haiku falls off the bottom of the ladder: with the lowest support rate of all
-  (8%) it mostly does not try, so its failure is absence rather than misfire.
+  Opus, all try to coordinate via support orders but still fail in tiers that climb
+  the competence stack. For instance, MiMo's supports are often **illegal** (it
+  mis-models which provinces a fleet can reach). While Sonnet's supports are legal
+  but **bounce** (it cannot engineer the strength to break a wall). Opus's supports
+  **land**, but it jams its own units (**self-bounce**). So as LLM capability rises,
+  the failure moves from "doesn't comprehend gameboard geometry" to "understands
+  the geometry but can't break a defensive line" to "breaks lines but trips over
+  its own ambition." Haiku falls off the bottom of the ladder: with the lowest
+  support rate of all (8%) it mostly does not try, so its failure is absence rather
+  than misfire.
 - **The self-bounce paradox.** Counterintuitively the cheapest model is the
   spatially cleanest (MiMo, 0 self-bounces) and the frontier model the messiest
   (Opus, 16); Haiku, also low-ambition, jams itself just 4 times. Self-bounces
