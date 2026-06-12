@@ -139,16 +139,14 @@ should've instead supported.
 
 ## Four LLMs head-to-head (the leaderboard)
 
-Seven counterbalanced ten-year games run by
-[`experiments/llm_axis.py`](../../experiments/llm_axis.py): three test models, Opus
+Seven counterbalanced ten-year games, launched with `caffeinate -i python
+experiments/llm_axis.py`: three test models, Opus
 (frontier), Haiku (small Claude), and MiMo (budget), each rotate through all seven
 powers once, against a field of the mid-tier Sonnet on the other four seats.
 Because every test model plays each power exactly once, board position is averaged
 out and each is measured against the same Sonnet field. The cross-game plots below
 are collected in the
-**[rotation dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)**
-(derived from the seven transcripts by
-[`experiments/model_capability/build_axis_dashboard.py`](../../experiments/model_capability/build_axis_dashboard.py)).
+**[rotation dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)**.
 
 **On territory, a clear ranking.** Ten years is long enough for capability to
 separate the field, and it does. Final supply centers per nation: Opus 6.6, Sonnet
