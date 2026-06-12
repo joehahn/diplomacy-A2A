@@ -3,14 +3,14 @@
 
 This study compares 4 LLMs across the price/capability spectrum: mimo-v2.5
 (budget), Claude Haiku 4.5 (small Claude), Claude Sonnet 4.6 (mid-tier), and
-Claude Opus 4.8 (frontier). The price tiers are not parameter counts, and the two
-decouple: MiMo is cheap but not small, a 311B-parameter open MoE, larger than the
-genuinely small (~20B) Haiku yet a fraction of the Claude models' cost. This
-investigation has two parts:
+Claude Opus 4.8 (frontier). Note though that the price tiers do not always scale
+with the model parameter counts; MiMo is inexpensive but not small, and its size
+resides between Haiku and Sonnet. This investigation has two parts:
 
 1. **Assessing self-play**: the same LLM plays against itself while driving all 7
    players in a game, one game per model. These games don't rank models, they
-   instead characterize each LLM's playing styles which are quite different.
+   instead allow us to characterize each LLM's playing styles and competencies
+   which are quite different.
 2. **LLM head-to-head**: the models meet on one board across seven counterbalanced
    ten-year games. Each game seats three test players, one Opus, one Haiku, and one
    MiMo, against a field of four Sonnets, with the test models spread apart for
@@ -98,6 +98,28 @@ Three patterns recur across all four games, regardless of model family or price:
 
 A longer Opus-vs-Sonnet read lives in [`REFERENCE.md`](../../REFERENCE.md) under
 "Opus vs Sonnet: play style."
+
+### Post-mortem: asking the model about its biggest mistake
+
+The `ask` subcommand reconstructs a finished power's view of a game and puts a
+question to it, answered by the model that played it. We aimed it at the single
+move that decided the Opus self-play game. In spring 1910 England, the board
+leader at eight centers, attacked Germany's last home center Berlin with one
+supporting fleet; France held two idle units that could each have stopped it
+(`A RUH-KIE` to cut the support, or `A MUN` to support Berlin's defense), yet spent
+both guarding Munich, which no one was attacking. Berlin fell, Germany was
+eliminated (the game's only death), and England reached nine.
+
+Asked why, France's agent did not rationalize, it diagnosed itself: it was "too
+invested in keeping the literal letter of my 'clean boundary' deal with
+England... valued the appearance of a quiet western front over the substance of
+checking the leader, and treated Berlin as already gone rather than as a center
+worth contesting for free." It had spent the back half of the game telling Russia
+and Italy that England was the only power who could solo and had to be stopped,
+"and then on the one turn I could cheaply pin or deny him, I held still. Cutting
+Kiel's support was the correct move and I missed it." This is the containment
+reflex of the self-play games, explained from the inside: a negotiated DMZ with
+the leader, honored to the letter, outweighed the coalition it was meant to serve.
 
 ## Four LLMs head-to-head (the leaderboard)
 
