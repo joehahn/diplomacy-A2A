@@ -230,15 +230,15 @@ contains many more diagnostic plots.
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
-Mean number of supply centers (SC) held by each LLM. Opus pulls ahead and stays
-ahead from 1905, while the remaining LLMs trail in rough order of their model
-scale (published or estimated parameter size).
+**Mean number of supply centers (SC) held by each LLM.** Opus pulls ahead and
+stays ahead from 1905, while the remaining LLMs trail in rough order of their
+model scale.
 
 ![Dominant and squeezed games over time](dashboard/threshold_trajectories.svg)
 
-The fraction of each model's games in which its nation is dominant (≥5 supply
-centers, left) or squeezed (≤4, right), by year. By 1910 Opus is dominant in every
-game and never squeezed; Haiku is the mirror image, with Sonnet and MiMo between.
+**The frequency in which each LLM is dominant (≥5 supply centers, left) or is
+squeezed (≤4, right) versus time.** By 1910 Opus is dominant in every game and never
+squeezed; Haiku is the mirror image, with Sonnet and MiMo between.
 
 - **Capability shows up as territory, but only over a long game.** Across ten
   years the models separate cleanly on supply centers, Opus 6.6, Sonnet 4.9, MiMo
