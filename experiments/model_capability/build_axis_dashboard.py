@@ -1434,11 +1434,6 @@ def build_index(data: dict) -> str:
         "(or as a share) so the four models compare despite Sonnet, the field, playing "
         "four nations per game to each test model's one.</p>",
         kpi_table(data),
-
-        "<p class='sub' style='margin-top:32px'>Plots derived from the seven game "
-        "transcripts by <code>experiments/model_capability/build_axis_dashboard.py</code>. "
-        "Per-game dashboards and the negotiation transcripts live under each game's "
-        "own folder.</p>",
     ]
     return ("<!doctype html><html><head><meta charset='utf-8'>"
             "<meta name='viewport' content='width=device-width, initial-scale=1'>"
