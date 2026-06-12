@@ -115,20 +115,28 @@ eliminated (the game's only death), and England increased its lead to nine.
 
 This query restricts France to what it knew that spring (`--phase S1910M`):
 
-    python -m diplomacy_a2a ask results/opus-reference/2026-06-09.17.03.53 FRANCE \
-      "This spring England is attacking Germany's last center Berlin (F BAL-BER supported by F KIE), and England leads the board at 8 centers. You ordered A MUN to hold with A RUH supporting it, but Munich is not under attack. A RUH-KIE would have cut England's support, or A MUN could have supported Berlin to hold, either of which denies the leader Berlin. What drove your choice to keep both units on Munich instead?" \
+    python -m diplomacy_a2a ask \
+      results/opus-reference/2026-06-09.17.03.53 FRANCE \
+      "This spring England is attacking Germany's last center
+      Berlin (F BAL-BER supported by F KIE), and England leads the
+      board at 8 centers. You ordered A MUN to hold with A RUH
+      supporting it, but Munich is not under attack. A RUH-KIE would
+      have cut England's support, or A MUN could have supported
+      Berlin to hold, either of which denies the leader Berlin. What
+      drove your choice to keep both units on Munich instead?" \
       --phase S1910M
 
-Asked why, France's agent did not rationalize, it diagnosed itself: it was "too
-invested in keeping the literal letter of my 'clean boundary' deal with
-England... valued the appearance of a quiet western front over the substance of
-checking the leader, and treated Berlin as already gone rather than as a center
-worth contesting for free." It had spent the back half of the game telling Russia
+Asked why, France's agent did not rationalize, it diagnosed itself: "I was too
+invested in keeping the literal letter of my 'clean boundary' deal with England,
+valued the appearance of a quiet western front over the substance of checking the
+leader, and treated Berlin as already gone rather than as a center worth
+contesting for free." It had spent the back half of the game telling Russia
 and Italy that England was the only power who could solo and had to be stopped,
 "and then on the one turn I could cheaply pin or deny him, I held still. Cutting
-Kiel's support was the correct move and I missed it." This is the containment
-reflex of the self-play games, explained from the inside: a negotiated DMZ with
-the leader, honored to the letter, outweighed the coalition it was meant to serve.
+Kiel's support was the correct move and I missed it." This is why the anti-leader
+coalition forms in chat but never on the board, explained from the inside: a
+negotiated DMZ with the leader, honored to the letter, outweighed the coalition it
+should've instead supported.
 
 ## Four LLMs head-to-head (the leaderboard)
 
