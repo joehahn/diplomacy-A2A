@@ -220,7 +220,7 @@ sub-second; it globs `results/model-capability/*/transcript.jsonl`:
 
     python experiments/model_capability/build_axis_dashboard.py
 
-## Main findings
+## Quantifying LLM gameplay abilities
 
 The seven-game rotation in one place. Each bullet is a result from the dashboard
 above; together they are the outline of the longer story this section will tell.
@@ -228,9 +228,8 @@ above; together they are the outline of the longer story this section will tell.
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
 *The four models climb out of the opening together and stay tangled until about
-1905, when Opus diverges upward while the budget models stay locked at the bottom.
-The long game converts the frontier model's cleaner execution into a territorial
-lead.*
+1905, when Opus diverges upward while the budget models stay locked at the
+bottom.*
 
 - **Capability shows up as territory, but only over a long game.** Across ten
   years the models separate cleanly on supply centers, Opus 6.6, Sonnet 4.9, MiMo
