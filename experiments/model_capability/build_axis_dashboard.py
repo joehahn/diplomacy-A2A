@@ -1104,7 +1104,7 @@ def plot_spend_frontier(final: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "9. Final supply centers vs spend rate")
+    s = _svg_open(w, h, "Final supply centers vs spend rate")
     s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
              f"stroke='#bbb' stroke-width='0.8'/>")
     s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
@@ -1151,14 +1151,17 @@ def plot_spend_frontier(final: dict) -> str:
                  f"stroke='#222' stroke-width='1.4'/>")
     lxleg = w - pad_r + 18
     legend_models = list(reversed(ORDER))
-    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 13 - 22
+    entry_h = 30
+    ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * entry_h / 2 - 16
     for i, m in enumerate(legend_models):
-        ly = ly0 + i * 26
+        ly = ly0 + i * entry_h
         s.append(f"<circle cx='{lxleg+5}' cy='{ly-3:.0f}' r='6' fill='{COLOR[m]}' "
                  f"stroke='#222' stroke-width='1.2'/>")
         s.append(f"<text x='{lxleg+18}' y='{ly+1:.0f}' font-size='11' fill='#444'>"
                  f"{m} <tspan fill='#999'>${SPEND_PER_MIN[m]:.2f}/min</tspan></text>")
-    _fit_legend(s, lxleg, ly0 + len(legend_models) * 26 + 6, "$/min", b_exp)
+        s.append(f"<text x='{lxleg+18}' y='{ly+13:.0f}' font-size='10' fill='#999'>"
+                 f"{PARAMS_B[m][3]}</text>")
+    _fit_legend(s, lxleg, ly0 + len(legend_models) * entry_h + 6, "$/min", b_exp)
     s.append("</svg>")
     return "\n".join(s)
 
