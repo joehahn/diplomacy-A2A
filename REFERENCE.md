@@ -962,6 +962,14 @@ so a rerun will produce *similar* dynamics, not identical transcripts.
 Model IDs are pinned in `diplomacy_a2a/config.py` so reruns are
 comparable across model releases.
 
+Per-call sampling temperatures live in `agent.py` (0.6 strategy, 0.8
+negotiation, 0.7 orders) on Anthropic's 0.0-1.0 scale; `DEFAULT_TEMPERATURE = 1.0`
+in `config.py` is the fallback maximum. One caveat for the model-capability study:
+**Opus 4.8 runs at a fixed temperature**. The client omits the parameter for
+`claude-opus-4-8` (`_OMIT_TEMPERATURE_PREFIXES` in `anthropic_client.py`), since
+that tier deprecates an explicit temperature, so those settings have no effect in
+the Opus games.
+
 The `render` subcommand is free (no LLM); `commentary` adds about $0.03
 per phase of Sonnet calls (e.g. ≈$1 for the canonical's 33-phase game,
 ≈$0.50 for an 18-phase game); `--with-commentary` rolls game +
