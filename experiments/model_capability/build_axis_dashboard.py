@@ -575,9 +575,9 @@ def plot_trajectory(traj: dict) -> str:
             s.append(f"<circle cx='{x:.1f}' cy='{yf(mean):.1f}' r='3.5' "
                      f"fill='{COLOR[m]}'/>")
 
-    # legend at right, cheap -> frontier top to bottom: MiMo, Sonnet, Opus
+    # legend at right, frontier -> cheap top to bottom: Opus, Sonnet, Haiku, MiMo
     lx = w - pad_r + 20
-    legend_models = list(reversed(ORDER))
+    legend_models = list(ORDER)
     ly0 = pad_t + plot_h / 2 - (len(legend_models) - 1) * 12
     for i, m in enumerate(legend_models):
         ly = ly0 + i * 24
