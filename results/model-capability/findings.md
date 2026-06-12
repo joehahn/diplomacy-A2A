@@ -205,6 +205,21 @@ the two budget models trail, the smallest model (Haiku) last and the cheapest
 (MiMo) the best value. Scale and spend both predict territory once the game is long
 enough to turn execution into ground.
 
+**Head-to-head rotation (seven 10-year games, ~$240, ~4 hours).** Opus, Haiku, and
+MiMo rotate through all powers against a Sonnet field; the roster and balanced
+rotation live in [`experiments/llm_axis.py`](../../experiments/llm_axis.py). It
+runs sequentially and is resumable (a re-run skips games already finished), and
+`caffeinate -i` keeps the Mac awake for the duration:
+
+    caffeinate -i python experiments/llm_axis.py          # full sweep
+    python experiments/llm_axis.py --dry-run              # print the 7 commands, run nothing
+    python experiments/llm_axis.py --smoke                # one 1-year game to scratch/, to sanity-check
+
+**Rebuild the rotation dashboard (the cross-game plots above).** No LLM calls,
+sub-second; it globs `results/model-capability/*/transcript.jsonl`:
+
+    python experiments/model_capability/build_axis_dashboard.py
+
 ## Main findings
 
 The seven-game rotation in one place. Each bullet is a result from the dashboard
@@ -212,11 +227,7 @@ above; together they are the outline of the longer story this section will tell.
 
 - **Capability shows up as territory, but only over a long game.** Across ten
   years the models separate cleanly on supply centers, Opus 6.6, Sonnet 4.9, MiMo
-  4.1, Haiku 3.7, where the three-year rotation had been a near-tie. Length is what
-  converts a model's execution edge into ground held.
-- **A counterbalanced design isolates the model from the nation it plays.** Opus,
-  Haiku, and MiMo each rotate through all seven powers once against a Sonnet field,
-  so the ranking reflects the model, not a strong Russia or a doomed Italy.
+  4.1, Haiku 3.7.
 - **The frontier edge is coordination, not tidy basic orders.** Opus issues support
   orders on ~35% of its moves, three to five times the rest, and that is the real
   separator. Illegal-order rate instead splits by budget tier (MiMo 8.5%, Haiku
@@ -240,21 +251,6 @@ above; together they are the outline of the longer story this section will tell.
   solo needs eighteen centers and far longer), and the Claude sizes are third-party
   estimates, not disclosed, so the size trend leans on the published MiMo (311B) and
   Haiku (~20B) anchors.
-
-**Head-to-head rotation (seven 10-year games, ~$240, ~4 hours).** Opus, Haiku, and
-MiMo rotate through all powers against a Sonnet field; the roster and balanced
-rotation live in [`experiments/llm_axis.py`](../../experiments/llm_axis.py). It
-runs sequentially and is resumable (a re-run skips games already finished), and
-`caffeinate -i` keeps the Mac awake for the duration:
-
-    caffeinate -i python experiments/llm_axis.py          # full sweep
-    python experiments/llm_axis.py --dry-run              # print the 7 commands, run nothing
-    python experiments/llm_axis.py --smoke                # one 1-year game to scratch/, to sanity-check
-
-**Rebuild the rotation dashboard (the cross-game plots above).** No LLM calls,
-sub-second; it globs `results/model-capability/*/transcript.jsonl`:
-
-    python experiments/model_capability/build_axis_dashboard.py
 
 ## Cost: the price spread these tiers represent
 
