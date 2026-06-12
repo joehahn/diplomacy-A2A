@@ -15,8 +15,8 @@ resides between Haiku and Sonnet. This investigation has two parts:
    ten-year games. Each game seats three test players, one Opus, one Haiku, and one
    MiMo, against a field of four Sonnets, with the test models spread apart for
    separation. Across the seven games Opus, Haiku, and MiMo each rotate through
-   every nation once, which averages out board position and builds an LLM
-   leaderboard for Diplomacy gameplay.
+   every nation once, which averages out board position and allows us to build an
+   LLM leaderboard for Diplomacy gameplay.
 
 ## The four models in self-play (style analysis)
 
@@ -109,6 +109,12 @@ supporting fleet; France held two idle units that could each have stopped it
 (`A RUH-KIE` to cut the support, or `A MUN` to support Berlin's defense), yet spent
 both guarding Munich, which no one was attacking. Berlin fell, Germany was
 eliminated (the game's only death), and England reached nine.
+
+The query, restricted to what France knew that spring (`--phase S1910M`):
+
+    python -m diplomacy_a2a ask results/opus-reference/2026-06-09.17.03.53 FRANCE \
+      "This spring England is attacking Germany's last center Berlin (F BAL-BER supported by F KIE), and England leads the board at 8 centers. You ordered A MUN to hold with A RUH supporting it, but Munich is not under attack. A RUH-KIE would have cut England's support, or A MUN could have supported Berlin to hold, either of which denies the leader Berlin. What drove your choice to keep both units on Munich instead?" \
+      --phase S1910M
 
 Asked why, France's agent did not rationalize, it diagnosed itself: it was "too
 invested in keeping the literal letter of my 'clean boundary' deal with
