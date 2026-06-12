@@ -30,7 +30,7 @@ tidiness is narrow: its ceiling is a geometry of another kind, ~6% of its orders
 are illegal, almost all of them non-adjacent support orders (a fleet "supporting"
 an attack it cannot reach), often the same impossible order re-issued for many
 turns. It reflexively dogpiles the leader, so
-its game is maximally contested and no one solos.
+its game is maximally contested.
 See [that game's dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html) for the play-by-play and summary stats.
 
 **Haiku *(budget runner-up)*: the agreeable diplomat.** The other budget candidate,
@@ -47,7 +47,7 @@ surging to seven centers, France warns the table "Russia is pulling away... let'
 check its growth" while its only support that turn is its own grab for Burgundy in
 the opposite direction. Russia is never checked, England quietly climbs to seven
 and sits unchallenged for five straight years, and the board churns through 21
-disbands without a single death or near-solo. That is the gap MiMo exploits: where
+disbands, the most of any game. That is the gap MiMo exploits: where
 MiMo coerces ("if you refuse I'll take it by force") and seizes the center, Haiku
 proposes a partnership and waits. The genial diplomat loses to the brawler.
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
@@ -77,11 +77,13 @@ already holds.
 
 Three patterns recur across all four games, regardless of model family or price:
 
-- **The containment reflex, and no solo.** Every model, every game, reflexively
-  names the leader and tries to organize a coalition against it. It works well
-  enough that none of the four games produces a solo winner; the leader is
-  always dragged back to a no-solo finish. This looks induced by the shared
-  persona/prompt as much as by the models.
+- **The containment reflex.** Every model, every game, reflexively names the
+  leader and tries to organize a coalition against it. This looks induced by the
+  shared persona/prompt as much as by the models. None of the four games ends in a
+  solo, but at ten years that proves little: a solo takes eighteen of the
+  thirty-four centers and rarely lands before the mid-1910s, so these games simply
+  stop too early to tell whether the reflex could actually hold a determined leader
+  back.
 - **A coordination-failure ladder.** The tier trio all try to coordinate (support
   orders) and fail in tiers that climb the competence stack. MiMo's supports are
   often **illegal** (it mis-models which provinces a fleet can reach). Sonnet's

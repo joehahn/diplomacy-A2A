@@ -1336,9 +1336,8 @@ def build_index(data: dict) -> str:
         "apart by capability: Opus never ends squeezed and is dominant in 71% of its "
         "games; Haiku is the opposite, often squeezed and never dominant; MiMo swings "
         "to both extremes; Sonnet sits balanced between. No nation was eliminated "
-        "outright in any of the seven ten-year games (the no-solo, no-death pattern "
-        "holds), so &le;3 units is the closest the rotation comes to a death "
-        "count.</figcaption></figure>",
+        "outright in any of the seven ten-year games, so &le;3 units is the closest "
+        "the rotation comes to a death count.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='polarization_by_size.svg'></object>",
         "<figcaption><b>The same, ordered by model size.</b> Identical data, but the "
