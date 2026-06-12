@@ -49,7 +49,7 @@ the opposite direction. Russia is never checked, England quietly climbs to seven
 and sits unchallenged for five straight years, and the board churns through 21
 disbands, the most of any game. That is the gap MiMo exploits: where
 MiMo coerces ("if you refuse I'll take it by force") and seizes the center, Haiku
-proposes a partnership and waits. The genial diplomat loses to the brawler.
+proposes a partnership and then waits. The genial diplomat loses to the brawler.
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
 
 **Sonnet *(M, mid)*: the polite accountant.** Articulate, rule-literate, and
@@ -58,8 +58,9 @@ coordination is conceptually correct yet mechanically fragile: plans bounce, the
 board stalemates, and it re-issues the same failed move for five or six seasons
 (France threw `A BUR - MUN` six times before Munich fell). Anti-leader coalitions
 form in chat but never on the board, so the leader (England, 8-9 centers) is
-never finished or checked. Tidy on defense, low on betrayal, and lighter on
-ruthlessness than its own persona prescribes.
+never finished or checked. Tidy on defense, low on betrayal, and milder than the
+aggressive, play-to-win persona every agent is prompted with (which tells them to
+grow relentlessly and break a quiet front rather than keep it).
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)
 
 **Opus *(L, frontier)*: the staff officer.** Plays like seven disciplined staff
