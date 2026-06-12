@@ -111,9 +111,9 @@ leader at eight centers, attacked Germany's last home center Berlin with one
 supporting fleet; France held two idle units that could each have stopped it
 (`A RUH-KIE` to cut the support, or `A MUN` to support Berlin's defense), yet spent
 both guarding Munich, which no one was attacking. Berlin fell, Germany was
-eliminated (the game's only death), and England reached nine.
+eliminated (the game's only death), and England increased its lead to nine.
 
-The query, restricted to what France knew that spring (`--phase S1910M`):
+This query restricts France to what it knew that spring (`--phase S1910M`):
 
     python -m diplomacy_a2a ask results/opus-reference/2026-06-09.17.03.53 FRANCE \
       "This spring England is attacking Germany's last center Berlin (F BAL-BER supported by F KIE), and England leads the board at 8 centers. You ordered A MUN to hold with A RUH supporting it, but Munich is not under attack. A RUH-KIE would have cut England's support, or A MUN could have supported Berlin to hold, either of which denies the leader Berlin. What drove your choice to keep both units on Munich instead?" \
