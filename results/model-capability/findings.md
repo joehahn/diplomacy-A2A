@@ -212,7 +212,7 @@ The headline cost of one 10-year self-play game per model:
 | M (mid) | Claude Sonnet 4.6 | $25.62 | 11.9M (48% cached) | 347K | 34 min |
 | L (frontier) | Claude Opus 4.8 | $184.16 | 17.4M (45% cached) | 369K | 25 min |
 
-Roughly a 110x cost spread from budget to frontier, driven by per-token rates,
+Roughly a 100x cost spread from budget to frontier, driven by per-token rates,
 not volume: all four games run a comparable number of LLM calls (~880) and
 land within 2x on tokens and wall time. Cached input (the bracketed share
 above) is billed at 10% of the full input rate. The budget runner-up, Claude

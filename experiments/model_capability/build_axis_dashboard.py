@@ -741,8 +741,8 @@ def _bar_panels(number: int, title: str, panels: list,
                 s.append(f"<text x='{cx:.1f}' y='{y_hi-6:.1f}' text-anchor='middle' "
                          f"font-size='11.5' font-weight='700' fill='{COLOR[m]}'>"
                          f"{fmt.format(val)}</text>")
-            s.append(f"<text x='{cx:.1f}' y='{baseline+17:.1f}' text-anchor='middle' "
-                     f"font-size='12' fill='#555'>{m}</text>")
+            s.append(f"<text x='{cx:.1f}' y='{baseline+18:.1f}' text-anchor='middle' "
+                     f"font-size='12.5' font-weight='600' fill='#333'>{m}</text>")
     s.append("</svg>")
     return "\n".join(s)
 
