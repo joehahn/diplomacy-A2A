@@ -590,7 +590,81 @@ def plot_trajectory(traj: dict) -> str:
     return "\n".join(s)
 
 
-# --- plots 3 & 4: competence and negotiation bar panels ---------------------
+# --- plot 3: dominant / squeezed fraction over time -------------------------
+
+def plot_threshold_trajectories(traj: dict) -> str:
+    """Two adjacent time series: the fraction of each model's games in which its
+    nation is dominant (SC >= 6, left) or squeezed (SC <= 3, right), by year,
+    with binomial standard-error bars."""
+    years = sorted(traj)
+    w, h = 760, 380
+    pad_t, pad_b = 60, 78
+    plot_h = h - pad_t - pad_b
+    half = w / 2
+    pad_l, pad_r = 48, 24
+    plot_w = half - pad_l - pad_r
+
+    def xf(ox, yr):
+        return ox + pad_l + plot_w * (years.index(yr) / (len(years) - 1))
+
+    def yf(v):
+        return pad_t + plot_h * (1 - v)            # v is a fraction in [0, 1]
+
+    s = _svg_open(w, h, "3. Dominant and squeezed games over time")
+    s.append(f"<text x='14' y='{pad_t+plot_h/2:.0f}' font-size='10' fill='#777' "
+             f"transform='rotate(-90 14 {pad_t+plot_h/2:.0f})' "
+             f"text-anchor='middle'>fraction of this model's games</text>")
+
+    panels = [(0.0, "Dominant (SC ≥ 6)", lambda v: v >= 6),
+              (half, "Squeezed (SC ≤ 3)", lambda v: v <= 3)]
+    for ox, ptitle, ok in panels:
+        s.append(f"<text x='{ox+pad_l+plot_w/2:.0f}' y='{pad_t-16}' "
+                 f"text-anchor='middle' font-size='12' font-weight='600' "
+                 f"fill='#333'>{ptitle}</text>")
+        for gy in (0.0, 0.25, 0.5, 0.75, 1.0):
+            yy = yf(gy)
+            s.append(f"<line x1='{ox+pad_l}' y1='{yy:.1f}' x2='{ox+pad_l+plot_w}' "
+                     f"y2='{yy:.1f}' stroke='#eee' stroke-width='1'/>")
+            s.append(f"<text x='{ox+pad_l-7}' y='{yy+3:.1f}' text-anchor='end' "
+                     f"font-size='9' fill='#999'>{gy:.2f}</text>")
+        for yr in years:
+            if yr % 2 == 0:
+                lbl = "start" if yr == 1900 else str(yr)
+                s.append(f"<text x='{xf(ox, yr):.1f}' y='{pad_t+plot_h+16:.0f}' "
+                         f"text-anchor='middle' font-size='9' fill='#999'>{lbl}</text>")
+        for m in ORDER:
+            pts = []
+            for yr in years:
+                vals = traj[yr][m]
+                n = len(vals)
+                p = sum(1 for v in vals if ok(v)) / n if n else 0.0
+                e = math.sqrt(p * (1 - p) / n) if n else 0.0
+                pts.append((xf(ox, yr), p, e))
+            d = " ".join(f"{'M' if i == 0 else 'L'} {x:.1f} {yf(p):.1f}"
+                         for i, (x, p, _) in enumerate(pts))
+            s.append(f"<path d='{d}' fill='none' stroke='{COLOR[m]}' stroke-width='2.2'/>")
+            for x, p, e in pts:
+                if e > 0:
+                    y_hi, y_lo = yf(min(p + e, 1.0)), yf(max(p - e, 0.0))
+                    s.append(f"<line x1='{x:.1f}' y1='{y_hi:.1f}' x2='{x:.1f}' "
+                             f"y2='{y_lo:.1f}' stroke='{COLOR[m]}' stroke-width='1.1'/>")
+                    for yy in (y_hi, y_lo):
+                        s.append(f"<line x1='{x-3:.1f}' y1='{yy:.1f}' x2='{x+3:.1f}' "
+                                 f"y2='{yy:.1f}' stroke='{COLOR[m]}' stroke-width='1.1'/>")
+                s.append(f"<circle cx='{x:.1f}' cy='{yf(p):.1f}' r='3' fill='{COLOR[m]}'/>")
+
+    items = list(reversed(ORDER))                  # MiMo, Haiku, Sonnet, Opus
+    cur = w / 2 - len(items) * 60
+    for m in items:
+        s.append(f"<rect x='{cur:.0f}' y='{h-20}' width='12' height='12' rx='2' "
+                 f"fill='{COLOR[m]}'/>")
+        s.append(f"<text x='{cur+17:.0f}' y='{h-10}' font-size='11' fill='#444'>{m}</text>")
+        cur += 120
+    s.append("</svg>")
+    return "\n".join(s)
+
+
+# --- plots 4 & 5: competence and negotiation bar panels ---------------------
 
 def _poisson_err(k: int, n: int, scale: float = 100.0) -> tuple[float, bool]:
     """1-sigma Poisson error on a bar of value scale*k/n. k is an event count
@@ -693,7 +767,7 @@ def plot_competence(raw: dict) -> str:
         ("Convoy rate", "% of orders · rare",
          {m: _rate(raw, m, "convoy", "orders") for m in ORDER}, "{:.1f}%"),
     ]
-    return _bar_panels(3, "Competence by model", panels, per_row=4, show_values=True)
+    return _bar_panels(4, "Competence by model", panels, per_row=4, show_values=True)
 
 
 def plot_negotiation(raw: dict) -> str:
@@ -707,7 +781,7 @@ def plot_negotiation(raw: dict) -> str:
         ("Betrayals", "% of messages · heuristic",
          {m: _rate(raw, m, "betray", "msgs") for m in ORDER}, "{:.1f}%"),
     ]
-    return _bar_panels(4, "Negotiation by model", panels, show_values=True)
+    return _bar_panels(5, "Negotiation by model", panels, show_values=True)
 
 
 def plot_od_means(od_points: dict) -> str:
@@ -739,7 +813,7 @@ def plot_od_means(od_points: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "5. Mean offence vs defence per model")
+    s = _svg_open(w, h, "6. Mean offence vs defence per model")
     s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
              f"stroke='#bbb' stroke-width='0.8'/>")
     s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
@@ -788,7 +862,7 @@ def plot_od_means(od_points: dict) -> str:
 
 
 
-# --- plot 6: cost-performance frontier (prototype) --------------------------
+# --- plot 7: cost-performance frontier (prototype) --------------------------
 
 def plot_cost_frontier(data: dict) -> str:
     """Per-dollar view: each KPI plotted against cost per nation-game (log x),
@@ -839,7 +913,7 @@ def plot_cost_frontier(data: dict) -> str:
     s = [f"<svg viewBox='0 0 {w} {h}' xmlns='http://www.w3.org/2000/svg' "
          f"font-family='{FONT}' width='{w}' height='{h}'>",
          f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
-         f"font-weight='600' fill='#333'>6. KPIs per dollar "
+         f"font-weight='600' fill='#333'>7. KPIs per dollar "
          f"(cost-performance frontier)</text>"]
     for pi, (ptitle, hint, dat, fmt) in enumerate(panels):
         ox = (pi % per_row) * pw
@@ -903,7 +977,7 @@ def plot_cost_frontier(data: dict) -> str:
     return "\n".join(s)
 
 
-# --- plot 7: final centers vs model size (speculative) ----------------------
+# --- plot 8: final centers vs model size (speculative) ----------------------
 
 def plot_param_frontier(data: dict) -> str:
     """Final supply centers vs total parameter count (log x). Vertical bars are
@@ -934,7 +1008,7 @@ def plot_param_frontier(data: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "7. Final supply centers vs model size")
+    s = _svg_open(w, h, "8. Final supply centers vs model size")
     s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
              f"stroke='#bbb' stroke-width='0.8'/>")
     s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
@@ -1006,12 +1080,12 @@ def plot_param_frontier(data: dict) -> str:
     return "\n".join(s)
 
 
-# --- plot 8: SC vs spend rate ------------------------------------------------
+# --- plot 9: SC vs spend rate ------------------------------------------------
 
 def plot_spend_frontier(final: dict) -> str:
     """Final supply centers against each model's spend rate (US dollars per minute
     of wall-clock in its self-play game), on a log x-axis, with a best-fit power
-    law. Burn rate is an intrinsic model property, like size in plot 7."""
+    law. Burn rate is an intrinsic model property, like size in plot 8."""
     def sem(vals):
         return statistics.stdev(vals) / math.sqrt(len(vals)) if len(vals) > 1 else 0.0
 
@@ -1032,7 +1106,7 @@ def plot_spend_frontier(final: dict) -> str:
     def yf(v):
         return pad_t + plot_h * (1 - (v - y0) / (y1 - y0))
 
-    s = _svg_open(w, h, "8. Final supply centers vs spend rate")
+    s = _svg_open(w, h, "9. Final supply centers vs spend rate")
     s.append(f"<line x1='{pad_l}' y1='{pad_t}' x2='{pad_l}' y2='{pad_t+plot_h}' "
              f"stroke='#bbb' stroke-width='0.8'/>")
     s.append(f"<line x1='{pad_l}' y1='{pad_t+plot_h}' x2='{pad_l+plot_w}' "
@@ -1094,7 +1168,7 @@ def plot_spend_frontier(final: dict) -> str:
     return "\n".join(s)
 
 
-# --- plots 9-10: outcome polarization (squeezed vs dominant) -----------------
+# --- plots 10-11: outcome polarization (squeezed vs dominant) ----------------
 
 def plot_polarization(final_units: dict, plot_order: list, num: int,
                       order_label: str) -> str:
@@ -1258,6 +1332,17 @@ def build_index(data: dict) -> str:
         "into a territorial lead, which the 3-year rotation was too short to "
         "show.</figcaption></figure>",
 
+        "<figure><object type='image/svg+xml' data='threshold_trajectories.svg'></object>",
+        "<figcaption><b>Dominant and squeezed games over time.</b> The same outcome "
+        "split into two thresholds and tracked by year: the fraction of each model's "
+        "games in which its nation is dominant (&ge;6 supply centers, left) or squeezed "
+        "(&le;3, right). Opus's dominant share climbs steadily to ~0.7 while its squeezed "
+        "share falls to zero; the budget models are the mirror, their dominant share "
+        "barely lifts off the floor while their squeezed share stays high. Error bars are "
+        "1&sigma; binomial standard error (&radic;(p(1&minus;p)/n)), wide for the "
+        "single-seat test models (n=7) and tighter for the Sonnet field "
+        "(n=28).</figcaption></figure>",
+
         "<figure><object type='image/svg+xml' data='competence.svg'></object>",
         "<figcaption><b>Competence splits by tier, but not by price alone.</b> The two "
         "budget models post the highest illegal-order rates (MiMo 8.5%, Haiku 8.8%) "
@@ -1379,6 +1464,8 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     (out / "final_centers.svg").write_text(plot_final(data["final"]))
     (out / "sc_trajectory.svg").write_text(plot_trajectory(data["traj"]))
+    (out / "threshold_trajectories.svg").write_text(
+        plot_threshold_trajectories(data["traj"]))
     (out / "competence.svg").write_text(plot_competence(data["raw"]))
     (out / "negotiation.svg").write_text(plot_negotiation(data["raw"]))
     (out / "offence_defence_means.svg").write_text(plot_od_means(data["od_points"]))
@@ -1388,9 +1475,9 @@ def main() -> int:
     cost_order = list(reversed(ORDER))                       # MiMo, Haiku, Sonnet, Opus
     size_order = sorted(ORDER, key=lambda m: PARAMS_B[m][1])  # Haiku, MiMo, Sonnet, Opus
     (out / "polarization.svg").write_text(
-        plot_polarization(data["final_units"], cost_order, 9, "cost"))
+        plot_polarization(data["final_units"], cost_order, 10, "cost"))
     (out / "polarization_by_size.svg").write_text(
-        plot_polarization(data["final_units"], size_order, 10, "model size"))
+        plot_polarization(data["final_units"], size_order, 11, "model size"))
     (out / "index.html").write_text(build_index(data))
     # remove superseded artifacts
     for stale in ("offence_defence_bars.svg", "offence_defence.svg",
