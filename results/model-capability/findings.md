@@ -88,7 +88,7 @@ Three patterns recur across all four games, regardless of model family or price:
 - **A coordination-failure ladder.** The three tier models, MiMo, Sonnet, and
   Opus, all try to coordinate via support orders but still fail in tiers that climb
   the competence stack. For instance, MiMo's supports are often **illegal** (it
-  mis-models which provinces a fleet can reach). While Sonnet's supports are legal
+  mis-models which provinces a fleet can reach), while Sonnet's supports are legal
   but **bounce** (it cannot engineer the strength to break a wall). Opus's supports
   **land**, but it jams its own units (**self-bounce**). So as LLM capability rises,
   the failure moves from "doesn't comprehend gameboard geometry" to "understands
