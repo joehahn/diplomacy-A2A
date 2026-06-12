@@ -205,6 +205,42 @@ the two budget models trail, the smallest model (Haiku) last and the cheapest
 (MiMo) the best value. Scale and spend both predict territory once the game is long
 enough to turn execution into ground.
 
+## Main findings
+
+The seven-game rotation in one place. Each bullet is a result from the dashboard
+above; together they are the outline of the longer story this section will tell.
+
+- **Capability shows up as territory, but only over a long game.** Across ten
+  years the models separate cleanly on supply centers, Opus 6.6, Sonnet 4.9, MiMo
+  4.1, Haiku 3.7, where the three-year rotation had been a near-tie. Length is what
+  converts a model's execution edge into ground held.
+- **A counterbalanced design isolates the model from the nation it plays.** Opus,
+  Haiku, and MiMo each rotate through all seven powers once against a Sonnet field,
+  so the ranking reflects the model, not a strong Russia or a doomed Italy.
+- **The frontier edge is coordination, not tidy basic orders.** Opus issues support
+  orders on ~35% of its moves, three to five times the rest, and that is the real
+  separator. Illegal-order rate instead splits by budget tier (MiMo 8.5%, Haiku
+  8.8% against Sonnet 3.7%, Opus 4.8%), a geometry ceiling rather than a capability
+  ladder.
+- **Each model negotiates in a recognizable voice.** Sonnet drives the hardest
+  bargains, Haiku is the alliance-talker (30% alliance language against Opus's 5%),
+  MiMo is the talkative brawler, and Opus barely courts coalitions, it coordinates
+  units instead. The dialogue, the project's actual deliverable, is where the
+  personalities show.
+- **Spend buys ground, but cost is a noisy proxy for capability.** Final centers
+  climb with price across a ~95x span, yet not monotonically, Haiku costs 5x MiMo
+  and wins fewer centers, a value-trap, which makes the cheapest model the best
+  value.
+- **The cleanest capability signal is size, not price.** Reordered by parameter
+  count, board dominance climbs monotonically, the share of games a model ends
+  dominant runs 0% (Haiku ~20B) to 29% (MiMo 311B) to 39% (Sonnet ~1-2T) to 71%
+  (Opus ~1.5-5T). Raw capacity, not dollars, tracks who controls the board (centers
+  scale as roughly params^0.10, a shallow but real slope).
+- **Stated honestly, the limits.** No nation was eliminated in any ten-year game (a
+  solo needs eighteen centers and far longer), and the Claude sizes are third-party
+  estimates, not disclosed, so the size trend leans on the published MiMo (311B) and
+  Haiku (~20B) anchors.
+
 **Head-to-head rotation (seven 10-year games, ~$240, ~4 hours).** Opus, Haiku, and
 MiMo rotate through all powers against a Sonnet field; the roster and balanced
 rotation live in [`experiments/llm_axis.py`](../../experiments/llm_axis.py). It
