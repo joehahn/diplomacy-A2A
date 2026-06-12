@@ -222,9 +222,8 @@ sub-second; it globs `results/model-capability/*/transcript.jsonl`:
 
 ## Quantifying LLM gameplay abilities
 
-We analyze seven ten-year games played by four LLMs, from budget to frontier
-(MiMo, Haiku, Sonnet, and Opus), to quantify each model's aggregated successes and
-failures. The figures here are a few highlights; the [full
+The following analyzes the seven Diplomacy games played by four LLMs (described
+above) to quantify each model's aggregated successes and failures. The figures here are a few highlights; the [full
 dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)
 contains many more diagnostic plots.
 
