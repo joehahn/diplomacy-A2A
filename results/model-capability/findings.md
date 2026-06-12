@@ -222,8 +222,11 @@ sub-second; it globs `results/model-capability/*/transcript.jsonl`:
 
 ## Quantifying LLM gameplay abilities
 
-The seven-game rotation in one place. Each bullet is a result from the dashboard
-above; together they are the outline of the longer story this section will tell.
+We analyze seven ten-year games played by four LLMs, from budget to frontier
+(MiMo, Haiku, Sonnet, and Opus), to quantify each model's aggregate successes and
+failures. The figures here are a few highlights from the [full
+dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html),
+which contains many more plots.
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
