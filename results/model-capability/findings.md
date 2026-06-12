@@ -203,7 +203,7 @@ enough to turn execution into ground.
 
 ## Cost: the price spread these tiers represent
 
-The headline cost of one 10-year self-play game per model:
+The cost of one 10-year game of self-play per model:
 
 | model | tier | 10-year self-play cost | input tokens | output tokens | wall time |
 |-------|------|------------------------|--------------|---------------|-----------|
@@ -215,14 +215,14 @@ The headline cost of one 10-year self-play game per model:
 Roughly a 100x cost spread from budget to frontier, driven by per-token rates:
 all four games run a comparable number of LLM calls (~880) in comparable wall
 time, and the three non-Opus models consume comparable input as well (~10-12M
-tokens each); Opus alone runs about 1.5x more (~17M), but that is mostly due to its tokenizer
-which splits identical text into ~1.4x more tokens than Sonnet or Haiku. Cached input (the bracketed share above) is billed at
-10% of the full input rate. The budget runner-up, Claude Haiku, lands in between,
-a Claude-family budget model at roughly 4x MiMo's cost but a quarter of Sonnet's.
+tokens each) while Opus consumes about 1.5x more (~17M), but that is mostly due
+to its tokenizer which splits identical text into ~1.4x more tokens than Sonnet
+or Haiku. Cached input (the bracketed share above) is billed at 10% of the full
+input rate. The budget runner-up, Claude Haiku, lands in between, a Claude-family
+budget model at roughly 4x MiMo's cost but a quarter of Sonnet's.
 
 Diplomacy agents call the LLM for three reasons: negotiation, strategy, and
-moves. The table below tracks the calls and tokens of each kind, using the
-canonical Sonnet game.
+moves, and the table below tracks Sonnet's calls and tokens.
 
 | call type | calls | input (prompt + context) | output | share of all tokens |
 |-----------|-------|--------------------------|--------|---------------------|
