@@ -85,8 +85,9 @@ Three patterns recur across all four games, regardless of model family or price:
   thirty-four centers and rarely lands before the mid-1910s, so these games simply
   stop too early to tell whether the reflex could actually hold a determined leader
   back.
-- **A coordination-failure ladder.** The tier trio all try to coordinate (support
-  orders) and fail in tiers that climb the competence stack. MiMo's supports are
+- **A coordination-failure ladder.** The three tier models, MiMo, Sonnet, and
+  Opus, all try to coordinate (support orders) and fail in tiers that climb the
+  competence stack. MiMo's supports are
   often **illegal** (it mis-models which provinces a fleet can reach). Sonnet's
   supports are legal but **bounce** (it cannot engineer the strength to break a
   wall). Opus's supports **land**, but it jams its own units (**self-bounce**). As
