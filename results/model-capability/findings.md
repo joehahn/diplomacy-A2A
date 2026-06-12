@@ -250,14 +250,17 @@ of each LLM's nations that finish dominant (SC ≥ 6) climbs monotonically, 0%
 (Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the squeezed share (SC ≤ 3)
 falls.
 
-![Final supply centers vs spend rate](dashboard/spend_frontier.svg)
+<p align="center">
+  <img src="dashboard/param_frontier.svg" width="49%" alt="Final supply centers vs model size">
+  <img src="dashboard/spend_frontier.svg" width="49%" alt="Final supply centers vs spend rate">
+</p>
 
-**Final supply centers versus spend rate.** Mean supply centers against each LLM's
-spend rate (dollars per minute of self-play, log axis), with each model's published
-or estimated parameter count in the legend. Centers rise with spend (shallow
-power-law fit, Opus above the line), but not cleanly: the cheapest model (MiMo)
-outscores the pricier Haiku. By parameter count rather than dollars the ordering is
-monotonic, a hint that scale predicts board control better than spend.
+**Two frontiers: final supply centers against model scale (left) and against spend
+rate (right).** Both climb on a log x-axis with a shallow power-law fit, and Opus
+sits above each line. But scale is the cleaner predictor: ordered by parameter count
+the supply-center ranking is monotonic (Haiku < MiMo < Sonnet < Opus), while ordered
+by spend it is not, the cheapest model (MiMo) outscores the pricier Haiku. Capability
+tracks raw scale more tightly than dollars.
 
 - **Capability shows up as territory, but only over a long game.** Across ten
   years the models separate cleanly on supply centers, Opus 6.6, Sonnet 4.9, MiMo
