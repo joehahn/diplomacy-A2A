@@ -184,10 +184,6 @@ happens: the four climb out of the opening together and stay tangled until about
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
-**Mean number of supply centers (SC) held by each LLM.** Note that Opus pulls ahead
-and stays ahead from 1905, while the remaining LLMs trail in rough order of their
-model scale.
-
 **On execution, the ladder mostly holds.** Order quality separates roughly as the
 self-play games predicted, though not by price alone. Illegal-order rate splits the
 Claude models from the budget pair: Sonnet 3.7% and Opus 4.8% against MiMo 8.5% and
@@ -197,6 +193,8 @@ it barely coordinates, while the models that attempt more coordination jam more.
 And coordination is where Opus pulls away: it orders supports on 35% of its moves,
 against Sonnet's 14% (next-highest) and Haiku's 7%. That combined-arms ambition,
 not cleaner basic orders, is what wins it the extra centers.
+
+![Competence by model: illegal-order rate, self-bounces, support rate, and more](dashboard/competence.svg)
 
 **On price and size, the frontiers come alive.** With territory now separated, the
 cost and parameter frontiers (both flat at 3 years) acquire a slope. Final centers

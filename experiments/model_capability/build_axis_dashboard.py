@@ -686,7 +686,7 @@ def _rate(raw, m, num, den, scale=100.0):
     return v, _poisson_err(c[num], c[den], scale)
 
 
-def _bar_panels(number: int, title: str, panels: list,
+def _bar_panels(number: int | None, title: str, panels: list,
                 per_row: int = None, show_values: bool = False) -> str:
     """Render a grid of bar charts with Poisson error bars, MiMo -> Sonnet ->
     Opus, wrapping at per_row panels. Each panel is
@@ -704,7 +704,7 @@ def _bar_panels(number: int, title: str, panels: list,
     s = [f"<svg viewBox='0 0 {w} {h}' xmlns='http://www.w3.org/2000/svg' "
          f"font-family='{FONT}' width='{w}' height='{h}'>",
          f"<text x='{w/2:.0f}' y='20' text-anchor='middle' font-size='13' "
-         f"font-weight='600' fill='#333'>{number}. {title}</text>"]
+         f"font-weight='600' fill='#333'>{f'{number}. ' if number else ''}{title}</text>"]
     for pi, panel in enumerate(panels):
         ptitle, hint, data = panel[0], panel[1], panel[2]
         fmt = panel[3] if len(panel) > 3 else "{:.1f}"
@@ -768,7 +768,7 @@ def plot_competence(raw: dict) -> str:
         ("Convoy rate", "% of orders · rare",
          {m: _rate(raw, m, "convoy", "orders") for m in ORDER}, "{:.1f}%"),
     ]
-    return _bar_panels(4, "Competence by model", panels, per_row=4, show_values=True)
+    return _bar_panels(None, "Competence by model", panels, per_row=4, show_values=True)
 
 
 def plot_negotiation(raw: dict) -> str:
