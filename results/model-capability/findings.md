@@ -123,16 +123,16 @@ Three patterns recur across all four games, regardless of model family or price:
 - **The self-bounce paradox.** Counterintuitively, the cheapest model is the
   spatially cleanest (MiMo, 0 self-bounces) and the frontier model the messiest
   (Opus, 16) while the low-ambition Haiku jams itself just 4 times. Self-bounces
-  track ambition and plan complexity (managing many units in motion without
+  track ambition and plan complexity (i.e. managing many units in motion without
   creating bottlenecks), not raw capability; MiMo stays clean partly because it
   attempts less.
 
 ### A post-mortem aside: asking the model about its biggest mistake
 
 The `ask` subcommand reconstructs a finished power's view of a game and puts a
-question to it, answered by the model that played it. We aimed it at the single
-move that decided the Opus self-play game. In spring 1910 England, the board
-leader at eight centers, attacked Germany's last home center Berlin with one
+question to it, answered by the model that played that power. We aimed it at the
+single move that decided the Opus self-play game. In spring 1910 England, the
+board leader at eight centers, attacked Germany's last home center Berlin with one
 supporting fleet; France held two idle units that could each have stopped it
 (`A RUH-KIE` to cut the support, or `A MUN` to support Berlin's defense), yet spent
 both guarding Munich, which no one was attacking. Berlin fell, Germany was
