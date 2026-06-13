@@ -182,6 +182,12 @@ the four climb out of the opening together and stay tangled until about 1905, wh
 Opus diverges upward while the rest plateau. The long game is what converts cleaner
 execution into ground.
 
+![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
+
+**Mean number of supply centers (SC) held by each LLM.** Note that Opus pulls ahead
+and stays ahead from 1905, while the remaining LLMs trail in rough order of their
+model scale.
+
 **On execution, the ladder mostly holds.** Order quality separates roughly as the
 self-play games predicted, though not by price alone. Illegal-order rate splits the
 Claude models from the budget pair: Sonnet 3.7% and Opus 4.8% against MiMo 8.5% and
@@ -230,13 +236,6 @@ The following analyzes the seven Diplomacy games that were played by four LLMs a
 described above, to quantify each model's aggregated successes and failures. The figures here are a few highlights; the [full
 dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)
 contains many more diagnostic plots.
-
-![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
-
-**Mean number of supply centers (SC) held by each LLM.** Note that Opus pulls ahead and
-stays ahead from 1905, while the remaining LLMs trail in rough order of their
-model scale.
-
 
 ![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
 
