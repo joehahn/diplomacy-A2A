@@ -24,17 +24,16 @@ Everything shown here can be regenerated from this repo. To play Diplomacy with 
 of the Anthropic LLMs you need an Anthropic key in `.env`, while our use of MiMo
 relies on an [OpenRouter key](../../REFERENCE.md#openrouter-how-the-gateway-is-used-here).
 
-**MiMo *(low-cost but not-so-small)*: the talkative brawler.** The most talkative and
+**MiMo *(low-cost but not so small)*: the talkative brawler.** The most talkative and
 most aggressive negotiator of the four (~1500 messages and the most real
 betrayals), and its betrayals are genuine and coercive and are often telegraphed: it
 reaffirms the Trieste demilitarized zone (DMZ) in spring 1901, then in F1902M tells Austria "let me have
-TRI peacefully... if you refuse I'll take it by force" and seizes the home center.
-It never jams its own units, the only model with zero self-bounces, but that
-tidiness is narrow: its ceiling is a geometry of another kind, ~6% of its orders
-are illegal, almost all of them non-adjacent support orders (a fleet "supporting"
-an attack it cannot reach), often the same impossible order re-issued for many
-turns. It reflexively dogpiles the leader, so
-its game is maximally contested.
+TRI peacefully... if you refuse I'll take it by force" and then seizes that home
+center. It never jams its own units, the only model with zero self-bounces, but
+that tidiness is narrow: its ceiling is a geometry error of another kind, ~6% of
+its orders are illegal, almost all of them non-adjacent support orders, often the
+same impossible order re-issued for many turns. It reflexively dogpiles the leader,
+so its game is maximally contested. To execute that game:
 
     python -m diplomacy_a2a run --model xiaomi/mimo-v2.5 \
       --years 10 --rounds 3 --category mimo-reference
@@ -58,6 +57,7 @@ and sits unchallenged for five straight years, and the board churns through 21
 disbands, the most of any game. That is the gap MiMo exploits: where
 MiMo coerces ("if you refuse I'll take it by force") and seizes the center, Haiku
 proposes a partnership and then waits. The genial diplomat loses to the brawler.
+To execute:
 
     python -m diplomacy_a2a run --model claude-haiku-4-5-20251001 \
       --years 10 --rounds 3 --category haiku-reference
@@ -71,16 +71,18 @@ board stalemates, and it re-issues the same failed move for five or six seasons
 (France threw `A BUR - MUN` six times before Munich fell). Anti-leader coalitions
 form in chat but never on the board, so the leader (England, 8-9 centers) is
 never finished or checked. Tidy on defense, low on betrayal, and milder than the
-aggressive, play-to-win persona every agent is prompted with (which tells them to
-grow relentlessly and break a quiet front rather than keep it).
+aggressive, play-to-win persona every agent is prompted with (that prompt directs
+agents to grow relentlessly and to break a quiet front rather than keep it).
+To run:
 
     python -m diplomacy_a2a run --model claude-sonnet-4-6 \
       --years 10 --rounds 3 --category canonical
 
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)
 
-**Opus *(L, frontier)*: the staff officer.** Plays like seven disciplined staff
-officers: peace-first openings, meticulously specified combined-arms that mostly
+**Opus *(L, frontier)*: the staff officer.** This game is played by seven
+disciplined staff officers: peace-first openings, meticulously specified
+combined-arms that mostly
 land (71% of its supported attacks succeed), genuine adaptation after a failed
 attack, and a decisive game (England 4 to 9 centers, Germany eliminated, the only
 death across all four games). Negotiation reads like shared order sheets,
@@ -101,10 +103,11 @@ Three patterns recur across all four games, regardless of model family or price:
 - **The containment reflex.** Every model, every game, reflexively names the
   leader and tries to organize a coalition against it. This looks induced by the
   shared persona/prompt as much as by the models. None of the four games ends in a
-  solo, but at ten years that proves little: a solo takes eighteen of the
-  thirty-four centers and rarely lands before the mid-1910s, so these games simply
-  stop too early to tell whether the reflex could actually hold a determined leader
-  back.
+  solo victory, but at ten years that proves little: a solo victory requires
+  eighteen of the thirty-four centers and rarely lands before the mid-1910s, so
+  these games simply stop too early to tell whether the reflex could actually hold
+  a determined leader back. Nonetheless, the plots below show that ten years is
+  enough to tell which LLMs play better and command the game's tactics more fully.
 - **A coordination-failure ladder.** The three tier models, MiMo, Sonnet, and
   Opus, all try to coordinate via support orders but still fail in tiers that climb
   the competence stack. For instance, MiMo's supports are often **illegal** (it
