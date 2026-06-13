@@ -164,10 +164,10 @@ should've instead supported.
 
 ## Four LLMs head-to-head (the leaderboard)
 
-Seven counterbalanced ten-year games, launched with `caffeinate -i python
-experiments/llm_axis.py`: three test models, Opus
+Seven counterbalanced ten-year games, launched at the commandline via
+`caffeinate -i python experiments/llm_axis.py`: three test models, Opus
 (frontier), Haiku (small Claude), and MiMo (budget), each rotate through all seven
-powers once, against a field of the mid-tier Sonnet on the other four seats.
+powers once, against a field of the mid-tier Sonnet in the other four seats.
 Because every test model plays each power exactly once, board position is averaged
 out and each is measured against the same Sonnet field. The cross-game plots below
 are collected in the
@@ -175,13 +175,12 @@ are collected in the
 
 **On territory, a clear ranking.** Ten years is long enough for capability to
 separate the field, and it does. Final supply centers per nation: Opus 6.6, Sonnet
-4.9, MiMo 4.1, Haiku 3.7. Opus clears the 4.86 board average by nearly two centers
-and leaves everyone behind, the mid-tier Sonnet sits right at average, and the two
-budget models trail below it. This is the leaderboard the 3-year rotation could not
-write, where every model had finished within a tenth of a center of average. The
-trajectories show how it happens: the four climb out of the opening together and
-stay tangled until about 1905, when Opus diverges upward while the rest plateau.
-The long game is what converts cleaner execution into ground.
+4.9, MiMo 4.1, Haiku 3.7. Opus clears the board average (4.9) by nearly two
+centers and leaves everyone behind, the mid-tier Sonnet sitting right at average
+and the two budget models trailing below. The trajectories show how it happens:
+the four climb out of the opening together and stay tangled until about 1905, when
+Opus diverges upward while the rest plateau. The long game is what converts cleaner
+execution into ground.
 
 **On execution, the ladder mostly holds.** Order quality separates roughly as the
 self-play games predicted, though not by price alone. Illegal-order rate splits the
