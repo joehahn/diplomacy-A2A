@@ -9,25 +9,25 @@ resides between Haiku and Sonnet. This investigation has two parts:
 
 1. **Assessing self-play**: the same LLM plays against itself while driving all 7
    players in a game, one game per model. These games don't rank models, they
-   instead allow us to characterize each LLM's playing styles and competencies
+   instead allow us to characterize each LLM's playing styles and competencies,
    which are quite different.
 2. **LLM head-to-head**: the models meet on one board across seven counterbalanced
    ten-year games. Each game seats three test players, one Opus, one Haiku, and one
    MiMo, against a field of four Sonnets, with the test models spread apart for
-   separation. Across the seven games Opus, Haiku, and MiMo each rotate through
+   geographic separation. Across the seven games Opus, Haiku, and MiMo each rotate through
    every nation once, which averages out board position and allows us to build an
    LLM leaderboard for Diplomacy gameplay.
 
-## The four models in self-play (style analysis)
+## Four LLM self-play Diplomacy
 
-Everything here regenerates from the repo. To play Diplomacy with any of the
-Anthropic LLMs you need an Anthropic key in `.env`, while our use of MiMo relies on
-an [OpenRouter key](../../REFERENCE.md#openrouter-how-the-gateway-is-used-here).
+Everything shown here can be regenerated from this repo. To play Diplomacy with any
+of the Anthropic LLMs you need an Anthropic key in `.env`, while our use of MiMo
+relies on an [OpenRouter key](../../REFERENCE.md#openrouter-how-the-gateway-is-used-here).
 
-**MiMo *(low-cost, not-so-small)*: the talkative brawler.** The most talkative and
+**MiMo *(low-cost but not-so-small)*: the talkative brawler.** The most talkative and
 most aggressive negotiator of the four (~1500 messages and the most real
-betrayals), and its betrayals are genuine and coercive, usually telegraphed: it
-reaffirms the Trieste DMZ in spring 1901, then in F1902M tells Austria "let me have
+betrayals), and its betrayals are genuine and coercive and are often telegraphed: it
+reaffirms the Trieste demilitarized zone (DMZ) in spring 1901, then in F1902M tells Austria "let me have
 TRI peacefully... if you refuse I'll take it by force" and seizes the home center.
 It never jams its own units, the only model with zero self-bounces, but that
 tidiness is narrow: its ceiling is a geometry of another kind, ~6% of its orders
