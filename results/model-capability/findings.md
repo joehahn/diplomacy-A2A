@@ -103,11 +103,11 @@ Three patterns recur across all four games, regardless of model family or price:
 - **The containment reflex.** Every model, every game, reflexively names the
   leader and tries to organize a coalition against it. This looks induced by the
   shared persona/prompt as much as by the models. None of the four games ends in a
-  solo victory, but at ten years that proves little: a solo victory requires
-  eighteen of the thirty-four centers and rarely lands before the mid-1910s, so
-  these games simply stop too early to tell whether the reflex could actually hold
-  a determined leader back. Nonetheless, the plots below show that ten years is
-  enough to tell which LLMs play better and command the game's tactics more fully.
+  solo victory, but at ten years that proves little: a solo needs eighteen of the
+  thirty-four centers and rarely lands before the mid-1910s, so the games stop too
+  early to reveal whether containment could actually hold a determined leader back.
+  The plots below still show that a decade is enough to tell which LLMs play better
+  and command the game's tactics more fully.
 - **A coordination-failure ladder.** The three tier models, MiMo, Sonnet, and
   Opus, all try to coordinate via support orders but still fail in tiers that climb
   the competence stack. For instance, MiMo's supports are often **illegal** (it
