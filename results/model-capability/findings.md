@@ -184,6 +184,22 @@ happens: the four climb out of the opening together and stay tangled until about
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
+![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
+
+**The frequency in which each LLM is dominant (≥5 supply centers, left) or is
+squeezed (≤4, right)** versus time. By 1907 Opus is dominant in every game and is
+never squeezed while the lower tier model (Haiku) is the mirror image, with the
+mid-scale models (Sonnet and MiMo) in between. The figure below uses slightly
+tighter definitions of dominant (SC ≥ 6) and squeezed (SC ≤ 3) to show which LLMs
+tend to lead or trail by game's end.
+
+![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
+
+**Dominance tracks model scale.** Ordered by model scale (left to right), the share
+of each LLM's nations that finish dominant (SC ≥ 6) climbs monotonically, 0%
+(Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the squeezed share (SC ≤ 3)
+falls.
+
 **On execution, the ladder mostly holds.** Order quality separates roughly as the
 self-play games predicted, though not by price alone. Illegal-order rate splits the
 Claude models from the budget pair: Sonnet 3.7% and Opus 4.8% against MiMo 8.5% and
@@ -234,22 +250,6 @@ The following analyzes the seven Diplomacy games that were played by four LLMs a
 described above, to quantify each model's aggregated successes and failures. The figures here are a few highlights; the [full
 dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)
 contains many more diagnostic plots.
-
-![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
-
-**The frequency in which each LLM is dominant (≥5 supply centers, left) or is
-squeezed (≤4, right)** versus time. By 1907 Opus is dominant in every game and is
-never squeezed while the lower tier model (Haiku) is the mirror image, with the
-mid-scale models (Sonnet and MiMo) in between. The figure below uses slightly
-tighter definitions of dominant (SC ≥ 6) and squeezed (SC ≤ 3) to show which LLMs
-tend to lead or trail by game's end.
-
-![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
-
-**Dominance tracks model scale.** Ordered by model scale (left to right), the share
-of each LLM's nations that finish dominant (SC ≥ 6) climbs monotonically, 0%
-(Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the squeezed share (SC ≤ 3)
-falls.
 
 <p align="center">
   <img src="dashboard/param_frontier.svg" width="49%" alt="Final supply centers vs model size">
