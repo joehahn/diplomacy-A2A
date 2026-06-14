@@ -107,9 +107,10 @@ Three patterns recur across all four games, regardless of model family or price:
 - **The containment reflex.** Every model, every game, reflexively names the
   leader and tries to organize a coalition against it. This is likely due to the
   agents' shared prompts. None of the four games ends in a solo victory, but at ten
-  years that proves little: a solo victory requires capturing eighteen of the
-  thirty-four centers and rarely lands before the mid-1910s, so the games stop too
-  early to reveal whether containment could actually hold a determined leader back.
+  years that proves little. A solo victory requires capturing eighteen of the
+  thirty-four centers and rarely lands before the mid-1910s. The games therefore
+  stop too early to reveal whether containment could actually hold a determined
+  leader back.
   Nonetheless the plots below will show that a decade of gameplay is sufficient to
   quantify which LLMs play better and command the game's tactics more fully.
 - **A coordination-failure ladder.** The three tier models, MiMo, Sonnet, and
@@ -128,7 +129,8 @@ Three patterns recur across all four games, regardless of model family or price:
   spatially cleanest (MiMo, 0 self-bounces) and the frontier model the messiest
   (Opus, 16) while the low-ambition Haiku jams itself just 4 times. Self-bounces
   track ambition and plan complexity (i.e. managing many units in motion without
-  creating bottlenecks) rather than raw capability; MiMo stays clean partly because it
+  creating bottlenecks) rather than the model's overall capability: the most capable
+  model (Opus) self-bounces the most, and MiMo stays clean partly because it
   attempts less.
 
 ### A post-mortem aside: asking the model about its biggest mistake
