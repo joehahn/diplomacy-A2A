@@ -185,7 +185,7 @@ separate the field. Final supply centers per nation: Haiku 3.7, MiMo 4.1, Sonnet
 leaves everyone behind, with the mid-tier Sonnet sitting right at average and the
 two budget models trailing behind. The trajectories plotted below show how it
 happens: the four climb out of the opening together and stay tangled until about
-1905 when Opus diverges upwards while the rest plateau.
+1905 when Opus diverges upwards while the rest plateau or slip.
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
