@@ -4,16 +4,16 @@
 This study compares 4 LLMs across the price/capability spectrum: mimo-v2.5
 (budget), Claude Haiku 4.5 (small Claude), Claude Sonnet 4.6 (mid-tier), and
 Claude Opus 4.8 (frontier). Note though that the price tiers do not always scale
-with the model parameter counts; MiMo is inexpensive but not small, and its size
+with the model parameter counts; MiMo is inexpensive but not small, as its size
 resides between Haiku and Sonnet. This investigation has two parts:
 
 1. **Assessing self-play**: the same LLM plays against itself while driving all 7
    players in a game, one game per model. These games don't rank models, they
    instead allow us to characterize each LLM's playing styles and competencies,
    which are quite different.
-2. **LLM head-to-head**: the models meet on one board across seven counterbalanced
-   ten-year games. Each game seats three test players, one Opus, one Haiku, and one
-   MiMo, against a field of four Sonnets, with the test models spread apart for
+2. **Comparing LLMs head-to-head**: the models meet on one board across seven
+   counterbalanced games. Each game seats three test players, one Opus, one Haiku,
+   and one MiMo, against a field of four Sonnets, with the test models spread apart for
    geographic separation. Across the seven games Opus, Haiku, and MiMo each rotate through
    every nation once, which averages out board position and allows us to build an
    LLM leaderboard for Diplomacy gameplay.
@@ -24,7 +24,7 @@ Everything shown here can be regenerated from this repo. To play Diplomacy with 
 of the Anthropic LLMs you need an Anthropic key in `.env`, while our use of MiMo
 relies on an [OpenRouter key](../../REFERENCE.md#openrouter-how-the-gateway-is-used-here).
 
-**MiMo *(low-cost but not so small)*: the talkative brawler.** The most talkative and
+**MiMo (low-cost but not so small):** *the talkative brawler.* The most talkative and
 most aggressive negotiator of the four (~1500 messages and the most real
 betrayals), and its betrayals are genuine and coercive and are often telegraphed: it
 reaffirms the Trieste demilitarized zone (DMZ) in spring 1901, then in F1902M tells Austria "let me have
@@ -40,7 +40,7 @@ so its game is maximally contested. To execute that game:
 
 See [that game's dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html) for the play-by-play and summary stats.
 
-**Haiku *(budget runner-up)*: the agreeable diplomat.** The other budget candidate,
+**Haiku (budget runner-up):** *the agreeable diplomat.* The other budget candidate,
 and the mirror image of MiMo's brawler. Haiku is the most *social* of the four
 and the least *forceful*: the highest alliance language of any model (43% of
 messages, double the next) and the most questions (39%), forever proposing
@@ -64,7 +64,7 @@ To execute:
 
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
 
-**Sonnet *(M, mid)*: the polite accountant.** Articulate, rule-literate, and
+**Sonnet (M, mid):** *the polite accountant.* Articulate, rule-literate, and
 risk-averse; it reasons in explicit strength-math but rarely converts it. Its
 coordination is conceptually correct yet mechanically fragile: plans bounce, the
 board stalemates, and it re-issues the same failed move for five or six seasons
@@ -80,7 +80,7 @@ To run:
 
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)
 
-**Opus *(L, frontier)*: the staff officer.** This game is played by seven
+**Opus (L, frontier):** *the staff officer.* This game is played by seven
 disciplined staff officers: peace-first openings, meticulously specified
 combined-arms that mostly
 land (71% of its supported attacks succeed), genuine adaptation after a failed
