@@ -166,10 +166,13 @@ should've instead supported.
 
 ## Four LLMs play head-to-head (the leaderboard)
 
-Counterbalanced LLMs play seven ten-year games, launched via the commandline
-`caffeinate -i python experiments/llm_axis.py`: three test models, Opus
-(frontier), Haiku (small Claude), and MiMo (budget), each rotate through all seven
-powers once, against a field of the mid-tier Sonnet in the other four seats.
+Counterbalanced LLMs play seven ten-year games, launched via the commandline:
+
+    caffeinate -i python experiments/llm_axis.py
+
+Three test models, Opus (frontier), Haiku (small Claude), and MiMo (budget), each
+rotate through all seven powers once, against a field of the mid-tier Sonnet in the
+other four seats.
 Because every test model plays each power exactly once, board position is averaged
 out and each is measured against the same Sonnet field. The cross-game analysis is
 collected in the
