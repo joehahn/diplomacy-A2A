@@ -191,17 +191,17 @@ happens: *the four climb out of the opening together and stay tangled until abou
 
 **Which LLMs dominate, and which get squeezed.** We count a nation as *dominant*
 when it holds five or more supply centers and *squeezed* when it holds four or
-fewer. Over the ten years the split is stark: by 1907 Opus is dominant in every
+fewer. Over the ten years the split is stark: *by 1907 Opus is dominant in every
 game and never squeezed, the smallest model (Haiku) is the mirror image, and the
-mid-scale Sonnet and MiMo land in between.
+mid-scale Sonnet and MiMo land in between.*
 
 ![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
 
 **Dominance tracks model scale.** Counting only the final position, with slightly
 tighter thresholds (dominant at six or more supply centers, squeezed at three or
-fewer), the share of each LLM's nations that finish dominant climbs monotonically
+fewer), *the share of each LLM's nations that finish dominant climbs monotonically
 with model scale, 0% (Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the
-squeezed share falls.
+squeezed share falls.*
 
 ![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
 
@@ -211,8 +211,8 @@ Claude models from the budget pair: Sonnet 3.7% and Opus 4.8% against MiMo 8.5% 
 Haiku 8.8%, the same geometry ceiling the cheap models hit in self-play. The
 self-bounce paradox survives at scale, MiMo jams its own units zero times because
 it barely coordinates, while the models that attempt more coordination jam more.
-And coordination is where Opus pulls away: it orders supports on 35% of its moves,
-against Sonnet's 14% (next-highest) and Haiku's 7%. That combined-arms ambition,
+And *coordination is where Opus pulls away: it orders supports on 35% of its moves,
+against Sonnet's 14% (next-highest) and Haiku's 7%.* That combined-arms ambition,
 not cleaner basic orders, is what wins it the extra centers.
 
 ![Competence by model: illegal-order rate, self-bounces, support rate, and more](dashboard/competence.svg)
