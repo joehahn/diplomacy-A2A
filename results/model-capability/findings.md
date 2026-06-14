@@ -184,8 +184,8 @@ separate the field. Final supply centers per nation: Haiku 3.7, MiMo 4.1, Sonnet
 4.9, Opus 6.6. Opus clears the board average (4.9) by nearly two centers and
 leaves everyone behind, with the mid-tier Sonnet sitting right at average and the
 two budget models trailing behind. The trajectories plotted below show how it
-happens: the four climb out of the opening together and stay tangled until about
-1905 when Opus diverges upwards while the rest plateau or slip.
+happens: *the four climb out of the opening together and stay tangled until about
+1905 when Opus diverges upwards while the rest plateau or slip.*
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
