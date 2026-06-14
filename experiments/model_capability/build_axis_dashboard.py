@@ -1167,7 +1167,7 @@ def plot_spend_frontier(final: dict) -> str:
 
 def plot_polarization(final_units: dict, plot_order: list, num: int,
                       order_label: str, title: str | None = None,
-                      metric: str = "units") -> str:
+                      metric: str = "units", show_params: bool = False) -> str:
     """How each model's own nations end: a connected scatter of the fraction
     squeezed to <=3 units (circles) versus the fraction grown to >=6 units
     (squares), one point per model, two overplotted series colored by model.
@@ -1220,6 +1220,9 @@ def plot_polarization(final_units: dict, plot_order: list, num: int,
     for x, m in zip(xs, plot_order):
         s.append(f"<text x='{x:.0f}' y='{h-26}' text-anchor='middle' font-size='12' "
                  f"font-weight='600' fill='{COLOR[m]}'>{m}</text>")
+        if show_params:
+            s.append(f"<text x='{x:.0f}' y='{h-11}' text-anchor='middle' font-size='9.5' "
+                     f"fill='#999'>{PARAMS_B[m][3].split(' (')[0]}</text>")
 
     # legend at right: line color marks the series, marker shape echoes the plot
     lx = w - pad_r + 18
@@ -1470,7 +1473,7 @@ def main() -> int:
     (out / "polarization_by_size.svg").write_text(
         plot_polarization(data["final_units"], size_order, 11, "model size",
                           title="Dominant (SC ≥ 6) and Squeezed (SC ≤ 3) Nations versus LLM",
-                          metric="SC"))
+                          metric="SC", show_params=True))
     (out / "index.html").write_text(build_index(data))
     # remove superseded artifacts
     for stale in ("offence_defence_bars.svg", "offence_defence.svg",
