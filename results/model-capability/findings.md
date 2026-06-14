@@ -36,7 +36,8 @@ same impossible order re-issued for many turns. It reflexively dogpiles the lead
 so its game is maximally contested. To execute that game:
 
     python -m diplomacy_a2a run --model xiaomi/mimo-v2.5 \
-      --years 10 --rounds 3 --category mimo-reference
+      --years 10 --rounds 3 \
+      --category mimo-reference
 
 See [that game's dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html) for the play-by-play and summary stats.
 
@@ -56,11 +57,12 @@ the opposite direction. Russia is never checked, England quietly climbs to seven
 and sits unchallenged for five straight years, and the board churns through 21
 disbands, the most of any game. That is the gap MiMo exploits: where
 MiMo coerces ("if you refuse I'll take it by force") and seizes the center, Haiku
-proposes a partnership and then waits. The genial diplomat loses to the brawler.
+proposes partnerships and then waits. The genial diplomat loses to the brawler.
 To execute:
 
     python -m diplomacy_a2a run --model claude-haiku-4-5-20251001 \
-      --years 10 --rounds 3 --category haiku-reference
+      --years 10 --rounds 3 \
+      --category haiku-reference
 
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
 
@@ -76,7 +78,8 @@ agents to grow relentlessly and to break a quiet front rather than keep it).
 To run:
 
     python -m diplomacy_a2a run --model claude-sonnet-4-6 \
-      --years 10 --rounds 3 --category canonical
+      --years 10 --rounds 3 \
+      --category canonical
 
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)
 
@@ -92,7 +95,8 @@ chains, it self-bounces 16 times, ordering a unit into a square its own side
 already holds.
 
     python -m diplomacy_a2a run --model claude-opus-4-8 \
-      --years 10 --rounds 3 --category opus-reference
+      --years 10 --rounds 3 \
+      --category opus-reference
 
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/opus-reference/2026-06-09.17.03.53/dashboard/index.html)
 
@@ -101,20 +105,20 @@ already holds.
 Three patterns recur across all four games, regardless of model family or price:
 
 - **The containment reflex.** Every model, every game, reflexively names the
-  leader and tries to organize a coalition against it. This looks induced by the
-  shared persona/prompt as much as by the models. None of the four games ends in a
-  solo victory, but at ten years that proves little: a solo needs eighteen of the
+  leader and tries to organize a coalition against it. This is likely due to the
+  agents' shared prompts. None of the four games ends in a solo victory, but at ten
+  years that proves little: a solo victory requires capturing eighteen of the
   thirty-four centers and rarely lands before the mid-1910s, so the games stop too
   early to reveal whether containment could actually hold a determined leader back.
-  Nonetheless the plots below will show that a decade of gameplay is enough to
-  assess which LLMs play better and command the game's tactics more fully.
+  Nonetheless the plots below will show that a decade of gameplay is sufficient to
+  quantify which LLMs play better and command the game's tactics more fully.
 - **A coordination-failure ladder.** The three tier models, MiMo, Sonnet, and
   Opus, all try to coordinate via support orders but still fail in tiers that climb
   the competence stack. For instance, MiMo's supports are often **illegal**,
   ordering a unit to support an attack on a province it does not border, while
-  Sonnet's supports are legal but **bounce** since it cannot engineer sufficient
+  Sonnet's supports are legal but **bounce** because it cannot engineer sufficient
   strength to break a defense. Opus's supports **land**, but it sometimes sends two
-  of its own units at one province, where they collide (a **self-bounce**). So as
+  of its own units at one province where they collide and **self-bounce**. So as
   LLM capability rises, the failure moves from "doesn't comprehend gameboard
   geometry" to "understands the geometry but can't break a defensive line" to
   "breaks lines but trips over its own ambition." Haiku falls off the bottom of the
@@ -124,7 +128,7 @@ Three patterns recur across all four games, regardless of model family or price:
   spatially cleanest (MiMo, 0 self-bounces) and the frontier model the messiest
   (Opus, 16) while the low-ambition Haiku jams itself just 4 times. Self-bounces
   track ambition and plan complexity (i.e. managing many units in motion without
-  creating bottlenecks), not raw capability; MiMo stays clean partly because it
+  creating bottlenecks) rather than raw capability; MiMo stays clean partly because it
   attempts less.
 
 ### A post-mortem aside: asking the model about its biggest mistake
