@@ -184,20 +184,20 @@ separate the field. Final supply centers per nation: Haiku 3.7, MiMo 4.1, Sonnet
 4.9, Opus 6.6. Opus clears the board average (4.9) by nearly two centers and
 leaves everyone behind, with the mid-tier Sonnet sitting right at average and the
 two budget models trailing behind. The trajectories plotted below show how it
-happens: *the four climb out of the opening together and stay tangled until about
+happens: *the four LLMs climb out of the opening together and stay tangled until about
 1905 when Opus diverges upwards while the rest plateau or slip.*
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
-**Which LLMs dominate, and which get squeezed.** We count a nation as *dominant*
+**Which LLMs dominate, and which are squeezed.** We count a nation as *dominant*
 when it holds five or more supply centers and *squeezed* when it holds four or
 fewer. Over the ten years the split is stark: *by 1907 Opus is dominant in every
-game and never squeezed, the smallest model (Haiku) is the mirror image, and the
+game and never squeezed, the smallest model (Haiku) is the mirror image, while the
 mid-scale Sonnet and MiMo land in between.*
 
 ![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
 
-**Dominance tracks model scale.** Counting only the final position, with slightly
+**Dominance tracks model scale.** When we only consider the final positions, with slightly
 tighter thresholds (dominant at six or more supply centers, squeezed at three or
 fewer), *the share of each LLM's nations that finish dominant climbs monotonically
 with model scale, 0% (Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the
