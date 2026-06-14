@@ -35,8 +35,7 @@ its orders are illegal, almost all of them non-adjacent support orders, often th
 same impossible order re-issued for many turns. It reflexively dogpiles the leader,
 so its game is maximally contested. To execute that game:
 
-    python -m diplomacy_a2a run --model xiaomi/mimo-v2.5 \
-      --years 10 --rounds 3 \
+    python -m diplomacy_a2a run --model xiaomi/mimo-v2.5 --years 10 --rounds 3 \
       --category mimo-reference
 
 See [that game's dashboard](https://joehahn.github.io/diplomacy-A2A/results/mimo-reference/2026-06-09.03.23.24/dashboard/index.html) for the play-by-play and summary stats.
@@ -60,8 +59,7 @@ MiMo coerces ("if you refuse I'll take it by force") and seizes the center, Haik
 proposes partnerships and then waits. The genial diplomat loses to the brawler.
 To execute:
 
-    python -m diplomacy_a2a run --model claude-haiku-4-5-20251001 \
-      --years 10 --rounds 3 \
+    python -m diplomacy_a2a run --model claude-haiku-4-5-20251001 --years 10 --rounds 3 \
       --category haiku-reference
 
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/haiku-reference/2026-06-10.22.02.13/dashboard/index.html)
@@ -77,8 +75,7 @@ aggressive, play-to-win persona every agent is prompted with (that prompt direct
 agents to grow relentlessly and to break a quiet front rather than keep it).
 To run:
 
-    python -m diplomacy_a2a run --model claude-sonnet-4-6 \
-      --years 10 --rounds 3 \
+    python -m diplomacy_a2a run --model claude-sonnet-4-6 --years 10 --rounds 3 \
       --category canonical
 
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/canonical/2026-06-04.14.48.20/dashboard/index.html)
@@ -94,8 +91,7 @@ flaw is the shadow of its ambition: juggling many units in active rotation
 chains, it self-bounces 16 times, ordering a unit into a square its own side
 already holds.
 
-    python -m diplomacy_a2a run --model claude-opus-4-8 \
-      --years 10 --rounds 3 \
+    python -m diplomacy_a2a run --model claude-opus-4-8 --years 10 --rounds 3 \
       --category opus-reference
 
 [Game dashboard](https://joehahn.github.io/diplomacy-A2A/results/opus-reference/2026-06-09.17.03.53/dashboard/index.html)
@@ -156,7 +152,7 @@ This query restricts France to what it knew that spring (`--phase S1910M`):
       choice to keep both units on Munich instead?" \
       --phase S1910M
 
-Asked why, France's agent did not rationalize, it diagnosed itself: "I was too
+Asked why, France's agent didn't rationalize, it instead diagnosed itself: "I was too
 invested in keeping the literal letter of my 'clean boundary' deal with England,
 valued the appearance of a quiet western front over the substance of checking the
 leader, and treated Berlin as already gone rather than as a center worth
@@ -168,9 +164,9 @@ coalition forms in chat but never on the board, explained from the inside: a
 negotiated DMZ with the leader, honored to the letter, outweighed the coalition it
 should've instead supported.
 
-## Four LLMs head-to-head (the leaderboard)
+## Four LLMs play head-to-head (the leaderboard)
 
-Seven counterbalanced ten-year games, launched at the commandline via
+Counterbalanced LLMs play seven ten-year games, launched via the commandline
 `caffeinate -i python experiments/llm_axis.py`: three test models, Opus
 (frontier), Haiku (small Claude), and MiMo (budget), each rotate through all seven
 powers once, against a field of the mid-tier Sonnet in the other four seats.
