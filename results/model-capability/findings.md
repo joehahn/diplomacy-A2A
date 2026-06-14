@@ -171,17 +171,17 @@ Counterbalanced LLMs play seven ten-year games, launched via the commandline:
     caffeinate -i python experiments/llm_axis.py
 
 Three test models, Opus (frontier), Haiku (small Claude), and MiMo (budget), each
-rotate through all seven powers once, against a field of the mid-tier Sonnet in the
-other four seats.
+rotate through all seven powers once, against a field of the mid-tier Sonnets
+playing the other four seats.
 Because every test model plays each power exactly once, board position is averaged
 out and each is measured against the same Sonnet field. The cross-game analysis is
 collected in the
-**[rotation dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)**,
+**[rotation dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)**
 whose highlights are noted in the following.
 
 **On territory gains, a clear ranking.** Ten years is long enough for capability to
-separate the field. Final supply centers per nation: Opus 6.6, Sonnet 4.9, MiMo
-4.1, Haiku 3.7. Opus clears the board average (4.9) by nearly two centers and
+separate the field. Final supply centers per nation: Haiku 3.7, MiMo 4.1, Sonnet
+4.9, Opus 6.6. Opus clears the board average (4.9) by nearly two centers and
 leaves everyone behind, with the mid-tier Sonnet sitting right at average and the
 two budget models trailing below. The trajectories plotted below show how it
 happens: the four climb out of the opening together and stay tangled until about
@@ -269,8 +269,8 @@ by spend it is not, the cheapest model (MiMo) outscores the pricier Haiku. Capab
 tracks raw scale more tightly than dollars.
 
 - **Capability shows up as territory, but only over a long game.** Across ten
-  years the models separate cleanly on supply centers, Opus 6.6, Sonnet 4.9, MiMo
-  4.1, Haiku 3.7.
+  years the models separate cleanly on supply centers, Haiku 3.7, MiMo 4.1, Sonnet
+  4.9, Opus 6.6.
 - **The frontier edge is coordination, not tidy basic orders.** Opus issues support
   orders on ~35% of its moves, three to five times the rest, and that is the real
   separator. Illegal-order rate instead splits by budget tier (MiMo 8.5%, Haiku
