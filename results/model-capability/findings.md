@@ -189,21 +189,21 @@ happens: the four climb out of the opening together and stay tangled until about
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
-**The frequency in which each LLM is dominant (≥5 supply centers, left) or is
-squeezed (≤4, right)** versus time. By 1907 Opus is dominant in every game and is
-never squeezed while the lower tier model (Haiku) is the mirror image, with the
-mid-scale models (Sonnet and MiMo) in between. The second figure below uses
-slightly tighter definitions of dominant (SC ≥ 6) and squeezed (SC ≤ 3) to show
-which LLMs tend to lead or trail by game's end.
+**Which LLMs dominate, and which get squeezed.** We count a nation as *dominant*
+when it holds five or more supply centers and *squeezed* when it holds four or
+fewer. Over the ten years the split is stark: by 1907 Opus is dominant in every
+game and never squeezed, the smallest model (Haiku) is the mirror image, and the
+mid-scale Sonnet and MiMo land in between.
 
 ![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
 
-![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
+**Dominance tracks model scale.** Counting only the final position, with slightly
+tighter thresholds (dominant at six or more supply centers, squeezed at three or
+fewer), the share of each LLM's nations that finish dominant climbs monotonically
+with model scale, 0% (Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the
+squeezed share falls.
 
-**Dominance tracks model scale.** Ordered by model scale (left to right), the share
-of each LLM's nations that finish dominant (SC ≥ 6) climbs monotonically, 0%
-(Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the squeezed share (SC ≤ 3)
-falls.
+![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
 
 **On execution, the ladder mostly holds.** Order quality separates roughly as the
 self-play games predicted, though not by price alone. Illegal-order rate splits the
