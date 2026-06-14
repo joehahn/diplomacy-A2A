@@ -197,11 +197,11 @@ mid-scale Sonnet and MiMo land in between.*
 
 ![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
 
-**Dominance tracks model scale.** When we only consider the final positions, with slightly
-tighter thresholds (dominant at six or more supply centers, squeezed at three or
-fewer), *the share of each LLM's nations that finish dominant climbs monotonically
-with model scale, 0% (Haiku), 29% (MiMo), 39% (Sonnet), 71% (Opus), while the
-squeezed share falls.*
+**Dominance tracks model scale.** The following plot only considers the final
+positions and with slightly tighter thresholds (dominant at six or more supply
+centers, squeezed at three or fewer), *the share of each LLM's nations that finish
+dominant climbs monotonically with model scale, Haiku last with Opus first, while
+the squeezed share falls.*
 
 ![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
 
