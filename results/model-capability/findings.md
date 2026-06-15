@@ -23,7 +23,6 @@ resides between Haiku and Sonnet. This investigation has two parts:
 Everything shown here can be regenerated from this repo. To play Diplomacy with any
 of the Anthropic LLMs you need an Anthropic key in `.env`, while our use of MiMo
 relies on an [OpenRouter key](../../REFERENCE.md#openrouter-how-the-gateway-is-used-here).
-
 Each game runs in about 30 minutes and consumes roughly 13M input tokens and 400K
 output tokens; per-game cost ranges from about $2 to $200 depending on the model.
 The full per-game cost and token breakdown is in
@@ -253,7 +252,5 @@ returns: to make an adversarial agent harvest 10% more reward (supply centers), 
 must boost its LLM's parameter count, or its spend rate, by a factor of about 2.5.
 Scale and spend buy ground, but slowly and at rising cost.
 
-The full head-to-head rotation, the seven ten-year games behind the leaderboard
-above, cost about $240 and ran in roughly four hours; the per-game cost and token
-breakdown is in
-[REFERENCE.md](../../REFERENCE.md#cost-and-token-usage-of-the-self-play-games).
+Lastly, the seven ten-year games described above cost about $240 to execute and were
+run serially in about four hours.
