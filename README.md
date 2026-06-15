@@ -383,10 +383,11 @@ ground truth behind everything in the dashboard.
 Goal 3 runs as controlled-variation experiments, each holding the table fixed and
 varying a single axis. Each gets its own writeup as it completes:
 
-- **Model capability** *(in progress)*: three tee-shirt-sized models, a budget
-  model (MiMo), a mid-tier model (Sonnet), and a frontier model (Opus), play one
-  board across seven counterbalanced games, so board position is averaged out.
-  LLM gaming capabilities and head-to-head rankings are reported in
+- **Model capability** *(complete)*: three test models, a budget model (MiMo), a
+  small model (Haiku), and a frontier model (Opus), rotate through all powers on one
+  board across seven counterbalanced games against a mid-tier Sonnet field, so board
+  position is averaged out. LLM gaming capabilities and head-to-head rankings are
+  reported in
   [`results/model-capability/`](results/model-capability/findings.md).
 - **Pre-game collusion** *(planned)*: two agents share a private agreement before
   the game starts.
@@ -399,12 +400,25 @@ varying a single axis. Each gets its own writeup as it completes:
 
 ## Summary of Main Findings
 
-This section will fill in with empirical results from the goal-3
-controlled-variation experiments as they complete. Expected content:
-per-axis takeaways, the success-vs-spend chart described in goal 3, and any
-falsifiable claims that emerge about which agent designs perform better in A2A
-competition. The first results are landing now in the model-capability
-experiment above.
+The first controlled-variation experiment is complete, the **model-capability**
+study: four LLMs from budget to frontier across seven counterbalanced ten-year games.
+Full writeup and plots in
+[`results/model-capability/findings.md`](results/model-capability/findings.md); the
+headline results:
+
+- **Over a long game, capability shows up as territory.** Final supply centers
+  separate cleanly by model (Haiku 3.7, MiMo 4.1, Sonnet 4.9, Opus 6.6), where a
+  three-year version had been a near-tie.
+- **Reward is a shallow power law in scale and cost.** Supply centers scale as roughly
+  params^0.10 and cost^0.11, so a 10% gain in reward costs about 2.5x the parameters
+  or spend, steep diminishing returns.
+- **Scale predicts board control more cleanly than price.** The share of games a model
+  ends dominant climbs monotonically with parameter count (0% for Haiku up to 71% for
+  Opus), while cost is a noisier proxy (the cheaper MiMo outscores the pricier Haiku).
+  So competitive A2A is about finding the LLM that best trades performance against
+  cost, not fielding the biggest model.
+
+The other goal-3 axes above are still planned.
 
 For additional project details see [**REFERENCE.md**](REFERENCE.md).
 
