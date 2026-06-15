@@ -653,47 +653,32 @@ Goal 3 in the README is N-1-identical / 1-varied A/B comparisons across four
 axes, replacing the original full persona grid. Each axis lands here as it
 runs, with method + per-power results table + verdict.
 
-### Axis A — model capability (one stronger model in a homogeneous table)
+### Axis A — model capability (three test models rotated through a Sonnet field)
 
-**Method:** 7 games, each with one Opus "champion" seat and one Haiku
-"underdog" seat; the other five seats stay Sonnet (the field default). The
-Opus and Haiku powers sit as far apart on the board as possible (opposite
-corners) so the two test subjects never directly duel, and each one's result
-reflects its model against the surrounding Sonnet field. Across the 7 games
-every power serves as the Opus champion exactly once and the Haiku underdog
-exactly once, following a single 5-cycle (England, Austria, France, Russia,
-Italy, back to England) plus a Germany/Turkey swap:
+**Method:** 7 games, each seating three test models, one Opus (frontier), one
+Haiku (small Claude), and one MiMo (budget), with the other four seats Sonnet (the
+field default). Across the set each test model plays every power exactly once and
+the three never share a power within a game (a balanced 3x7 Latin rectangle), so
+board position is counterbalanced out and each model is measured against the same
+Sonnet field. Opus and Haiku sit on opposite sides of the board so the two extremes
+never directly duel; MiMo is placed to avoid bordering Opus in 5 of the 7 games.
 
-| Game | Opus champion | Haiku underdog |
-|------|---------------|----------------|
-| 1 | England | Austria |
-| 2 | Austria | France |
-| 3 | France | Russia |
-| 4 | Russia | Italy |
-| 5 | Italy | England |
-| 6 | Germany | Turkey |
-| 7 | Turkey | Germany |
+| Game | Opus | Haiku | MiMo |
+|------|------|-------|------|
+| 1 | Turkey | Germany | France |
+| 2 | Germany | Italy | Turkey |
+| 3 | England | Austria | Italy |
+| 4 | Austria | France | England |
+| 5 | Russia | England | Austria |
+| 6 | Italy | Russia | Germany |
+| 7 | France | Turkey | Russia |
 
-Because every power plays both Opus and Haiku across the set, the headline
-signal is a within-power paired delta, `centers(power as Opus) - centers(power
-as Haiku)`, which differences out each power's positional baseline without a
-separate control game. 3 negotiation rounds per movement phase, strategy notes
-on, 10 game-years each; same shape as the canonical configuration, so the only
-things varying are the two upgraded/downgraded powers.
+Each model's headline number is its mean final centers across its seven seats. 3
+negotiation rounds per movement phase, strategy notes on, 10 game-years each. Each
+run is self-describing: the `run_started` record stores `power_models`, so analysis
+recovers which power was which model directly from the transcript.
 
-Each run is self-describing: the `run_started` transcript record stores
-`power_models`, so analysis recovers which power was Opus or Haiku directly
-from the transcript (the timestamp run-id need not encode the condition).
-
-Invocation (per game; the field stays Sonnet because `--model` is omitted):
-```bash
-python -m diplomacy_a2a run \
-  --power-model ENGLAND=claude-opus-4-8 \
-  --power-model AUSTRIA=claude-haiku-4-5-20251001 \
-  --category model-capability
-```
-
-The full seven-game sweep is orchestrated by
+The full sweep is orchestrated by
 [`experiments/llm_axis.py`](experiments/llm_axis.py), which seats the test models,
 runs the games sequentially, and is resumable (a re-run skips games already
 finished):
@@ -704,12 +689,23 @@ python experiments/llm_axis.py --dry-run       # print the 7 commands, run nothi
 python experiments/llm_axis.py --smoke         # one 1-year game to scratch/, to sanity-check
 ```
 
-**Status:** *Plumbing landed in commit `7358cdd` (run_game `power_clients`
-+ `--power-model POWER=MODEL` CLI flag + model-aware cost estimator). Design
-finalized to the 1-Opus / 1-Haiku / 5-Sonnet rotation above; first runs
-pending.*
+The roster is pinned in `config.py` (`LLM_AXIS_TOPSHELF` / `LLM_AXIS_HAIKU` /
+`LLM_AXIS_LOWCOST`; the field is `DEFAULT_MODEL`). Under the hood each game is a
+`python -m diplomacy_a2a run` subprocess with three `--power-model POWER=MODEL`
+flags (game 1, for example, sets `TURKEY=<opus>`, `GERMANY=<haiku>`,
+`FRANCE=<mimo>`) and `--category model-capability`; the field stays Sonnet because
+`--model` is omitted.
 
-Results will land under `results/model-capability/` when complete.
+The cross-game dashboard regenerates from the finished transcripts with no LLM
+calls (sub-second), globbing `results/model-capability/*/transcript.jsonl`:
+
+```bash
+python experiments/model_capability/build_axis_dashboard.py
+```
+
+**Status:** complete. Seven `2026-06-11` games under `results/model-capability/`;
+final centers per nation Opus 6.6, Sonnet 4.9, MiMo 4.1, Haiku 3.7. Writeup:
+`results/model-capability/findings.md`.
 
 ### Axis B — personality trait (one aggressive / untruthful / backstabbing / crazy)
 

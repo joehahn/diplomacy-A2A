@@ -243,11 +243,6 @@ the two budget models trail, the smallest model (Haiku) last and the cheapest
 (MiMo) the best value. Scale and spend both predict territory once the game is long
 enough to turn execution into ground.
 
-**Rebuild the rotation dashboard (the cross-game plots above).** No LLM calls,
-sub-second; it globs `results/model-capability/*/transcript.jsonl`:
-
-    python experiments/model_capability/build_axis_dashboard.py
-
 ## Quantifying LLM gameplay abilities
 
 The following analyzes the seven Diplomacy games that were played by four LLMs as
