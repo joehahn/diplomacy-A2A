@@ -693,6 +693,17 @@ python -m diplomacy_a2a run \
   --category model-capability
 ```
 
+The full seven-game sweep is orchestrated by
+[`experiments/llm_axis.py`](experiments/llm_axis.py), which seats the test models,
+runs the games sequentially, and is resumable (a re-run skips games already
+finished):
+
+```bash
+caffeinate -i python experiments/llm_axis.py   # full sweep (~$240, ~4 hours)
+python experiments/llm_axis.py --dry-run       # print the 7 commands, run nothing
+python experiments/llm_axis.py --smoke         # one 1-year game to scratch/, to sanity-check
+```
+
 **Status:** *Plumbing landed in commit `7358cdd` (run_game `power_clients`
 + `--power-model POWER=MODEL` CLI flag + model-aware cost estimator). Design
 finalized to the 1-Opus / 1-Haiku / 5-Sonnet rotation above; first runs

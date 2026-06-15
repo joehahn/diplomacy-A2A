@@ -243,16 +243,6 @@ the two budget models trail, the smallest model (Haiku) last and the cheapest
 (MiMo) the best value. Scale and spend both predict territory once the game is long
 enough to turn execution into ground.
 
-**Head-to-head rotation (seven 10-year games, ~$240, ~4 hours).** Opus, Haiku, and
-MiMo rotate through all powers against a Sonnet field; the roster and balanced
-rotation live in [`experiments/llm_axis.py`](../../experiments/llm_axis.py). It
-runs sequentially and is resumable (a re-run skips games already finished), and
-`caffeinate -i` keeps the Mac awake for the duration:
-
-    caffeinate -i python experiments/llm_axis.py          # full sweep
-    python experiments/llm_axis.py --dry-run              # print the 7 commands, run nothing
-    python experiments/llm_axis.py --smoke                # one 1-year game to scratch/, to sanity-check
-
 **Rebuild the rotation dashboard (the cross-game plots above).** No LLM calls,
 sub-second; it globs `results/model-capability/*/transcript.jsonl`:
 
@@ -322,7 +312,9 @@ tokens each) while Opus consumes about 1.5x more (~17M), but that is mostly due
 to its tokenizer which splits identical text into ~1.4x more tokens than Sonnet
 or Haiku. Cached input (the bracketed share above) is billed at 10% of the full
 input rate. The budget runner-up, Claude Haiku, lands in between, a Claude-family
-budget model at roughly 4x MiMo's cost but a quarter of Sonnet's.
+budget model at roughly 4x MiMo's cost but a quarter of Sonnet's. The full
+head-to-head rotation behind the leaderboard above, seven ten-year games, runs about
+$240 in roughly four hours.
 
 Diplomacy agents call the LLM for three reasons: negotiation, strategy, and
 moves, and the table below tracks Sonnet's calls and tokens.
