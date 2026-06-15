@@ -1,3 +1,5 @@
+[&larr; diplomacy-A2A README](../../README.md)
+
 # Model-capability axis:
 ### Four LLMs, from budget to frontier, play Diplomacy
 
@@ -254,7 +256,7 @@ supply centers after 10 years of gameplay), you must boost the LLM's parameter c
 (which in turn boosts the spend rate) by a factor of about 2.5 (2.5^0.1 ≈ 1.1). Scale
 and spend both buy ground, but slowly and at rising cost.
 
-**Related work.** For agents that *learn* a game by playing it numerous times (the
+**Related work.** For agents that *learn* a game by playing it many times (the
 AlphaZero approach), playing strength is a known power law in model size and training
 compute
 ([Jones 2021](https://arxiv.org/abs/2104.03113); [Neumann & Gros
@@ -265,7 +267,7 @@ Diplomacy, so view our findings as being consistent in spirit with those prior w
 Lastly, the seven ten-year games described above cost about $240 to execute and were
 run serially in about four hours.
 
-[^1]: The exact exponent is uncertain, since three of the four parameter counts are
-estimates (Anthropic does not disclose Claude sizes), but its shallow-power-law shape
-is robust: a factor-of-two error in those estimates keeps the exponent between 0.08
-and 0.14.
+[^1]: The exact exponent is uncertain since three of the Anthropic parameter counts
+are estimates (Anthropic does not disclose Claude sizes). Nonetheless the
+shallow-power-law shape is robust, since a factor-of-two error in the LLM parameter
+counts still keeps the power-law exponent between 0.08 and 0.14.
