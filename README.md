@@ -103,13 +103,15 @@ that broke when one party defected for its own gain.
    expose how effective those agents are at influencing each other, not
    whether any particular agent wins.
 
-3. **Quantify what helps an AI agent succeed when it is competing against other agents in an A2A universe.** *(Under active development.)*
+3. **Quantify what helps an AI agent succeed when it is competing against other agents in an A2A universe.** *(First axis complete, the rest under development.)*
    Controlled A/B experiments hold the table fixed and vary a single agent along
    one axis at a time (model capability, pre-game collusion, personality,
    information asymmetry, memory depth), isolating that axis's effect on success.
-   The planned deliverable is a chart of agent success versus LLM spend, making
-   the cost-benefit shape of each axis explicit. The axes, with their writeups as
-   they complete, are listed under [Experiments](#experiments) below.
+   The deliverable for each axis is a chart of agent success versus LLM spend and
+   scale, making the cost-benefit shape explicit; the first, model capability, finds
+   that success is a shallow power law in both (steep diminishing returns). The axes,
+   with their writeups as they complete, are listed under [Experiments](#experiments)
+   below.
 
 ## Real-world A2A analogies
 
