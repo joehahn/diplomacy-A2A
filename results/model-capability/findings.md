@@ -252,7 +252,10 @@ centers scaling roughly as params^0.10 and cost^0.11. This implies steep diminis
 returns: to make an adversarial agent harvest 10% more reward (namely, supply centers
 after 10 years of gameplay), you must boost the LLM's parameter count (which in turn
 boosts the spend rate) by a factor of about 2.5 (2.5^0.1 ≈ 1.1). Scale and spend
-both buy ground, but slowly and at rising cost.
+both buy ground, but slowly and at rising cost. The exact exponent is uncertain,
+since three of the four parameter counts are estimates (Anthropic does not disclose
+Claude sizes), but its shallow-power-law shape is robust: a factor-of-two error in
+those estimates keeps the exponent between 0.08 and 0.14.
 
 **Related work.** For agents that *learn* a game by playing it numerous times (e.g.,
 the AlphaZero approach), playing strength is a known power law in model size and
