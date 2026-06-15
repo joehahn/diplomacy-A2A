@@ -229,24 +229,24 @@ fairly even across the field, about 4% of all messages.
 ![Negotiation by model: messages, conditional bargaining, alliance language, betrayals](dashboard/negotiation.svg)
 
 **Gameplay versus LLM scale/spend.** The following plots show how the supply-center
-outcome varies against model scale (left) and spend rate (right), each spanning more
-than two orders of magnitude. Haiku is the value-trap, costing five times MiMo yet
-winning fewer centers; and cleanliness does not track price either, for Sonnet posts
-the fewest mistakes. *Nonetheless, scale is the cleaner predictor of success since
-the supply-center ranking is monotonic with LLM scale (Haiku < MiMo < Sonnet <
-Opus). However, by spend it is not, since the cheapest model MiMo outscores the
-pricier Haiku.*
+outcome varies against model scale (left) and spend rate (right) across more than
+two orders of magnitude. Note that Haiku is a value-trap that costs five times MiMo
+yet wins fewer centers. And that cleanliness does not track price either, since
+Sonnet, not the pricier Opus, posts the fewest mistakes of the four. *Nonetheless,
+model scale is a clean predictor of success since the supply-center ranking is
+monotonic with LLM scale (Haiku < MiMo < Sonnet < Opus). However by spend it is not
+since the cheaper model MiMo outscores the pricier Haiku.*
 
 <p align="center">
   <img src="dashboard/param_frontier.svg" width="49%" alt="Final supply centers vs model size">
   <img src="dashboard/spend_frontier.svg" width="49%" alt="Final supply centers vs spend rate">
 </p>
 
-The headline: ten years is the game length where the model-capability axis finally
-writes itself in centers. Opus wins the board, the mid-tier holds the average, and
-the two budget models trail, the smallest model (Haiku) last and the cheapest
-(MiMo) the best value. Scale and spend both predict territory once the game is long
-enough to turn execution into ground.
+The headline: both frontiers are shallow power laws, with final supply centers
+scaling as roughly params^0.10 and ($/min)^0.11. That implies steep diminishing
+returns: to make an adversarial agent harvest 10% more reward (supply centers), you
+must boost its LLM's parameter count, or its spend rate, by a factor of about 2.5.
+Scale and spend buy ground, but slowly and at rising cost.
 
 ## Cost: the price spread these tiers represent
 
