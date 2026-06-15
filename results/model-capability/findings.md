@@ -205,11 +205,11 @@ Haiku and highest for Opus, while their squeezed share mostly does the reverse.*
 ![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
 
 **On execution, the ladder mostly holds.** Order quality separates roughly as the
-self-play games predicted, though not by price alone. Illegal-order rate splits the
-Claude models from the budget pair: Sonnet 3.7% and Opus 4.8% against MiMo 8.5% and
-Haiku 8.8%, the same geometry ceiling the cheap models hit in self-play. The
-self-bounce paradox survives at scale, MiMo jams its own units zero times because
-it barely coordinates, while the models that attempt more coordination jam more.
+self-play games predicted, though not by price alone, see below. Illegal-order rate
+splits the Claude models from the budget pair: Sonnet & Opus about 4% versus
+MiMo/Haiku 8-9%, the same geometry ceiling the cheap models hit in self-play. The
+self-bounce paradox survives at scale, as MiMo jams its own units zero times because
+it barely coordinates, while those models that attempt more also jam more often.
 And *coordination is where Opus pulls away: it orders supports on 35% of its moves,
 against Sonnet's 14% (next-highest) and Haiku's 7%.* That combined-arms ambition,
 not cleaner basic orders, is what wins it the extra centers.
