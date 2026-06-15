@@ -256,7 +256,7 @@ supply centers after 10 years of gameplay), you must boost the LLM's parameter c
 (which in turn boosts the spend rate) by a factor of about 2.5 (2.5^0.1 ≈ 1.1). Scale
 and spend both buy ground, but slowly and at rising cost.
 
-**Related work.** For agents that *learn* a game by playing it many times (the
+**Related works:** For agents that *learn* a game by playing it many times (the
 AlphaZero approach), playing strength is a known power law in model size and training
 compute
 ([Jones 2021](https://arxiv.org/abs/2104.03113); [Neumann & Gros
@@ -266,6 +266,12 @@ Diplomacy, so view our findings as being consistent in spirit with those prior w
 
 Lastly, the seven ten-year games described above cost about $240 to execute and were
 run serially in about four hours.
+
+The drive to win could push adversarial A2A toward ever larger and more expensive
+LLMs, but at roughly 2.5x the spend for 10% more ground, that expense has to return
+real value. Competitive adversarial A2A will *not* be about using the biggest LLM to
+clear the gameboard; it will instead be about finding the LLM that optimizes
+performance against cost.
 
 [^1]: The exact exponent is uncertain since three of the Anthropic parameter counts
 are estimates (Anthropic does not disclose Claude sizes). Nonetheless the
