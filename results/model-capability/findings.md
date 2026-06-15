@@ -248,23 +248,24 @@ spend since the cheaper model MiMo outscores the pricier Haiku.*
 
 **Main finding**: the above plots show that adversarial agents harvest game rewards
 at rates that are shallow power laws in model scale and cost, with final supply
-centers scaling roughly as params^0.10 and cost^0.11. This implies steep diminishing
-returns: to make an adversarial agent harvest 10% more reward (namely, supply centers
-after 10 years of gameplay), you must boost the LLM's parameter count (which in turn
-boosts the spend rate) by a factor of about 2.5 (2.5^0.1 ≈ 1.1). Scale and spend
-both buy ground, but slowly and at rising cost. The exact exponent is uncertain,
-since three of the four parameter counts are estimates (Anthropic does not disclose
-Claude sizes), but its shallow-power-law shape is robust: a factor-of-two error in
-those estimates keeps the exponent between 0.08 and 0.14.
+centers scaling roughly as params^0.10 and cost^0.11[^1]. This implies steep
+diminishing returns: to make an adversarial agent harvest 10% more reward (namely,
+supply centers after 10 years of gameplay), you must boost the LLM's parameter count
+(which in turn boosts the spend rate) by a factor of about 2.5 (2.5^0.1 ≈ 1.1). Scale
+and spend both buy ground, but slowly and at rising cost.
 
-**Related work.** For agents that *learn* a game by playing it numerous times (e.g.,
-the AlphaZero approach), playing strength is a known power law in model size and
-training compute
+**Related work.** For agents that *learn* a game by playing it numerous times (the
+AlphaZero approach), playing strength is a known power law in model size and training
+compute
 ([Jones 2021](https://arxiv.org/abs/2104.03113); [Neumann & Gros
 2024](https://arxiv.org/abs/2412.11979)). However, our study is a loose analog of
 those works since we are using off-the-shelf LLMs with no additional training to play
-Diplomacy, so view our findings as consistent in spirit with that work, not a
-comparable measurement.
+Diplomacy, so view our findings as being consistent in spirit with those prior works.
 
 Lastly, the seven ten-year games described above cost about $240 to execute and were
 run serially in about four hours.
+
+[^1]: The exact exponent is uncertain, since three of the four parameter counts are
+estimates (Anthropic does not disclose Claude sizes), but its shallow-power-law shape
+is robust: a factor-of-two error in those estimates keeps the exponent between 0.08
+and 0.14.
