@@ -217,8 +217,8 @@ cleaner basic orders is what wins it the extra centers.
 
 ![Competence by model: illegal-order rate, self-bounces, support rate](dashboard/competence.svg)
 
-**In inter-agent negotiation, the four LLMs speak in distinct voices.** *Sonnet
-drives the hardest bargains (49% conditional via
+The following charts show that **in inter-agent negotiation, the four LLMs speak
+with different voices.** *Sonnet drives the hardest bargains (49% conditional via
 if-you-then-I language), Haiku is the alliance-talker (31% alliance language
 against Opus's 5%). Opus barely courts coalitions and coordinates units instead,
 while MiMo is the talkative brawler, bargaining by threat.* Betrayal, though, runs
