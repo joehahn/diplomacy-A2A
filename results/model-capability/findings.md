@@ -177,9 +177,7 @@ Because every test model plays each power exactly once, board position is averag
 out and each is measured against the same Sonnet field. The cross-game analysis is
 collected in the
 **[rotation dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)**
-whose highlights are noted in the following. That dashboard regenerates from the
-finished transcripts with no LLM calls (sub-second), globbing every
-`results/model-capability/*/transcript.jsonl`:
+whose highlights are noted below and can be regenerated via the following:
 
     python experiments/model_capability/build_axis_dashboard.py
 
