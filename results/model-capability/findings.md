@@ -265,12 +265,12 @@ compute
 those works since we are using off-the-shelf LLMs with no additional training to play
 Diplomacy, so view our findings as being consistent in spirit with those prior works.
 
-The seven ten-year games described above cost about $240 to execute and were run
-serially in about four hours. The drive to win could push adversarial A2A toward ever
-larger and more expensive LLMs, but at roughly 2.5x the spend for 10% more ground,
-that expense has to return real value. Competitive adversarial A2A will *not* be about
-using the biggest LLM to clear the gameboard; it will instead be about finding the LLM
-that optimizes performance against cost.
+**A2A costs:** these seven ten-year games cost about $240 to run (serially, in about
+four hours). Chasing wins, though, would push adversarial A2A toward ever larger and
+more expensive LLMs, and at roughly 2.5x the spend for 10% more ground, that expense
+has to return real value. So competitive adversarial A2A will *not* be about using the
+biggest LLM to clear the gameboard; it will instead be about finding the LLM that
+optimizes performance against cost.
 
 [^1]: The exact exponent is uncertain since three of the Anthropic parameter counts
 are estimates (Anthropic does not disclose Claude sizes). Nonetheless the
