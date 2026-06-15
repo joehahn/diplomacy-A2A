@@ -36,6 +36,45 @@ mixed-model and Haiku-only games reported Sonnet-rate-inflated costs.
 
 ---
 
+## Cost and token usage of the self-play games
+
+The cost of one 10-year game of self-play per model (the four model-capability
+rotation models):
+
+| model | tier | 10-year self-play cost | input tokens | output tokens | wall time |
+|-------|------|------------------------|--------------|---------------|-----------|
+| xiaomi/mimo-v2.5 | S (budget) | $1.66 | 11.2M (uncached) | 334K | 32 min |
+| Claude Haiku 4.5 | S (alt) | $7.30 | 10.3M (58% cached) | 453K | 32 min |
+| Claude Sonnet 4.6 | M (mid) | $25.62 | 11.9M (48% cached) | 347K | 34 min |
+| Claude Opus 4.8 | L (frontier) | $184.16 | 17.4M (45% cached) | 369K | 25 min |
+
+Roughly a 100x cost spread from budget to frontier, driven by per-token rates:
+all four games run a comparable number of LLM calls (~880) in comparable wall
+time, and the three non-Opus models consume comparable input as well (~10-12M
+tokens each) while Opus consumes about 1.5x more (~17M), but that is mostly due
+to its tokenizer which splits identical text into ~1.4x more tokens than Sonnet
+or Haiku. Cached input (the bracketed share above) is billed at 10% of the full
+input rate. The budget runner-up, Claude Haiku, lands in between, a Claude-family
+budget model at roughly 4x MiMo's cost but a quarter of Sonnet's.
+
+Diplomacy agents call the LLM for three reasons: negotiation, strategy, and
+moves, and the table below tracks Sonnet's calls and tokens.
+
+| call type | calls | input (prompt + context) | output | share of all tokens |
+|-----------|-------|--------------------------|--------|---------------------|
+| negotiation | 420 | 5.6M | 243K | 48% |
+| strategy | 280 | 3.8M | 37K | 31% |
+| moves | 185 | 2.5M | 68K | 21% |
+| **total** | **885** | **11.9M** | **347K** | **100%** |
+
+Two things stand out. There is no separate "prompt" line because the prompt
+*is* the input side of every call: about 97% of all tokens are input (the board
+state, rules, persona, and running history re-sent on each call) and only ~3%
+are model output. And negotiation is the single largest consumer at ~48%, which
+fits the project's premise that the dialogue, not the move, is the deliverable.
+
+---
+
 ## Per-phase wall-time observations
 
 All rows except the last are serial (one per-power LLM call at a time

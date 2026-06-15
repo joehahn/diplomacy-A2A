@@ -24,6 +24,11 @@ Everything shown here can be regenerated from this repo. To play Diplomacy with 
 of the Anthropic LLMs you need an Anthropic key in `.env`, while our use of MiMo
 relies on an [OpenRouter key](../../REFERENCE.md#openrouter-how-the-gateway-is-used-here).
 
+Each game runs in about 30 minutes and consumes roughly 13M input tokens and 400K
+output tokens; per-game cost ranges from about $2 to $200 depending on the model.
+The full per-game cost and token breakdown is in
+[REFERENCE.md](../../REFERENCE.md#cost-and-token-usage-of-the-self-play-games).
+
 **MiMo (low-cost but not so small):** *the talkative brawler.* The most talkative and
 most aggressive negotiator of the four (~1500 messages and the most real
 betrayals), and its betrayals are genuine and coercive and are often telegraphed: it
@@ -248,40 +253,7 @@ returns: to make an adversarial agent harvest 10% more reward (supply centers), 
 must boost its LLM's parameter count, or its spend rate, by a factor of about 2.5.
 Scale and spend buy ground, but slowly and at rising cost.
 
-## Cost: the price spread these tiers represent
-
-The cost of one 10-year game of self-play per model:
-
-| model | tier | 10-year self-play cost | input tokens | output tokens | wall time |
-|-------|------|------------------------|--------------|---------------|-----------|
-| xiaomi/mimo-v2.5 | S (budget) | $1.66 | 11.2M (uncached) | 334K | 32 min |
-| Claude Haiku 4.5 | S (alt) | $7.30 | 10.3M (58% cached) | 453K | 32 min |
-| Claude Sonnet 4.6 | M (mid) | $25.62 | 11.9M (48% cached) | 347K | 34 min |
-| Claude Opus 4.8 | L (frontier) | $184.16 | 17.4M (45% cached) | 369K | 25 min |
-
-Roughly a 100x cost spread from budget to frontier, driven by per-token rates:
-all four games run a comparable number of LLM calls (~880) in comparable wall
-time, and the three non-Opus models consume comparable input as well (~10-12M
-tokens each) while Opus consumes about 1.5x more (~17M), but that is mostly due
-to its tokenizer which splits identical text into ~1.4x more tokens than Sonnet
-or Haiku. Cached input (the bracketed share above) is billed at 10% of the full
-input rate. The budget runner-up, Claude Haiku, lands in between, a Claude-family
-budget model at roughly 4x MiMo's cost but a quarter of Sonnet's. The full
-head-to-head rotation behind the leaderboard above, seven ten-year games, runs about
-$240 in roughly four hours.
-
-Diplomacy agents call the LLM for three reasons: negotiation, strategy, and
-moves, and the table below tracks Sonnet's calls and tokens.
-
-| call type | calls | input (prompt + context) | output | share of all tokens |
-|-----------|-------|--------------------------|--------|---------------------|
-| negotiation | 420 | 5.6M | 243K | 48% |
-| strategy | 280 | 3.8M | 37K | 31% |
-| moves | 185 | 2.5M | 68K | 21% |
-| **total** | **885** | **11.9M** | **347K** | **100%** |
-
-Two things stand out. There is no separate "prompt" line because the prompt
-*is* the input side of every call: about 97% of all tokens are input (the board
-state, rules, persona, and running history re-sent on each call) and only ~3%
-are model output. And negotiation is the single largest consumer at ~48%, which
-fits the project's premise that the dialogue, not the move, is the deliverable.
+The full head-to-head rotation, the seven ten-year games behind the leaderboard
+above, cost about $240 and ran in roughly four hours; the per-game cost and token
+breakdown is in
+[REFERENCE.md](../../REFERENCE.md#cost-and-token-usage-of-the-self-play-games).
