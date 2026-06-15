@@ -228,14 +228,14 @@ fairly even across the field, about 4% of all messages.
 
 ![Negotiation by model: messages, conditional bargaining, alliance language, betrayals](dashboard/negotiation.svg)
 
-**Quantifying gameplay versus scale and spend.** The following plots show how the
-supply-center outcome varies against model scale (left) and spend rate (right), each
-spanning more than two orders of magnitude. Haiku is the value-trap,
-costing five times MiMo yet winning fewer centers; and cleanliness does not track
-price either, Sonnet, not Opus, posts the fewest mistakes. *But scale is the cleaner
-predictor: ordered by parameter count the supply-center ranking is monotonic (Haiku
-< MiMo < Sonnet < Opus), while by spend it is not, the cheapest model (MiMo)
-outscores the pricier Haiku.*
+**Gameplay versus LLM scale/spend.** The following plots show how the supply-center
+outcome varies against model scale (left) and spend rate (right), each spanning more
+than two orders of magnitude. Haiku is the value-trap, costing five times MiMo yet
+winning fewer centers; and cleanliness does not track price either, for Sonnet posts
+the fewest mistakes. *Nonetheless, scale is the cleaner predictor of success since
+the supply-center ranking is monotonic with LLM scale (Haiku < MiMo < Sonnet <
+Opus). However, by spend it is not, since the cheapest model MiMo outscores the
+pricier Haiku.*
 
 <p align="center">
   <img src="dashboard/param_frontier.svg" width="49%" alt="Final supply centers vs model size">
