@@ -229,67 +229,25 @@ fairly even across the field, about 4% of all messages.
 ![Negotiation by model: messages, conditional bargaining, alliance language, betrayals](dashboard/negotiation.svg)
 
 **On price and size, the frontiers come alive.** With territory now separated, the
-cost and parameter frontiers (both flat at 3 years) acquire a slope. Final centers
-climb with spend across the ~95x cost range, and rise with scale across more than
-two orders of magnitude in parameters (Haiku ~20B to Opus ~2.7T), so at ten years
-dollars and size both buy ground. Two wrinkles complicate the simple "more is
-better" read. Haiku is a value-trap: it costs five times MiMo yet wins fewer
-centers, so the genuinely small Claude is dominated by the larger-but-cheaper open
-MoE on both axes. And cleanliness does not track price, Sonnet, not Opus, posts the
-fewest mistakes; Opus trades some order-cleanliness back for the ambition errors
-that come with coordinating far more.
-
-The headline: ten years is the game length where the model-capability axis finally
-writes itself in centers. Opus wins the board, the mid-tier holds the average, and
-the two budget models trail, the smallest model (Haiku) last and the cheapest
-(MiMo) the best value. Scale and spend both predict territory once the game is long
-enough to turn execution into ground.
-
-## Quantifying LLM gameplay abilities
-
-The following analyzes the seven Diplomacy games that were played by four LLMs as
-described above, to quantify each model's aggregated successes and failures. The figures here are a few highlights; the [full
-dashboard](https://joehahn.github.io/diplomacy-A2A/results/model-capability/dashboard/index.html)
-contains many more diagnostic plots.
+cost and parameter frontiers (both flat at three years) acquire a slope: final
+centers rise with spend across the ~95x cost range and with scale across two orders
+of magnitude in parameters (Haiku ~20B to Opus ~2.7T). Haiku is the value-trap,
+costing five times MiMo yet winning fewer centers; and cleanliness does not track
+price either, Sonnet, not Opus, posts the fewest mistakes. *But scale is the cleaner
+predictor: ordered by parameter count the supply-center ranking is monotonic (Haiku
+< MiMo < Sonnet < Opus), while by spend it is not, the cheapest model (MiMo)
+outscores the pricier Haiku.*
 
 <p align="center">
   <img src="dashboard/param_frontier.svg" width="49%" alt="Final supply centers vs model size">
   <img src="dashboard/spend_frontier.svg" width="49%" alt="Final supply centers vs spend rate">
 </p>
 
-**Two frontiers: final supply centers against model scale (left) and against spend
-rate (right).** Both climb on a log x-axis with a shallow power-law fit, and Opus
-sits above each line. But scale is the cleaner predictor: ordered by parameter count
-the supply-center ranking is monotonic (Haiku < MiMo < Sonnet < Opus), while ordered
-by spend it is not, the cheapest model (MiMo) outscores the pricier Haiku. Capability
-tracks raw scale more tightly than dollars.
-
-- **Capability shows up as territory, but only over a long game.** Across ten
-  years the models separate cleanly on supply centers, Haiku 3.7, MiMo 4.1, Sonnet
-  4.9, Opus 6.6.
-- **The frontier edge is coordination, not tidy basic orders.** Opus issues support
-  orders on ~35% of its moves, three to five times the rest, and that is the real
-  separator. Illegal-order rate instead splits by budget tier (MiMo 8.5%, Haiku
-  8.8% against Sonnet 3.7%, Opus 4.8%), a geometry ceiling rather than a capability
-  ladder.
-- **Each model negotiates in a recognizable voice.** Sonnet drives the hardest
-  bargains, Haiku is the alliance-talker (30% alliance language against Opus's 5%),
-  MiMo is the talkative brawler, and Opus barely courts coalitions, it coordinates
-  units instead. The dialogue, the project's actual deliverable, is where the
-  personalities show.
-- **Spend buys ground, but cost is a noisy proxy for capability.** Final centers
-  climb with price across a ~95x span, yet not monotonically, Haiku costs 5x MiMo
-  and wins fewer centers, a value-trap, which makes the cheapest model the best
-  value.
-- **The cleanest capability signal is size, not price.** Reordered by parameter
-  count, board dominance climbs monotonically, the share of games a model ends
-  dominant runs 0% (Haiku ~20B) to 29% (MiMo 311B) to 39% (Sonnet ~1-2T) to 71%
-  (Opus ~1.5-5T). Raw capacity, not dollars, tracks who controls the board (centers
-  scale as roughly params^0.10, a shallow but real slope).
-- **Stated honestly, the limits.** No nation was eliminated in any ten-year game (a
-  solo needs eighteen centers and far longer), and the Claude sizes are third-party
-  estimates, not disclosed, so the size trend leans on the published MiMo (311B) and
-  Haiku (~20B) anchors.
+The headline: ten years is the game length where the model-capability axis finally
+writes itself in centers. Opus wins the board, the mid-tier holds the average, and
+the two budget models trail, the smallest model (Haiku) last and the cheapest
+(MiMo) the best value. Scale and spend both predict territory once the game is long
+enough to turn execution into ground.
 
 ## Cost: the price spread these tiers represent
 
