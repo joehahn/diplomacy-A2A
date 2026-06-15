@@ -189,16 +189,16 @@ happens: *the four LLMs climb out of the opening together and stay tangled until
 
 ![Mean supply centers by year, per model](dashboard/sc_trajectory.svg)
 
-**Which LLMs dominate, and which are squeezed.** We count a nation as *dominant*
+**Which LLMs dominate, and which get squeezed.** We count a nation as *dominant*
 when it holds five or more supply centers and *squeezed* when it holds four or
 fewer. Over the ten years the split is stark: *by 1907 Opus is dominant in every
-game and never squeezed, the smallest model (Haiku) is the mirror image, while the
-mid-scale Sonnet and MiMo land in between.*
+game and never squeezed, while the smallest model (Haiku) is the mirror image, with
+the mid-scale Sonnet and MiMo landing in between.*
 
 ![Dominant and Squeezed LLMs over time](dashboard/threshold_trajectories.svg)
 
-**Gameboard dominance tracks with model scale.** The plot below only considers the
-final positions and uses slightly tighter thresholds: *the share of each LLM's
+**Gameboard dominance tracks with model scale.** The plot below examines the games'
+final positions and also uses slightly tighter thresholds: *the share of each LLM's
 nations that finish dominant climbs monotonically with model scale, Haiku last with
 Opus first, while their squeezed share falls.*
 
