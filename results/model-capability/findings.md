@@ -204,7 +204,7 @@ Haiku and highest for Opus, while their squeezed share mostly does the reverse.*
 
 ![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
 
-The following shows that **On execution, the competency ladder mostly holds**. Order quality separates roughly as the
+The following shows that **on execution, the competency ladder mostly holds**. Order quality separates roughly as the
 self-play games predicted though not by price alone. The illegal-order rate
 segregates the Sonnet/Opus models (about 4%) from the budget MiMo/Haiku models
 (8-9%), whose illegal orders are mostly supports for moves their units cannot reach,
@@ -217,12 +217,12 @@ cleaner basic orders is what wins it the extra centers.
 
 ![Competence by model: illegal-order rate, self-bounces, support rate](dashboard/competence.svg)
 
-**On negotiation, four distinct voices.** The dialogue is this project's actual
-deliverable, and the four models speak it differently: *Sonnet drives the hardest
-bargains (49% conditional, if-you-then-I language), Haiku is the alliance-talker
-(31% alliance language against Opus's 5%), Opus barely courts coalitions and
-coordinates units instead, and MiMo is the talkative brawler, bargaining by threat.*
-Betrayal, though, runs fairly even across the field (3.6-5.2% of messages).
+**For inter-agent negotiations, four different voices are heard among the 4
+different LLMs.** *Sonnet drives the hardest bargains (49% conditional via
+if-you-then-I language), Haiku is the alliance-talker (31% alliance language
+against Opus's 5%). Opus barely courts coalitions and coordinates units instead,
+while MiMo is the talkative brawler, bargaining by threat.* Betrayal, though, runs
+fairly even across the field, about 4% of all messages.
 
 ![Negotiation by model: messages, conditional bargaining, alliance language, betrayals](dashboard/negotiation.svg)
 
