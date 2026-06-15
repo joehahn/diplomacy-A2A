@@ -254,13 +254,14 @@ after 10 years of gameplay), you must boost its LLM's parameter count (which in 
 boosts the spend rate) by a factor of about 2.5 (2.5^0.1 ≈ 1.1). Scale and spend
 both buy ground, but slowly and at rising cost.
 
-**Related work.** For *trained* AlphaZero agents on simple two-player games, playing
-strength is a known power law in model size and compute
+**Related work.** For agents that *learn* a game by playing it against themselves
+millions of times (the AlphaZero approach, trained on the game itself), playing
+strength is a known power law in model size and training compute
 ([Jones 2021](https://arxiv.org/abs/2104.03113); [Neumann & Gros
-2024](https://arxiv.org/abs/2412.11979), which traces the exponent to a Zipf law over
-game states). Ours is a much looser zero-shot, cross-family analog with
-mostly-estimated parameter counts, so read it as consistent in spirit with that work,
-not a comparable measurement.
+2024](https://arxiv.org/abs/2412.11979)). Ours is a much looser analog: general LLMs
+playing Diplomacy zero-shot (off the shelf, never trained on it), across different
+model families with mostly-estimated parameter counts, so read it as consistent in
+spirit with that work, not a comparable measurement.
 
 Lastly, the seven ten-year games described above cost about $240 to execute and were
 run serially in about four hours.
