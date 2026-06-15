@@ -199,8 +199,8 @@ the mid-scale Sonnet and MiMo landing in between.*
 
 **Gameboard dominance tracks with model scale.** The plot below examines the games'
 final positions and also uses slightly tighter thresholds: *the share of each LLM's
-nations that finish dominant climbs monotonically with model scale, Haiku last with
-Opus first, while their squeezed share falls.*
+nations that finish dominant climbs monotonically with model scale, lowest for
+Haiku and highest for Opus, while their squeezed share broadly does the reverse.*
 
 ![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
 
