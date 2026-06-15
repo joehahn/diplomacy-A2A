@@ -770,7 +770,7 @@ def plot_negotiation(raw: dict) -> str:
         ("Betrayals", "% of messages · heuristic",
          {m: _rate(raw, m, "betray", "msgs") for m in ORDER}, "{:.1f}%"),
     ]
-    return _bar_panels(5, "Negotiation by model", panels, show_values=True)
+    return _bar_panels(None, "Negotiation by model", panels, show_values=True)
 
 
 def plot_od_means(od_points: dict) -> str:

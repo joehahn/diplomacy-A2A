@@ -214,7 +214,16 @@ And *coordination is where Opus pulls away: it orders supports on 35% of its mov
 against Sonnet's 14% (next-highest) and Haiku's 7%.* That combined-arms ambition,
 not cleaner basic orders, is what wins it the extra centers.
 
-![Competence by model: illegal-order rate, self-bounces, support rate, and more](dashboard/competence.svg)
+![Competence by model: illegal-order rate, self-bounces, support rate](dashboard/competence.svg)
+
+**On negotiation, four distinct voices.** The dialogue is this project's actual
+deliverable, and the four models speak it differently: *Sonnet drives the hardest
+bargains (49% conditional, if-you-then-I language), Haiku is the alliance-talker
+(31% alliance language against Opus's 5%), Opus barely courts coalitions and
+coordinates units instead, and MiMo is the talkative brawler, bargaining by threat.*
+Betrayal, though, runs fairly even across the field (3.6-5.2% of messages).
+
+![Negotiation by model: messages, conditional bargaining, alliance language, betrayals](dashboard/negotiation.svg)
 
 **On price and size, the frontiers come alive.** With territory now separated, the
 cost and parameter frontiers (both flat at 3 years) acquire a slope. Final centers
