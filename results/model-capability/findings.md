@@ -228,10 +228,9 @@ fairly even across the field, about 4% of all messages.
 
 ![Negotiation by model: messages, conditional bargaining, alliance language, betrayals](dashboard/negotiation.svg)
 
-**On price and size, the frontiers come alive.** With territory now separated, the
-cost and parameter frontiers (both flat at three years) acquire a slope: final
-centers rise with spend across the ~95x cost range and with scale across two orders
-of magnitude in parameters (Haiku ~20B to Opus ~2.7T). Haiku is the value-trap,
+**Quantifying gameplay versus scale and spend.** The following plots show how the
+supply-center outcome varies against model scale (left) and spend rate (right), each
+spanning more than two orders of magnitude. Haiku is the value-trap,
 costing five times MiMo yet winning fewer centers; and cleanliness does not track
 price either, Sonnet, not Opus, posts the fewest mistakes. *But scale is the cleaner
 predictor: ordered by parameter count the supply-center ranking is monotonic (Haiku
