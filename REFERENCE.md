@@ -696,13 +696,6 @@ flags (game 1, for example, sets `TURKEY=<opus>`, `GERMANY=<haiku>`,
 `FRANCE=<mimo>`) and `--category model-capability`; the field stays Sonnet because
 `--model` is omitted.
 
-The cross-game dashboard regenerates from the finished transcripts with no LLM
-calls (sub-second), globbing `results/model-capability/*/transcript.jsonl`:
-
-```bash
-python experiments/model_capability/build_axis_dashboard.py
-```
-
 **Status:** complete. Seven `2026-06-11` games under `results/model-capability/`;
 final centers per nation Opus 6.6, Sonnet 4.9, MiMo 4.1, Haiku 3.7. Writeup:
 `results/model-capability/findings.md`.
