@@ -749,26 +749,14 @@ def _bar_panels(number: int | None, title: str, panels: list,
 
 def plot_competence(raw: dict) -> str:
     panels = [
-        # row 1: error / coordination-failure metrics
         ("Illegal-order rate", "% of orders · lower is better",
          {m: _rate(raw, m, "illegal", "orders") for m in ORDER}, "{:.1f}%"),
         ("Self-bounces", "per 100 orders · lower is better",
          {m: _rate(raw, m, "self_bounce", "orders") for m in ORDER}, "{:.1f}"),
-        ("Uncoordinated supports", "% of move-supports · lower is better",
-         {m: _rate(raw, m, "supp_uncoord", "supp_move") for m in ORDER}, "{:.1f}%"),
-        ("Uncoordinated convoys", "% of orders · rare",
-         {m: _rate(raw, m, "convoy_uncoord", "orders") for m in ORDER}, "{:.1f}%"),
-        # row 2: order-mix and coordination metrics
-        ("Hold rate", "% of orders · passivity",
-         {m: _rate(raw, m, "holds", "orders") for m in ORDER}, "{:.1f}%"),
         ("Support rate", "% of orders · coordination effort",
          {m: _rate(raw, m, "support", "orders") for m in ORDER}, "{:.1f}%"),
-        ("Move-support success", "% of move-supports · higher is better",
-         {m: _rate(raw, m, "supp_move_ok", "supp_move") for m in ORDER}, "{:.1f}%"),
-        ("Convoy rate", "% of orders · rare",
-         {m: _rate(raw, m, "convoy", "orders") for m in ORDER}, "{:.1f}%"),
     ]
-    return _bar_panels(None, "Competence by model", panels, per_row=4, show_values=True)
+    return _bar_panels(None, "Competence by model", panels, per_row=3, show_values=True)
 
 
 def plot_negotiation(raw: dict) -> str:
@@ -1348,11 +1336,11 @@ def build_index(data: dict) -> str:
         "against Sonnet's 3.7% and Opus's 4.8%, the geometry ceiling the self-play "
         "games predicted. Support rate exposes the real separation: Opus coordinates on "
         "35% of its orders, three to five times the others, and that ambition also "
-        "gives it the most self-bounces and the lowest hold rate (least passive). The "
+        "gives it the most self-bounces. The "
         "self-bounce paradox survives at scale, MiMo jams its own units zero times "
         "because it barely coordinates. Error bars are 1&sigma; Poisson (&radic;N on the "
         "event count); a zero count is drawn as a one-sided upper limit (&sigma; &lt; "
-        "1). The convoy panels stay near-empty even over 10 years. Exact values are in "
+        "1). Exact values are in "
         "the KPI table below.</figcaption></figure>",
 
         "<figure><object type='image/svg+xml' data='negotiation.svg'></object>",
