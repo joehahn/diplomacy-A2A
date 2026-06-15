@@ -246,11 +246,13 @@ spend since the cheaper model MiMo outscores the pricier Haiku.*
   <img src="dashboard/spend_frontier.svg" width="49%" alt="Final supply centers vs spend rate">
 </p>
 
-The headline: both frontiers are shallow power laws, with final supply centers
-scaling as roughly params^0.10 and ($/min)^0.11. That implies steep diminishing
-returns: to make an adversarial agent harvest 10% more reward (supply centers), you
-must boost its LLM's parameter count, or its spend rate, by a factor of about 2.5.
-Scale and spend buy ground, but slowly and at rising cost.
+**Main finding**: the above plots show that adversarial agents harvest game rewards
+at rates that are shallow power laws in model scale and cost, with final supply
+centers scaling roughly as params^0.10 and cost^0.11. This implies steep diminishing
+returns: to make an adversarial agent harvest 10% more reward (e.g., supply centers
+after 10 years of gameplay), you must boost its LLM's parameter count (which in turn
+boosts your spend rate) by a factor of about 2.5 (2.5^0.1 ≈ 1.1). Scale and spend
+both buy ground, but slowly and at rising cost.
 
 Lastly, the seven ten-year games described above cost about $240 to execute and were
 run serially in about four hours.
