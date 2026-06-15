@@ -204,8 +204,8 @@ Haiku and highest for Opus, while their squeezed share mostly does the reverse.*
 
 ![Dominant and squeezed nations versus LLM, ordered by model scale](dashboard/polarization_by_size.svg)
 
-**On execution, the ladder mostly holds.** Order quality separates roughly as the
-self-play games predicted, though not by price alone, see below. Illegal-order rate
+**On execution, the competency ladder mostly holds,** see below. Order quality separates roughly as the
+self-play games predicted, though not by price alone. Illegal-order rate
 splits the Claude models from the budget pair: Sonnet & Opus about 4% versus
 MiMo/Haiku 8-9%, the same geometry ceiling the cheap models hit in self-play. The
 self-bounce paradox survives at scale, as MiMo jams its own units zero times because
