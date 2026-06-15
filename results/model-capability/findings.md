@@ -251,8 +251,16 @@ at rates that are shallow power laws in model scale and cost, with final supply
 centers scaling roughly as params^0.10 and cost^0.11. This implies steep diminishing
 returns: to make an adversarial agent harvest 10% more reward (e.g., supply centers
 after 10 years of gameplay), you must boost its LLM's parameter count (which in turn
-boosts your spend rate) by a factor of about 2.5 (2.5^0.1 ≈ 1.1). Scale and spend
+boosts the spend rate) by a factor of about 2.5 (2.5^0.1 ≈ 1.1). Scale and spend
 both buy ground, but slowly and at rising cost.
+
+**Related work.** For *trained* AlphaZero agents on simple two-player games, playing
+strength is a known power law in model size and compute
+([Jones 2021](https://arxiv.org/abs/2104.03113); [Neumann & Gros
+2024](https://arxiv.org/abs/2412.11979), which traces the exponent to a Zipf law over
+game states). Ours is a much looser zero-shot, cross-family analog with
+mostly-estimated parameter counts, so read it as consistent in spirit with that work,
+not a comparable measurement.
 
 Lastly, the seven ten-year games described above cost about $240 to execute and were
 run serially in about four hours.
