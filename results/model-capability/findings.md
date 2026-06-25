@@ -1,5 +1,11 @@
 [&larr; diplomacy-A2A README](../../README.md)
 
+**Author:** Joe Hahn  
+**Email:** [jmh.datasciences@gmail.com](mailto:jmh.datasciences@gmail.com)  
+**Consulting:** [jmh-datasciences.com](https://jmh-datasciences.com)  
+**Date:** 2026-May-22  
+**branch:** main
+
 # Model-capability axis:
 ### Four LLMs, from budget to frontier, play Diplomacy
 
