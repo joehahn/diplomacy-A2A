@@ -2,8 +2,8 @@
 
 **Author:** Joe Hahn  
 **Email:** [jmh.datasciences@gmail.com](mailto:jmh.datasciences@gmail.com)  
-**Web:** [jmh-datasciences.com](https://jmh-datasciences.com)  
-**Date:** 2026-Jun-25  
+**Consulting:** [jmh-datasciences.com](https://jmh-datasciences.com)  
+**Date:** 2026-May-22  
 **branch:** main
 
 ![A Diplomacy board mid-game with pieces deployed across Europe](assets/diplomacy-board.jpg)
